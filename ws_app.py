@@ -62,6 +62,20 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 6px !important;
     }
+    /* Dropdown popup menu */
+    [data-baseweb="popover"], [data-baseweb="menu"] {
+        background-color: #1e2a3e !important;
+    }
+    [data-baseweb="menu"] ul { background-color: #1e2a3e !important; }
+    [data-baseweb="menu"] li {
+        background-color: #1e2a3e !important;
+        color: #e2e8f0 !important;
+    }
+    [data-baseweb="menu"] li:hover {
+        background-color: #2d3f5e !important;
+        color: #ffffff !important;
+    }
+    [data-baseweb="select"] div { color: #e2e8f0 !important; }
 
     /* ── Top accent bar ── */
     .stApp::before {

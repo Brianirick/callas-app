@@ -20,8 +20,8 @@ importlib.reload(ws)
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="WS Display PDF Tools",
-    page_icon="🖨️",
+    page_title="CallasFlow",
+    page_icon="📄",
     layout="wide",
 )
 
@@ -40,15 +40,20 @@ st.markdown("""
 
     /* ── Buttons ── */
     .stButton>button {
-        background-color: #2563eb;
+        background-color: #3b82f6;
         color: white;
         border: none;
         border-radius: 6px;
         padding: 0.5rem 1.5rem;
         font-weight: 600;
         letter-spacing: 0.02em;
+        box-shadow: 0 0 12px rgba(59,130,246,0.35);
+        transition: all 0.15s ease;
     }
-    .stButton>button:hover { background-color: #1d4ed8; }
+    .stButton>button:hover {
+        background-color: #60a5fa;
+        box-shadow: 0 0 18px rgba(59,130,246,0.55);
+    }
 
     /* ── Selectbox / inputs ── */
     .stSelectbox>div>div, .stNumberInput>div>div>input, .stTextInput>div>div>input {
@@ -58,15 +63,42 @@ st.markdown("""
         border-radius: 6px !important;
     }
 
+    /* ── Top accent bar ── */
+    .stApp::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa, #2563eb);
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 9999;
+    }
+
     /* ── File uploader ── */
-    .stFileUploader { background-color: #1e2a3e; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 0.5rem; }
+    .stFileUploader {
+        background-color: #1a2540;
+        border: 1px dashed rgba(59,130,246,0.4);
+        border-radius: 8px;
+        padding: 0.5rem;
+    }
+    .stFileUploader label { color: #7f9bb5 !important; }
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: #1a2540 !important;
+        border: none !important;
+    }
 
     /* ── Expander ── */
     .streamlit-expanderHeader { background-color: #1a2540 !important; color: #e2e8f0 !important; border-radius: 6px; }
-    .streamlit-expanderContent { background-color: #161f31 !important; }
+    .streamlit-expanderContent { background-color: #161f31 !important; border: 1px solid rgba(255,255,255,0.06); border-radius: 0 0 6px 6px; }
 
     /* ── Divider ── */
     hr { border-color: rgba(255,255,255,0.08) !important; }
+
+    /* ── Caption/footer ── */
+    .stCaption, footer { color: #4a6080 !important; }
+
+    /* ── Spinner ── */
+    .stSpinner > div { border-top-color: #3b82f6 !important; }
 
     /* ── Metric cards ── */
     [data-testid="metric-container"] {
@@ -115,12 +147,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Header ─────────────────────────────────────────────────────────────────────
-col_logo, col_title = st.columns([1, 6])
-with col_title:
-    st.title("🖨️ WS Display PDF Tools")
-    st.caption("Automated PDF finishing, preflight, and preparation")
-
-st.divider()
+st.markdown("""
+<div style="display:flex; align-items:center; gap:1rem; padding:0.5rem 0 1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem;">
+    <div style="background:linear-gradient(135deg,#2563eb,#3b82f6); width:44px; height:44px; border-radius:10px;
+                display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:800;
+                color:white; letter-spacing:-0.02em; flex-shrink:0;">CF</div>
+    <div>
+        <div style="font-size:1.4rem; font-weight:700; color:#ffffff; letter-spacing:-0.01em;">CallasFlow</div>
+        <div style="font-size:0.78rem; color:#4a6080; letter-spacing:0.05em; text-transform:uppercase;">WS Display · PDF Finishing · Preflight · Preparation</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ── Sidebar — Operation Selector ───────────────────────────────────────────────
 with st.sidebar:
@@ -344,4 +381,4 @@ else:
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.divider()
-st.caption("WS Display PDF Tools · Built with PyMuPDF + Poppler · Replaces Callas pdfToolbox for core operations")
+st.caption("CallasFlow · WS Display · Built with PyMuPDF + Poppler")

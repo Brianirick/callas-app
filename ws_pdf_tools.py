@@ -23,7 +23,7 @@ import pypdf
 from pypdf import PdfWriter, PdfReader
 from pypdf.generic import (
     ArrayObject, FloatObject, NameObject, NumberObject,
-    DictionaryObject, BooleanObject, TextStringObject
+    DictionaryObject, BooleanObject, TextStringObject, RectangleObject
 )
 from pathlib import Path
 
@@ -489,6 +489,185 @@ def remove_private_data(input_path: str, output_path: str):
 
 
 # ---------------------------------------------------------------------------
+# SLD FINISHING OPERATIONS  (ffeat: EnlargePage, OutlinePBox, SetPageBoxEx)
+# ---------------------------------------------------------------------------
+
+def enlarge_page(input_path: str, output_path: str,
+                 top_inch: float = 0.0, bottom_inch: float = 0.0,
+                 left_inch: float = 0.0, right_inch: float = 0.0):
+    """
+    Replicates: EnlargePage
+    Expands the MediaBox by the given amounts on each side.
+    Content remains at its original position; blank space is added outside.
+    All other page boxes (TrimBox, BleedBox, etc.) are left untouched.
+    """
+    top_pt    = top_inch    * 72.0
+    bottom_pt = bottom_inch * 72.0
+    left_pt   = left_inch   * 72.0
+    right_pt  = right_inch  * 72.0
+
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    for page in reader.pages:
+        mb = page.mediabox            # PDF coords: bottom-left origin, y↑
+        x0 = float(mb.left)   - left_pt
+        y0 = float(mb.bottom) - bottom_pt  # expand downward in PDF space
+        x1 = float(mb.right)  + right_pt
+        y1 = float(mb.top)    + top_pt     # expand upward in PDF space
+        page.mediabox = RectangleObject([x0, y0, x1, y1])
+        writer.add_page(page)
+    with open(output_path, "wb") as f:
+        writer.write(f)
+    print(f"  Page enlarged ±{top_inch}/{bottom_inch}\" top/bottom: {output_path}")
+
+
+def add_trimbox_stroke(input_path: str, output_path: str,
+                       stroke_width_pt: float = 0.25):
+    """
+    Replicates: OutlinePBox on TrimBox, CMYK 0,0,0,1 (100K black), 0.25pt
+    Draws a hairline black stroke along the TrimBox border.
+    ffeat: OutlinePBox
+    """
+    doc = fitz.open(input_path)
+    for page in doc:
+        trim = page.trimbox
+        if trim is None or trim.is_empty:
+            trim = page.mediabox
+        page.draw_rect(trim, color=(0, 0, 0, 1), fill=None, width=stroke_width_pt)
+    doc.save(output_path, deflate=True, garbage=4, clean=True)
+    doc.close()
+    print(f"  TrimBox stroke added (100K, {stroke_width_pt}pt): {output_path}")
+
+
+def set_bleedbox_from_cropbox(input_path: str, output_path: str):
+    """
+    Replicates: SetPageBoxEx BleedBox = CropBox
+    Sets the BleedBox equal to the CropBox on every page.
+    ffeat: SetPageBoxEx
+    """
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    for page in reader.pages:
+        crop = page.cropbox if "/CropBox" in page else page.mediabox
+        page.bleedbox = crop
+        writer.add_page(page)
+    with open(output_path, "wb") as f:
+        writer.write(f)
+    print(f"  BleedBox set from CropBox: {output_path}")
+
+
+def add_thrucut_spot(input_path: str, output_path: str,
+                     stroke_width_pt: float = 0.25):
+    """
+    Replicates: OutlinePBox on BleedBox with 'thru-cut' Separation spot color.
+    Injects a spot color stroke rectangle at the BleedBox boundary so RIPs
+    and cutters recognise it as a through-cut path.
+    ffeat: OutlinePBox
+    """
+    doc = fitz.open(input_path)
+
+    for page_idx in range(len(doc)):
+        page = doc[page_idx]
+        bleed = page.bleedbox
+        if bleed is None or bleed.is_empty:
+            bleed = page.mediabox
+
+        page_h = page.rect.height
+
+        # PDF coordinate space (bottom-left origin, y flipped from PyMuPDF)
+        x0   = bleed.x0
+        y_lo = page_h - bleed.y1   # PDF y at visual bottom
+        x1   = bleed.x1
+        y_hi = page_h - bleed.y0   # PDF y at visual top
+
+        spot_name = "thru-cut"
+        res_key   = "CSThrCut"     # name used inside the Resources dict
+
+        # ── 1. Build PDF objects: tint function + Separation colorspace ────────
+        fn_xref = doc.get_new_xref()
+        doc.update_object(fn_xref,
+            "<</FunctionType 2/Domain[0.0 1.0]"
+            "/C0[0.0 0.0 0.0 0.0]/C1[0.0 0.0 0.0 1.0]/N 1.0>>")
+
+        cs_xref = doc.get_new_xref()
+        doc.update_object(cs_xref,
+            f"[/Separation /thru-cut /DeviceCMYK {fn_xref} 0 R]")
+
+        # ── 2. Add colorspace to page Resources ───────────────────────────────
+        page_xref = page.xref
+
+        # Resolve Resources (may be indirect ref or inline dict)
+        res_val = doc.xref_get_key(page_xref, "Resources")
+        if not res_val or res_val == "null":
+            res_xref = doc.get_new_xref()
+            doc.update_object(res_xref, "<<>>")
+            doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
+        else:
+            parts = res_val.split()
+            if len(parts) >= 3 and parts[-1] == "R":
+                res_xref = int(parts[0])
+            else:
+                # Inline dict — materialise as indirect object
+                res_xref = doc.get_new_xref()
+                inline = res_val if res_val.startswith("<<") else "<<>>"
+                doc.update_object(res_xref, inline)
+                doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
+
+        # Resolve / create the ColorSpace sub-dict
+        cs_dict_val = doc.xref_get_key(res_xref, "ColorSpace")
+        if not cs_dict_val or cs_dict_val == "null":
+            cs_dict_xref = doc.get_new_xref()
+            doc.update_object(cs_dict_xref, "<<>>")
+            doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
+        else:
+            parts2 = cs_dict_val.split()
+            if len(parts2) >= 3 and parts2[-1] == "R":
+                cs_dict_xref = int(parts2[0])
+            else:
+                cs_dict_xref = doc.get_new_xref()
+                inline2 = cs_dict_val if cs_dict_val.startswith("<<") else "<<>>"
+                doc.update_object(cs_dict_xref, inline2)
+                doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
+
+        doc.xref_set_key(cs_dict_xref, res_key, f"{cs_xref} 0 R")
+
+        # ── 3. Content stream — stroke rect with spot color ───────────────────
+        content = (
+            f"q\n"
+            f"/{res_key} CS\n"             # stroking colorspace = Separation
+            f"1.0 SCN\n"                   # tint = 1.0 (full ink)
+            f"{stroke_width_pt} w\n"       # line width
+            f"{x0:.4f} {y_lo:.4f} m\n"    # bottom-left
+            f"{x1:.4f} {y_lo:.4f} l\n"    # bottom-right
+            f"{x1:.4f} {y_hi:.4f} l\n"    # top-right
+            f"{x0:.4f} {y_hi:.4f} l\n"    # top-left
+            f"h S\n"                       # close + stroke
+            f"Q\n"
+        ).encode("latin-1")
+
+        # ── 4. Append stream to page Contents ─────────────────────────────────
+        new_stm = doc.get_new_xref()
+        doc.update_stream(new_stm, content)
+
+        contents_val = doc.xref_get_key(page_xref, "Contents")
+        if not contents_val or contents_val == "null":
+            doc.xref_set_key(page_xref, "Contents", f"{new_stm} 0 R")
+        else:
+            stripped = contents_val.strip()
+            if stripped.startswith("["):
+                inner = stripped[1:-1].strip()
+                doc.xref_set_key(page_xref, "Contents",
+                                  f"[{inner} {new_stm} 0 R]")
+            else:
+                doc.xref_set_key(page_xref, "Contents",
+                                  f"[{stripped} {new_stm} 0 R]")
+
+    doc.save(output_path, deflate=True, garbage=4, clean=True)
+    doc.close()
+    print(f"  Thru-cut spot stroke added at BleedBox: {output_path}")
+
+
+# ---------------------------------------------------------------------------
 # PIPELINE HELPER — chain multiple operations
 # ---------------------------------------------------------------------------
 
@@ -602,6 +781,25 @@ def profile_outline_and_clean(input_path: str, output_path: str):
     run_pipeline(input_path, output_path, [
         outline_fonts,
         remove_private_data,
+    ])
+
+
+def profile_sld_top_bttm(input_path: str, output_path: str):
+    """
+    Mirrors: SLD_4_2_TOP_BTTM_FINISH_.kfpx
+    Full SLD 4.2 Top/Bottom finishing pipeline:
+    1. Set MediaBox to origin          (ffeat: SetMediaBoxTo00)
+    2. Stroke TrimBox in 100K black    (ffeat: OutlinePBox)
+    3. Enlarge page +4.5\" top/bottom  (ffeat: EnlargePage)
+    4. Set BleedBox = CropBox          (ffeat: SetPageBoxEx)
+    5. Add 'thru-cut' spot at BleedBox (ffeat: OutlinePBox w/ spot color)
+    """
+    run_pipeline(input_path, output_path, [
+        set_mediabox_to_origin,
+        add_trimbox_stroke,
+        lambda i, o: enlarge_page(i, o, top_inch=4.5, bottom_inch=4.5),
+        set_bleedbox_from_cropbox,
+        add_thrucut_spot,
     ])
 
 

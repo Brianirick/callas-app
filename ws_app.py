@@ -192,8 +192,9 @@ OP_DESCRIPTIONS = {
     "Set MediaBox to Origin":         "Normalizes the page so its lower-left corner sits at 0,0 — required before most finishing steps.",
     "Create Identical Pages":         "Duplicates a single-page file to N identical pages for gang printing.",
     "Remove Bleed":                   "Sets the CropBox equal to the TrimBox, hiding bleed area from output.",
-    "Full Finishing — 10ft Tent":     "Full pipeline: origin → artwork layer → cutpath layer → 118\"×86.25\" crop.",
-    "Full Finishing — 6ft Multi-Page":"Full pipeline: duplicate to 5 pages → correct page geometry.",
+    "Full Finishing — 10ft Tent":          "Full pipeline: origin → artwork layer → cutpath layer → 118\"×86.25\" crop.",
+    "Full Finishing — 6ft Multi-Page":     "Full pipeline: duplicate to 5 pages → correct page geometry.",
+    "Full Finishing — SLD 4.2 Top/Bottom": "Full SLD pipeline: origin → TrimBox stroke → enlarge +4.5\" top/bottom → BleedBox from CropBox → thru-cut spot at BleedBox.",
 }
 
 # ── Sidebar — Operation Selector ───────────────────────────────────────────────
@@ -361,6 +362,9 @@ if uploaded:
 
                 elif operation == "Full Finishing — 6ft Multi-Page":
                     ws.profile_6ft_multipage(input_path, output_path)
+
+                elif operation == "Full Finishing — SLD 4.2 Top/Bottom":
+                    ws.profile_sld_top_bttm(input_path, output_path)
 
                 # ── Success + download ─────────────────────────────────────────
                 if output_path and os.path.exists(output_path):

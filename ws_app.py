@@ -62,20 +62,19 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 6px !important;
     }
-    /* Dropdown popup menu */
-    [data-baseweb="popover"], [data-baseweb="menu"] {
-        background-color: #1e2a3e !important;
-    }
+    /* Dropdown popup menu — broad override for Streamlit cloud */
+    [data-baseweb="popover"] { background-color: #1e2a3e !important; }
+    [data-baseweb="menu"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] ul { background-color: #1e2a3e !important; }
-    [data-baseweb="menu"] li {
-        background-color: #1e2a3e !important;
-        color: #e2e8f0 !important;
-    }
-    [data-baseweb="menu"] li:hover {
-        background-color: #2d3f5e !important;
-        color: #ffffff !important;
-    }
+    [data-baseweb="menu"] li { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
+    [data-baseweb="menu"] li:hover { background-color: #2d3f5e !important; color: #ffffff !important; }
     [data-baseweb="select"] div { color: #e2e8f0 !important; }
+    [data-baseweb="select"] span { color: #e2e8f0 !important; }
+    /* Catch-all for any popup/dropdown text */
+    [role="listbox"] { background-color: #1e2a3e !important; }
+    [role="option"] { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
+    [role="option"]:hover { background-color: #2d3f5e !important; color: #ffffff !important; }
+    ul[role="listbox"] li { color: #e2e8f0 !important; background-color: #1e2a3e !important; }
 
     /* ── Top accent bar ── */
     .stApp::before {

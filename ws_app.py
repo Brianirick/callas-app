@@ -28,42 +28,88 @@ st.set_page_config(
 # ── Styles ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    .main { background-color: #f8f9fa; }
+    /* ── Base dark navy theme (PSUFlow-style) ── */
+    .stApp { background-color: #0f1623; }
+    .main .block-container { background-color: #0f1623; padding-top: 1.5rem; }
+    section[data-testid="stSidebar"] { background-color: #131d2e; border-right: 1px solid rgba(255,255,255,0.08); }
+    section[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+
+    /* ── Text ── */
+    h1, h2, h3, h4, p, label, div { color: #e2e8f0; }
+    .stMarkdown p { color: #b0bec5; }
+
+    /* ── Buttons ── */
     .stButton>button {
-        background-color: #1a3c6e;
+        background-color: #2563eb;
         color: white;
+        border: none;
         border-radius: 6px;
         padding: 0.5rem 1.5rem;
         font-weight: 600;
+        letter-spacing: 0.02em;
     }
-    .stButton>button:hover { background-color: #254f91; }
+    .stButton>button:hover { background-color: #1d4ed8; }
+
+    /* ── Selectbox / inputs ── */
+    .stSelectbox>div>div, .stNumberInput>div>div>input, .stTextInput>div>div>input {
+        background-color: #1e2a3e !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 6px !important;
+    }
+
+    /* ── File uploader ── */
+    .stFileUploader { background-color: #1e2a3e; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 0.5rem; }
+
+    /* ── Expander ── */
+    .streamlit-expanderHeader { background-color: #1a2540 !important; color: #e2e8f0 !important; border-radius: 6px; }
+    .streamlit-expanderContent { background-color: #161f31 !important; }
+
+    /* ── Divider ── */
+    hr { border-color: rgba(255,255,255,0.08) !important; }
+
+    /* ── Metric cards ── */
+    [data-testid="metric-container"] {
+        background-color: #1a2540;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    [data-testid="metric-container"] label { color: #7f9bb5 !important; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    [data-testid="metric-container"] [data-testid="stMetricValue"] { color: #ffffff !important; font-size: 1.6rem !important; font-weight: 700; }
+
+    /* ── Status boxes ── */
     .result-box {
-        background: #e8f4e8;
-        border-left: 4px solid #2e7d32;
+        background: rgba(34, 197, 94, 0.1);
+        border-left: 4px solid #22c55e;
         padding: 1rem;
         border-radius: 4px;
         margin: 0.5rem 0;
+        color: #e2e8f0;
     }
     .issue-box {
-        background: #fdecea;
-        border-left: 4px solid #c62828;
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 4px solid #ef4444;
         padding: 1rem;
         border-radius: 4px;
         margin: 0.5rem 0;
+        color: #e2e8f0;
     }
     .warn-box {
-        background: #fff8e1;
-        border-left: 4px solid #f9a825;
+        background: rgba(234, 179, 8, 0.1);
+        border-left: 4px solid #eab308;
         padding: 1rem;
         border-radius: 4px;
         margin: 0.5rem 0;
+        color: #e2e8f0;
     }
     .info-box {
-        background: #e3f2fd;
-        border-left: 4px solid #1565c0;
+        background: rgba(37, 99, 235, 0.1);
+        border-left: 4px solid #2563eb;
         padding: 1rem;
         border-radius: 4px;
         margin: 0.5rem 0;
+        color: #e2e8f0;
     }
 </style>
 """, unsafe_allow_html=True)

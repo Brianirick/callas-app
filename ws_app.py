@@ -170,35 +170,56 @@ st.markdown("""
 
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div style="display:flex; align-items:center; gap:1rem; padding:0.5rem 0 1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem;">
-    <div style="background:linear-gradient(135deg,#2563eb,#3b82f6); width:64px; height:64px; border-radius:12px;
-                display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:800;
-                color:white; letter-spacing:-0.02em; flex-shrink:0; box-shadow:0 0 20px rgba(59,130,246,0.4);">CF</div>
+<div style="display:flex; align-items:center; gap:1.2rem; padding:0.5rem 0 1.2rem 0;
+            border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.8rem;">
+    <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6); width:72px; height:72px; border-radius:14px;
+                display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:900;
+                color:white; letter-spacing:-0.03em; flex-shrink:0;
+                box-shadow:0 0 28px rgba(59,130,246,0.5), 0 4px 12px rgba(0,0,0,0.4);">CF</div>
     <div>
-        <div style="font-size:1.4rem; font-weight:700; color:#ffffff; letter-spacing:-0.01em;">CallasFlow</div>
-        <div style="font-size:0.78rem; color:#4a6080; letter-spacing:0.05em; text-transform:uppercase;">WS Display · PDF Finishing · Preflight · Preparation</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#ffffff; letter-spacing:-0.02em; line-height:1.1;">CallasFlow</div>
+        <div style="font-size:0.72rem; color:#3b82f6; letter-spacing:0.12em; text-transform:uppercase; font-weight:600; margin-top:2px;">
+            WS Display &nbsp;·&nbsp; PDF Finishing &nbsp;·&nbsp; Preflight &nbsp;·&nbsp; Preparation
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+OP_DESCRIPTIONS = {
+    "Preflight Check":                "Scans for template spot colors, font issues, and page geometry problems before going to press.",
+    "Outline Fonts + Clean Metadata": "Converts all fonts to curves (no font dependencies) and strips private application data.",
+    "Set TrimBox":                    "Applies the correct trim dimensions using built-in presets for your product line.",
+    "Set MediaBox to Origin":         "Normalizes the page so its lower-left corner sits at 0,0 — required before most finishing steps.",
+    "Create Identical Pages":         "Duplicates a single-page file to N identical pages for gang printing.",
+    "Remove Bleed":                   "Sets the CropBox equal to the TrimBox, hiding bleed area from output.",
+    "Full Finishing — 10ft Tent":     "Full pipeline: origin → artwork layer → cutpath layer → 118\"×86.25\" crop.",
+    "Full Finishing — 6ft Multi-Page":"Full pipeline: duplicate to 5 pages → correct page geometry.",
+}
+
 # ── Sidebar — Operation Selector ───────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Operation")
+    st.markdown("""
+    <div style="padding:0.6rem 0 1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1rem;">
+        <div style="font-size:0.65rem; color:#3b82f6; letter-spacing:0.14em; text-transform:uppercase; font-weight:700;">PDF AUTOMATION SUITE</div>
+        <div style="font-size:0.62rem; color:#4a6080; margin-top:2px;">v1.0 &nbsp;·&nbsp; WS Display</div>
+    </div>
+    """, unsafe_allow_html=True)
 
+    st.markdown('<div style="font-size:0.75rem; color:#7f9bb5; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:0.4rem;">Select Profile</div>', unsafe_allow_html=True)
     operation = st.selectbox(
         "Select profile",
-        options=[
-            "Preflight Check",
-            "Outline Fonts + Clean Metadata",
-            "Set TrimBox",
-            "Set MediaBox to Origin",
-            "Create Identical Pages",
-            "Remove Bleed",
-            "Full Finishing — 10ft Tent",
-            "Full Finishing — 6ft Multi-Page",
-        ],
-        help="Choose which Callas-equivalent operation to run"
+        options=list(OP_DESCRIPTIONS.keys()),
+        help="Choose which Callas-equivalent operation to run",
+        label_visibility="collapsed"
     )
+
+    # Operation description card
+    st.markdown(f"""
+    <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2);
+                border-radius:8px; padding:0.75rem; margin:0.75rem 0; font-size:0.8rem; color:#93b4d4; line-height:1.5;">
+        {OP_DESCRIPTIONS[operation]}
+    </div>
+    """, unsafe_allow_html=True)
 
     st.divider()
 
@@ -242,7 +263,7 @@ with st.sidebar:
 
 
 # ── Main area ──────────────────────────────────────────────────────────────────
-st.subheader("Upload PDF")
+st.markdown('<div style="font-size:0.75rem; color:#7f9bb5; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Upload PDF</div>', unsafe_allow_html=True)
 uploaded = st.file_uploader(
     "Drop your PDF here or click to browse",
     type=["pdf"],
@@ -277,9 +298,7 @@ if uploaded:
     st.divider()
 
     # ── Run button ─────────────────────────────────────────────────────────────
-    run_col, _ = st.columns([2, 5])
-    with run_col:
-        run = st.button(f"▶  Run: {operation}", use_container_width=True)
+    run = st.button(f"▶  Run: {operation}", use_container_width=True)
 
     if run:
         output_path = tempfile.mktemp(suffix=".pdf")
@@ -345,8 +364,17 @@ if uploaded:
 
                 # ── Success + download ─────────────────────────────────────────
                 if output_path and os.path.exists(output_path):
-                    st.markdown('<div class="result-box">✅ Processing complete.</div>',
-                                unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
+                                border-radius:10px; padding:1rem 1.25rem; margin:1rem 0;
+                                display:flex; align-items:center; gap:0.75rem;">
+                        <div style="font-size:1.5rem;">✅</div>
+                        <div>
+                            <div style="color:#22c55e; font-weight:700; font-size:0.95rem;">Processing Complete</div>
+                            <div style="color:#7f9bb5; font-size:0.8rem; margin-top:2px;">{operation} applied successfully</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                     # Show output page info
                     with st.expander("📐 Output Page Info"):
@@ -388,19 +416,45 @@ if uploaded:
 
 else:
     st.markdown("""
-    <div class="info-box">
-    👆 Upload a PDF above to get started.<br><br>
-    <strong>Available operations:</strong><br>
-    • <strong>Preflight Check</strong> — detect template spot colors, font issues<br>
-    • <strong>Outline Fonts + Clean Metadata</strong> — convert fonts to curves, strip private data<br>
-    • <strong>Set TrimBox</strong> — apply correct trim dimensions (table throw, canopy, tent presets)<br>
-    • <strong>Set MediaBox to Origin</strong> — normalize page position<br>
-    • <strong>Create Identical Pages</strong> — duplicate to N-up<br>
-    • <strong>Remove Bleed</strong> — set CropBox to TrimBox<br>
-    • <strong>Full Finishing profiles</strong> — multi-step pipelines matching your KFPX profiles
+    <div style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);
+                border-radius:12px; padding:1.5rem 1.75rem; margin-top:0.5rem;">
+        <div style="color:#3b82f6; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; margin-bottom:1rem;">
+            Available Operations
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Preflight Check</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Detect template spot colors &amp; font issues</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Outline Fonts + Clean Metadata</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Convert fonts to curves, strip private data</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Set TrimBox</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Apply trim dimensions with product presets</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Set MediaBox to Origin</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Normalize page position to 0,0</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Create Identical Pages</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Duplicate to N-up for gang printing</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.65rem 0.9rem;">
+                <div style="color:#e2e8f0; font-weight:600; font-size:0.85rem;">Full Finishing Profiles</div>
+                <div style="color:#4a6080; font-size:0.75rem; margin-top:2px;">Multi-step pipelines matching your KFPX profiles</div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
-st.divider()
-st.caption("CallasFlow · WS Display · Built with PyMuPDF + Poppler")
+st.markdown("""
+<div style="margin-top:3rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06);
+            display:flex; justify-content:space-between; align-items:center;">
+    <div style="color:#2a3a52; font-size:0.72rem;">CallasFlow · WS Display · Built with PyMuPDF + Poppler</div>
+    <div style="color:#2a3a52; font-size:0.72rem;">v1.0</div>
+</div>
+""", unsafe_allow_html=True)

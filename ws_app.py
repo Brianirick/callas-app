@@ -86,6 +86,15 @@ st.markdown("""
         background-color: #1a2540 !important;
         border: none !important;
     }
+    [data-testid="stFileUploaderDropzone"] button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button:hover {
+        background-color: #60a5fa !important;
+    }
 
     /* ── Expander ── */
     .streamlit-expanderHeader { background-color: #1a2540 !important; color: #e2e8f0 !important; border-radius: 6px; }
@@ -149,9 +158,9 @@ st.markdown("""
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div style="display:flex; align-items:center; gap:1rem; padding:0.5rem 0 1rem 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem;">
-    <div style="background:linear-gradient(135deg,#2563eb,#3b82f6); width:44px; height:44px; border-radius:10px;
-                display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:800;
-                color:white; letter-spacing:-0.02em; flex-shrink:0;">CF</div>
+    <div style="background:linear-gradient(135deg,#2563eb,#3b82f6); width:64px; height:64px; border-radius:12px;
+                display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:800;
+                color:white; letter-spacing:-0.02em; flex-shrink:0; box-shadow:0 0 20px rgba(59,130,246,0.4);">CF</div>
     <div>
         <div style="font-size:1.4rem; font-weight:700; color:#ffffff; letter-spacing:-0.01em;">CallasFlow</div>
         <div style="font-size:0.78rem; color:#4a6080; letter-spacing:0.05em; text-transform:uppercase;">WS Display · PDF Finishing · Preflight · Preparation</div>
@@ -220,7 +229,7 @@ with st.sidebar:
 
 
 # ── Main area ──────────────────────────────────────────────────────────────────
-st.subheader("📄 Upload PDF")
+st.subheader("Upload PDF")
 uploaded = st.file_uploader(
     "Drop your PDF here or click to browse",
     type=["pdf"],

@@ -46,6 +46,17 @@ st.markdown("""
         background-color: #1e2a3e !important; color: #e2e8f0 !important;
         border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 6px !important;
     }
+    /* Selected value text inside selectbox */
+    .stSelectbox [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] div,
+    .stSelectbox [data-baseweb="select"] input,
+    [data-baseweb="select"] [data-testid="stMarkdown"],
+    [data-baseweb="select"] p,
+    [data-baseweb="value-container"] * { color: #e2e8f0 !important; }
+    /* The actual visible selected text */
+    [data-baseweb="select"] [aria-selected] { color: #e2e8f0 !important; }
+    .stSelectbox div[class*="placeholder"] { color: #7f9bb5 !important; }
+    .stSelectbox div[class*="singleValue"] { color: #e2e8f0 !important; }
     [data-baseweb="popover"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] li { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
@@ -105,10 +116,10 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         background-color: transparent !important;
         color: #7f9bb5 !important;
-        border-radius: 7px !important;
+        border-radius: 20px !important;
         font-weight: 600 !important;
         font-size: 0.88rem !important;
-        padding: 0.5rem 1.4rem !important;
+        padding: 0.45rem 1.4rem !important;
         border: none !important;
         letter-spacing: 0.01em !important;
         transition: all 0.15s ease !important;
@@ -121,6 +132,7 @@ st.markdown("""
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
         color: #ffffff !important;
         box-shadow: 0 2px 10px rgba(59,130,246,0.45) !important;
+        border-radius: 20px !important;
     }
     .stTabs [data-baseweb="tab-highlight"] { display: none !important; }
     .stTabs [data-baseweb="tab-border"]    { display: none !important; }

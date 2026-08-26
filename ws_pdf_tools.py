@@ -162,15 +162,29 @@ def create_artwork_layer(input_path: str, output_path: str):
     layer_xref = ensure_layer(doc, "artwork")
 
     for page in doc:
-        # Wrap existing content stream in OCG marked content
-        existing = page.read_contents()
-        if existing:
-            wrapped = (
-                b"/OC /" + f"OC{layer_xref}".encode() + b" BDC\n" +
-                existing +
-                b"\nEMC\n"
-            )
-            page.set_contents(wrapped)
+        # Merge any array of content streams into a single stream first
+        page.clean_contents()
+
+        contents_info = doc.xref_get_key(page.xref, "Contents")
+        if contents_info[0] != "xref":
+            continue  # no content stream to wrap
+        c_xref   = int(contents_info[1].split()[0])
+        existing = doc.xref_stream(c_xref)
+        if not existing:
+            continue
+
+        # Resources may be direct or indirect — find the right xref to patch
+        res_info = doc.xref_get_key(page.xref, "Resources")
+        if res_info[0] == "xref":
+            res_xref = int(res_info[1].split()[0])
+            doc.xref_set_key(res_xref, "Properties/artwork", f"{layer_xref} 0 R")
+        else:
+            doc.xref_set_key(page.xref, "Resources/Properties/artwork",
+                             f"{layer_xref} 0 R")
+
+        # Wrap existing content with proper marked-content operators
+        wrapped = b"/OC /artwork BDC\n" + existing + b"\nEMC\n"
+        doc.update_stream(c_xref, wrapped)
 
     save_pdf(doc, output_path)
     doc.close()
@@ -978,6 +992,182 @@ def run_profile(input_path: str, output_path: str, profile: dict):
             steps.append(fn)
 
     run_pipeline(input_path, output_path, steps)
+
+
+# ---------------------------------------------------------------------------
+# Overlay & Cutpath
+# ---------------------------------------------------------------------------
+
+def stamp_overlay(input_path: str, output_path: str,
+                  overlay_pdf_path: str, opacity: float = 0.5):
+    """
+    Stamp overlay PDF centred on each artwork page at the given opacity.
+    Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
+    """
+    doc  = fitz.open(input_path)
+    over = fitz.open(overlay_pdf_path)
+
+    for i, page in enumerate(doc):
+        ov_idx = min(i, len(over) - 1)
+
+        # Embed overlay page as a Form XObject; appended to content stream
+        page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+
+        # Merge any content stream array into a single stream
+        page.clean_contents()
+
+        contents_info = doc.xref_get_key(page.xref, "Contents")
+        if contents_info[0] != "xref":
+            continue
+        c_xref = int(contents_info[1].split()[0])
+        raw    = doc.xref_stream(c_xref)
+        if not raw:
+            continue
+
+        # Register an ExtGState for the desired alpha
+        alpha_str = f"{opacity:.3f}"
+        res_info  = doc.xref_get_key(page.xref, "Resources")
+        if res_info[0] == "xref":
+            res_xref = int(res_info[1].split()[0])
+            doc.xref_set_key(res_xref, "ExtGState/GSov",
+                             f"<</Type /ExtGState /ca {alpha_str} /CA {alpha_str}>>")
+        else:
+            doc.xref_set_key(page.xref, "Resources/ExtGState/GSov",
+                             f"<</Type /ExtGState /ca {alpha_str} /CA {alpha_str}>>")
+
+        # Insert "/GSov gs" after the last bare "q" (overlay's save-state)
+        lines  = raw.split(b"\n")
+        last_q = max(
+            (j for j, ln in enumerate(lines) if ln.strip() == b"q"),
+            default=None
+        )
+        if last_q is not None:
+            lines.insert(last_q + 1, b"/GSov gs")
+            doc.update_stream(c_xref, b"\n".join(lines))
+
+    doc.save(output_path, garbage=4, deflate=True)
+    print(f"  stamp_overlay → {output_path}")
+
+
+def merge_cutpath(input_path: str, output_path: str, cutpath_pdf_path: str):
+    """Append cutpath PDF pages after the artwork pages."""
+    doc = fitz.open(input_path)
+    cut = fitz.open(cutpath_pdf_path)
+    doc.insert_pdf(cut)
+    doc.save(output_path, garbage=4, deflate=True)
+    print(f"  merge_cutpath → {output_path}")
+
+
+# ---------------------------------------------------------------------------
+# JPEG export
+# ---------------------------------------------------------------------------
+
+def export_jpeg(input_path: str, output_path: str, dpi: int = 150):
+    """
+    Render the first page of a PDF to a JPEG at the given DPI.
+    For multi-page PDFs, renders every page and saves as <stem>_p1.jpg, etc.
+    Returns list of output paths written.
+    """
+    doc    = fitz.open(input_path)
+    mat    = fitz.Matrix(dpi / 72, dpi / 72)
+    paths  = []
+    stem   = Path(output_path).stem
+    folder = Path(output_path).parent
+    ext    = Path(output_path).suffix or ".jpg"
+
+    for i, page in enumerate(doc):
+        pix  = page.get_pixmap(matrix=mat, alpha=False)
+        dest = str(folder / f"{stem}_p{i+1}{ext}") if len(doc) > 1 else output_path
+        pix.save(dest)
+        paths.append(dest)
+        print(f"  export_jpeg p{i+1} → {dest}")
+
+    doc.close()
+    return paths
+
+
+# ---------------------------------------------------------------------------
+# Recipe runner  (preflight → proof JPEG → finishing → cutpath)
+# ---------------------------------------------------------------------------
+
+def run_recipe(input_path: str, recipe: dict,
+               profiles_dir: str = None,
+               overlays_dir: str = None,
+               cutpaths_dir: str = None) -> dict:
+    """
+    Execute a structured recipe and return a dict of output paths:
+
+        {
+          "original_jpeg":  ["/tmp/orig_p1.jpg"],     # preflighted file, no overlay
+          "overlay_pdf":    "/tmp/overlay.pdf",        # preflighted + overlay (customer proof)
+          "overlay_jpeg":   ["/tmp/overlay_p1.jpg"],  # JPEG of overlay PDF
+          "cutpath_pdf":    "/tmp/cutpath.pdf",        # standalone cutpath file
+          "cutpath_jpeg":   ["/tmp/cutpath_p1.jpg"],  # JPEG of cutpath file
+          "finished_pdf":   "/tmp/finished.pdf",       # preflighted + finishing (production)
+        }
+
+    Pipeline order:
+      1. Preflight  → preflighted PDF  (black conversion — stub for now)
+      2. Original JPEG from preflighted PDF
+      3. Overlay    → stamp on preflighted → overlay PDF + JPEG
+      4. Finishing  → run on preflighted PDF (clean) → finished/production PDF
+      5. Cutpath    → JPEG of standalone cutpath file
+    """
+    import tempfile, shutil, json
+
+    results: dict = {}
+
+    # ── 1. Preflight ──────────────────────────────────────────────────────────
+    tmp_pf = tempfile.mktemp(suffix=".pdf")
+    preflight = recipe.get("preflight") or ""
+    if preflight in ("100k", "75x3"):
+        print(f"  [preflight] {preflight} — black conversion not yet implemented; skipping.")
+    shutil.copy2(input_path, tmp_pf)
+
+    # ── 2. Original JPEG (preflighted, no overlay) ────────────────────────────
+    tmp_orig_jpg = tempfile.mktemp(suffix=".jpg")
+    results["original_jpeg"] = export_jpeg(tmp_pf, tmp_orig_jpg)
+
+    # ── 3. Overlay PDF + JPEG ─────────────────────────────────────────────────
+    overlay = recipe.get("overlay") or ""
+    if overlay and overlays_dir:
+        ov_path = Path(overlays_dir) / overlay
+        if ov_path.exists():
+            tmp_ov     = tempfile.mktemp(suffix=".pdf")
+            tmp_ov_jpg = tempfile.mktemp(suffix=".jpg")
+            stamp_overlay(tmp_pf, tmp_ov, str(ov_path))
+            results["overlay_pdf"]  = tmp_ov
+            results["overlay_jpeg"] = export_jpeg(tmp_ov, tmp_ov_jpg)
+        else:
+            print(f"  [overlay] file not found: {ov_path}")
+
+    # ── 4. Finishing (runs on clean preflighted PDF — no overlay) ─────────────
+    finishing = recipe.get("finishing") or ""
+    tmp_finished = tmp_pf
+    if finishing and profiles_dir:
+        pfile = Path(profiles_dir) / f"{finishing}.json"
+        if pfile.exists():
+            profile_data = json.loads(pfile.read_text())
+            tmp_fin = tempfile.mktemp(suffix=".pdf")
+            run_profile(tmp_pf, tmp_fin, profile_data)
+            tmp_finished = tmp_fin
+        else:
+            print(f"  [finishing] profile not found: {pfile}")
+    results["finished_pdf"]    = tmp_finished
+    results["preflighted_pdf"] = tmp_pf
+
+    # ── 5. Cutpath — JPEG of standalone cutpath file ──────────────────────────
+    cutpath = recipe.get("cutpath") or ""
+    if cutpath and cutpaths_dir:
+        cp_path = Path(cutpaths_dir) / cutpath
+        if cp_path.exists():
+            tmp_cp_jpg = tempfile.mktemp(suffix=".jpg")
+            results["cutpath_pdf"]  = str(cp_path)
+            results["cutpath_jpeg"] = export_jpeg(str(cp_path), tmp_cp_jpg)
+        else:
+            print(f"  [cutpath] file not found: {cp_path}")
+
+    return results
 
 
 # ---------------------------------------------------------------------------

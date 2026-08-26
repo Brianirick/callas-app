@@ -15,8 +15,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 import ws_pdf_tools as ws
 importlib.reload(ws)
 
-PROFILES_DIR = Path(__file__).parent / "profiles"
+BASE_DIR      = Path(__file__).parent
+PROFILES_DIR  = BASE_DIR / "profiles"
 PROFILES_DIR.mkdir(exist_ok=True)
+
+_QP_EXPORT    = BASE_DIR / "Exported Library from QuickProof Server" / "PDFs"
+OVERLAYS_DIR  = _QP_EXPORT / "Overlay"
+CUTPATHS_DIR  = _QP_EXPORT / "Cutpath"
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="CallasFlow", page_icon="📄", layout="wide")
@@ -34,29 +39,51 @@ st.markdown("""
 
     .stButton>button {
         background-color: #3b82f6; color: white; border: none;
-        border-radius: 6px; padding: 0.5rem 1.5rem;
+        border-radius: 50px; padding: 0.5rem 1.5rem;
         font-weight: 600; letter-spacing: 0.02em;
         box-shadow: 0 0 12px rgba(59,130,246,0.35);
         transition: all 0.15s ease;
     }
     .stButton>button:hover { background-color: #60a5fa; box-shadow: 0 0 18px rgba(59,130,246,0.55); }
+    /* Download buttons — same pill style */
+    .stDownloadButton>button {
+        background-color: #1e2a3e; color: #e2e8f0 !important; border: 1px solid rgba(59,130,246,0.4);
+        border-radius: 50px; padding: 0.5rem 1.5rem;
+        font-weight: 600; letter-spacing: 0.02em;
+        transition: all 0.15s ease;
+    }
+    .stDownloadButton>button:hover {
+        background-color: #2d3f5e; color: #fff !important;
+        border-color: #3b82f6; box-shadow: 0 0 12px rgba(59,130,246,0.3);
+    }
+    /* Secondary buttons — keep pill shape but dim them */
+    .stButton>button[kind="secondary"] {
+        background-color: rgba(59,130,246,0.18) !important; color: #93b4d4 !important;
+        border: 1px solid rgba(59,130,246,0.3) !important; box-shadow: none !important;
+    }
+    .stButton>button[kind="secondary"]:hover {
+        background-color: rgba(59,130,246,0.35) !important; color: white !important;
+        box-shadow: 0 0 12px rgba(59,130,246,0.3) !important;
+    }
 
     .stSelectbox>div>div, .stNumberInput>div>div>input, .stTextInput>div>div>input,
     .stTextArea textarea {
         background-color: #1e2a3e !important; color: #e2e8f0 !important;
         border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 6px !important;
     }
-    /* Force all text inside any selectbox to be white */
-    .stSelectbox * { color: #e2e8f0 !important; }
-    .stSelectbox [data-baseweb="select"] { background-color: #1e2a3e !important; }
-    div[data-baseweb="select"] * { color: #e2e8f0 !important; }
-    div[data-baseweb="value-container"] * { color: #e2e8f0 !important; }
-    div[class*="placeholder"] { color: #7f9bb5 !important; }
+    /* Selectbox — force white on every possible selector Streamlit generates */
+    .stSelectbox *, .stSelectbox *::before, .stSelectbox *::after { color: #e2e8f0 !important; }
+    [data-baseweb="select"] { background-color: #1e2a3e !important; }
+    [data-baseweb="select"] * { color: #e2e8f0 !important; background-color: #1e2a3e !important; }
+    [data-baseweb="select"] input { color: #e2e8f0 !important; }
+    [data-baseweb="select"] [data-baseweb="single-value"] { color: #e2e8f0 !important; }
+    [data-baseweb="select"] [class*="singleValue"] { color: #e2e8f0 !important; }
+    [data-baseweb="select"] [class*="placeholder"] { color: #7f9bb5 !important; }
+    [data-baseweb="select"] svg { fill: #e2e8f0 !important; }
     [data-baseweb="popover"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] li { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
     [data-baseweb="menu"] li:hover { background-color: #2d3f5e !important; color: #fff !important; }
-    [data-baseweb="select"] div, [data-baseweb="select"] span { color: #e2e8f0 !important; }
     [role="listbox"] { background-color: #1e2a3e !important; }
     [role="option"] { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
     [role="option"]:hover { background-color: #2d3f5e !important; color: #fff !important; }
@@ -167,6 +194,13 @@ def load_all_profiles():
     return profiles
 
 
+def list_pdfs(directory: Path) -> list[str]:
+    """Return sorted list of PDF filenames from a directory."""
+    if not directory.exists():
+        return []
+    return sorted(p.name for p in directory.glob("*.pdf"))
+
+
 def save_profile_to_disk(profile: dict):
     safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in profile["name"])
     safe_name = safe_name.strip().replace(" ", "_").lower()
@@ -200,6 +234,35 @@ def page_info_expander(input_path: str):
         doc.close()
 
 
+def recipe_download_buttons(result: dict, stem: str):
+    """Render all download buttons for a run_recipe() result dict."""
+    outputs = [
+        ("preflighted_pdf", f"{stem}_preflighted.pdf",  "application/pdf",  "⬇  Preflighted PDF"),
+        ("original_jpeg",   f"{stem}_original.jpg",     "image/jpeg",       "⬇  Original JPEG"),
+        ("overlay_pdf",     f"{stem}_overlay.pdf",      "application/pdf",  "⬇  Overlay PDF"),
+        ("overlay_jpeg",    f"{stem}_overlay.jpg",      "image/jpeg",       "⬇  Overlay JPEG"),
+        ("cutpath_pdf",     f"{stem}_cutpath.pdf",      "application/pdf",  "⬇  Cutpath PDF"),
+        ("cutpath_jpeg",    f"{stem}_cutpath.jpg",      "image/jpeg",       "⬇  Cutpath JPEG"),
+        ("finished_pdf",    f"{stem}_finished.pdf",     "application/pdf",  "⬇  Finished PDF"),
+    ]
+    cols = st.columns(2)
+    col_idx = 0
+    for key, fname, mime, label in outputs:
+        val = result.get(key)
+        if not val:
+            continue
+        # val can be a list (jpegs) or a single path string
+        paths = val if isinstance(val, list) else [val]
+        for path in paths:
+            if path and os.path.exists(path):
+                with open(path, "rb") as f:
+                    cols[col_idx % 2].download_button(
+                        label, f.read(), file_name=fname, mime=mime,
+                        use_container_width=True
+                    )
+                col_idx += 1
+
+
 def success_banner(operation: str):
     st.markdown(f"""
     <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
@@ -229,15 +292,51 @@ with st.sidebar:
                                   label_visibility="collapsed")
     ws.POPPLER_BIN = poppler_path
 
+    st.divider()
+    st.markdown("**Asset Directories**")
+    ov_count  = len(list_pdfs(OVERLAYS_DIR))
+    cp_count  = len(list_pdfs(CUTPATHS_DIR))
+    pf_count  = len(list(PROFILES_DIR.glob("*.json")))
+    st.markdown(f"""
+    <div style="font-size:0.78rem; color:#7f9bb5; line-height:2;">
+        📂 Profiles: <b style="color:#e2e8f0;">{pf_count}</b><br>
+        🖼 Overlays: <b style="color:#e2e8f0;">{ov_count}</b><br>
+        ✂️ Cutpaths: <b style="color:#e2e8f0;">{cp_count}</b>
+    </div>
+    """, unsafe_allow_html=True)
+    if ov_count == 0:
+        st.caption(f"⚠ Overlay folder not found:\n{OVERLAYS_DIR}")
+    if cp_count == 0:
+        st.caption(f"⚠ Cutpath folder not found:\n{CUTPATHS_DIR}")
 
-# ── Main Tabs ──────────────────────────────────────────────────────────────────
-tab_run, tab_build, tab_preflight = st.tabs(["▶  Run Profile", "🔧  Build Profile", "📋  Preflight Check"])
 
+# ── Navigation buttons ─────────────────────────────────────────────────────────
+if "page" not in st.session_state:
+    st.session_state.page = "run"
+
+nav1, nav2, nav3, nav_space = st.columns([1.2, 1.3, 1.5, 5])
+_cur = st.session_state.page
+with nav1:
+    if st.button("▶  Run Profile", use_container_width=True, type="primary" if _cur=="run" else "secondary"):
+        st.session_state.page = "run"
+        st.rerun()
+with nav2:
+    if st.button("🔧  Build Profile", use_container_width=True, type="primary" if _cur=="build" else "secondary"):
+        st.session_state.page = "build"
+        st.rerun()
+with nav3:
+    if st.button("📋  Preflight Check", use_container_width=True, type="primary" if _cur=="preflight" else "secondary"):
+        st.session_state.page = "preflight"
+        st.rerun()
+
+st.markdown('<div style="border-bottom:2px solid rgba(59,130,246,0.4); margin:0.6rem 0 1.2rem 0;"></div>', unsafe_allow_html=True)
+
+page = st.session_state.page
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — RUN PROFILE
+# PAGE: RUN PROFILE
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_run:
+if page == "run":
     all_profiles = load_all_profiles()
 
     if not all_profiles:
@@ -290,213 +389,251 @@ with tab_run:
                 page_info_expander(input_path)
                 st.divider()
 
+                is_recipe = profile_data.get("type") == "recipe"
+                # Clear stored result if user changed file or profile
+                run_key = f"{uploaded.name}|{profile_name}"
+                if st.session_state.get("run_key") != run_key:
+                    st.session_state.run_key    = run_key
+                    st.session_state.run_result = None
+                    st.session_state.run_stem   = None
+
                 if st.button(f"▶  Run: {profile_name}", use_container_width=True):
-                    output_path = tempfile.mktemp(suffix=".pdf")
                     with st.spinner(f"Running {profile_name}…"):
                         try:
-                            ws.run_profile(input_path, output_path, profile_data)
-                            if os.path.exists(output_path):
-                                success_banner(f"{profile_name} applied successfully")
-                                stem = Path(uploaded.name).stem
-                                out_name = f"{stem}_finished.pdf"
-                                with open(output_path, "rb") as f:
-                                    st.download_button("⬇  Download Result", f.read(),
-                                                       file_name=out_name, mime="application/pdf",
-                                                       use_container_width=True)
+                            stem = Path(uploaded.name).stem
+                            if is_recipe:
+                                result = ws.run_recipe(input_path, profile_data,
+                                                       profiles_dir=str(PROFILES_DIR),
+                                                       overlays_dir=str(OVERLAYS_DIR),
+                                                       cutpaths_dir=str(CUTPATHS_DIR))
+                                st.session_state.run_result = result
+                                st.session_state.run_stem   = stem
+                            else:
+                                output_path = tempfile.mktemp(suffix=".pdf")
+                                ws.run_profile(input_path, output_path, profile_data)
+                                st.session_state.run_result = {"finished_pdf": output_path}
+                                st.session_state.run_stem   = Path(uploaded.name).stem
                         except Exception as e:
                             st.error(f"❌ Error: {e}")
 
+                # Always render results if they exist for this file+profile combo
+                if st.session_state.get("run_result"):
+                    success_banner(f"{profile_name} complete")
+                    recipe_download_buttons(st.session_state.run_result,
+                                            st.session_state.run_stem)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — BUILD PROFILE
+# PAGE: BUILD PROFILE  (recipe-based)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_build:
+elif page == "build":
+
+    # ── Discover available assets ──────────────────────────────────────────────
+    finishing_profiles = {
+        data.get("name", p.stem): p.stem
+        for p in sorted(PROFILES_DIR.glob("*.json"))
+        if (data := json.loads(p.read_text(encoding="utf-8")))
+        and data.get("type") != "recipe"   # don't nest recipes
+    }
+    overlay_files  = ["— none —"] + list_pdfs(OVERLAYS_DIR)
+    cutpath_files  = ["— none —"] + list_pdfs(CUTPATHS_DIR)
+    finishing_opts = ["— none —"] + list(finishing_profiles.keys())
 
     # ── Session state ──────────────────────────────────────────────────────────
-    if "builder_steps" not in st.session_state:
-        st.session_state.builder_steps = []
-    if "builder_name" not in st.session_state:
-        st.session_state.builder_name = "New Profile"
-    if "builder_desc" not in st.session_state:
-        st.session_state.builder_desc = ""
-    if "builder_cat" not in st.session_state:
-        st.session_state.builder_cat = "Finishing"
-    if "load_into_builder" not in st.session_state:
-        st.session_state.load_into_builder = None
+    for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","100k"),
+                 ("rb_finishing","— none —"), ("rb_overlay","— none —"),
+                 ("rb_cutpath","— none —")]:
+        if k not in st.session_state:
+            st.session_state[k] = v
 
-    # ── Load existing profile into builder ─────────────────────────────────────
-    all_profiles_b = load_all_profiles()
-    col_load, col_new = st.columns([3, 1])
-    with col_load:
-        load_choice = st.selectbox("Load existing profile to edit",
-                                   ["— start fresh —"] + list(all_profiles_b.keys()),
+    # ── Load existing recipe ───────────────────────────────────────────────────
+    all_recipes = {
+        data.get("name", p.stem): (p, data)
+        for p in sorted(PROFILES_DIR.glob("*.json"))
+        if (data := json.loads(p.read_text(encoding="utf-8")))
+        and data.get("type") == "recipe"
+    }
+    load_opts = ["— start fresh —"] + list(all_recipes.keys())
+    lc1, lc2 = st.columns([4, 1])
+    with lc1:
+        load_choice = st.selectbox("Load existing recipe", load_opts,
                                    label_visibility="collapsed")
-    with col_new:
+    with lc2:
         if st.button("Load →", use_container_width=True) and load_choice != "— start fresh —":
-            _, pdata = all_profiles_b[load_choice]
-            st.session_state.builder_name = pdata.get("name", "")
-            st.session_state.builder_desc = pdata.get("description", "")
-            st.session_state.builder_cat  = pdata.get("category", "Finishing")
-            st.session_state.builder_steps = [dict(s) for s in pdata.get("steps", [])]
+            _, rdata = all_recipes[load_choice]
+            st.session_state.rb_name       = rdata.get("name", "")
+            st.session_state.rb_desc       = rdata.get("description", "")
+            st.session_state.rb_preflight  = rdata.get("preflight", "100k") or "100k"
+            # Map stored stems back to display names
+            fin_stem = rdata.get("finishing", "")
+            fin_name = next((n for n, s in finishing_profiles.items() if s == fin_stem), "— none —")
+            st.session_state.rb_finishing  = fin_name
+            st.session_state.rb_overlay    = rdata.get("overlay") or "— none —"
+            st.session_state.rb_cutpath    = rdata.get("cutpath") or "— none —"
             st.rerun()
 
     st.divider()
-    left_b, right_b = st.columns([1, 2])
 
-    # ── Left: profile meta + add step ─────────────────────────────────────────
-    with left_b:
-        st.markdown("#### Profile Details")
-        st.session_state.builder_name = st.text_input("Profile Name", value=st.session_state.builder_name)
-        st.session_state.builder_desc = st.text_area("Description", value=st.session_state.builder_desc, height=80)
-        st.session_state.builder_cat  = st.selectbox("Category",
-            ["Finishing", "Preparation", "Imposition", "Proofing", "Other"],
-            index=["Finishing","Preparation","Imposition","Proofing","Other"].index(
-                st.session_state.builder_cat) if st.session_state.builder_cat in
-                ["Finishing","Preparation","Imposition","Proofing","Other"] else 0)
+    # ── Recipe fields ──────────────────────────────────────────────────────────
+    nm_col, desc_col = st.columns([1, 2])
+    with nm_col:
+        st.session_state.rb_name = st.text_input("Recipe Name", value=st.session_state.rb_name)
+    with desc_col:
+        st.session_state.rb_desc = st.text_input("Description", value=st.session_state.rb_desc)
 
-        st.divider()
-        st.markdown("#### Add Step")
+    st.markdown('<div style="margin-top:1rem;"></div>', unsafe_allow_html=True)
 
-        # Group ops by category for the selector
-        all_op_ids   = list(ws.AVAILABLE_OPS.keys())
-        all_op_labels = [ws.AVAILABLE_OPS[o]["label"] for o in all_op_ids]
-        cat_options  = [f"[{ws.AVAILABLE_OPS[o]['category']}]  {ws.AVAILABLE_OPS[o]['label']}" for o in all_op_ids]
+    def _stage_header(icon, label, tooltip=""):
+        st.markdown(
+            f'<div style="font-size:0.68rem; color:#3b82f6; text-transform:uppercase; '
+            f'letter-spacing:0.12em; font-weight:700; margin-bottom:0.3rem;">{icon} {label}</div>',
+            unsafe_allow_html=True
+        )
 
-        selected_idx = st.selectbox("Operation", range(len(all_op_ids)),
-                                    format_func=lambda i: cat_options[i],
-                                    label_visibility="collapsed")
-        selected_op_id   = all_op_ids[selected_idx]
-        selected_op_meta = ws.AVAILABLE_OPS[selected_op_id]
+    c_pf, c_fin, c_ov, c_cp = st.columns(4)
 
-        # Show op description
-        st.markdown(f'<div style="font-size:0.78rem; color:#7f9bb5; margin:0.3rem 0 0.6rem 0;">{selected_op_meta["description"]}</div>', unsafe_allow_html=True)
+    with c_pf:
+        _stage_header("🔍", "Preflight", "Black ink standard")
+        pf_opts = ["100k", "75x3"]
+        pf_idx  = pf_opts.index(st.session_state.rb_preflight) if st.session_state.rb_preflight in pf_opts else 0
+        st.session_state.rb_preflight = st.selectbox(
+            "Preflight", pf_opts + ["— skip —"],
+            index=pf_idx, label_visibility="collapsed",
+            help="100k = (0,0,0,100) · 75x3 = (75,75,75,100)"
+        )
+        st.markdown(
+            '<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.3rem;">'
+            '100k = pure black<br>75x3 = rich black</div>',
+            unsafe_allow_html=True
+        )
 
-        # Dynamic param inputs
-        new_params = {}
-        for param in selected_op_meta.get("params", []):
-            pname  = param["name"]
-            plabel = param["label"]
-            ptype  = param["type"]
-            if ptype == "float":
-                new_params[pname] = st.number_input(plabel, value=float(param["default"]),
-                                                     step=float(param.get("step", 0.25)),
-                                                     key=f"p_{selected_op_id}_{pname}")
-            elif ptype == "int":
-                new_params[pname] = st.number_input(plabel, value=int(param["default"]),
-                                                     min_value=param.get("min", 1),
-                                                     max_value=param.get("max", 100),
-                                                     step=1,
-                                                     key=f"p_{selected_op_id}_{pname}")
-            elif ptype == "select":
-                opts = param["options"]
-                def_idx = opts.index(param["default"]) if param["default"] in opts else 0
-                new_params[pname] = st.selectbox(plabel, opts, index=def_idx,
-                                                  key=f"p_{selected_op_id}_{pname}")
+    with c_fin:
+        _stage_header("⚙️", "Finishing", "Python finishing profile")
+        fin_idx = finishing_opts.index(st.session_state.rb_finishing) \
+                  if st.session_state.rb_finishing in finishing_opts else 0
+        st.session_state.rb_finishing = st.selectbox(
+            "Finishing", finishing_opts,
+            index=fin_idx, label_visibility="collapsed"
+        )
+        if st.session_state.rb_finishing != "— none —":
+            st.markdown(
+                f'<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.3rem;">'
+                f'{finishing_profiles.get(st.session_state.rb_finishing,"")}.json</div>',
+                unsafe_allow_html=True
+            )
 
-        if st.button("＋  Add Step", use_container_width=True):
-            step_def = {"op": selected_op_id}
-            if new_params:
-                step_def["params"] = new_params
-            st.session_state.builder_steps.append(step_def)
+    with c_ov:
+        _stage_header("🖼", "Overlay", "Template overlay PDF")
+        ov_idx = overlay_files.index(st.session_state.rb_overlay) \
+                 if st.session_state.rb_overlay in overlay_files else 0
+        st.session_state.rb_overlay = st.selectbox(
+            "Overlay", overlay_files,
+            index=ov_idx, label_visibility="collapsed"
+        )
+        if not OVERLAYS_DIR.exists():
+            st.caption("⚠ Overlay folder missing")
+
+    with c_cp:
+        _stage_header("✂️", "Cutpath", "Die cut path PDF")
+        cp_idx = cutpath_files.index(st.session_state.rb_cutpath) \
+                 if st.session_state.rb_cutpath in cutpath_files else 0
+        st.session_state.rb_cutpath = st.selectbox(
+            "Cutpath", cutpath_files,
+            index=cp_idx, label_visibility="collapsed"
+        )
+        if not CUTPATHS_DIR.exists():
+            st.caption("⚠ Cutpath folder missing")
+
+    # ── Recipe preview ─────────────────────────────────────────────────────────
+    st.divider()
+    stages_defined = [
+        s for s in [
+            st.session_state.rb_preflight  if st.session_state.rb_preflight  != "— skip —" else None,
+            st.session_state.rb_finishing  if st.session_state.rb_finishing  != "— none —" else None,
+            st.session_state.rb_overlay    if st.session_state.rb_overlay    != "— none —" else None,
+            st.session_state.rb_cutpath    if st.session_state.rb_cutpath    != "— none —" else None,
+        ] if s
+    ]
+    st.markdown(
+        f'<div style="font-size:0.75rem; color:#7f9bb5; margin-bottom:0.5rem;">'
+        f'Pipeline: <b style="color:#e2e8f0;">'
+        + " → ".join(stages_defined or ["(nothing selected)"])
+        + "</b></div>",
+        unsafe_allow_html=True
+    )
+
+    # ── Save + Test ────────────────────────────────────────────────────────────
+    sv_col, cl_col = st.columns([3, 1])
+    with sv_col:
+        if st.button("💾  Save Recipe", use_container_width=True, disabled=not stages_defined):
+            if not st.session_state.rb_name.strip():
+                st.error("Give the recipe a name first.")
+            else:
+                recipe_to_save = {
+                    "type":        "recipe",
+                    "name":        st.session_state.rb_name.strip(),
+                    "description": st.session_state.rb_desc.strip(),
+                    "preflight":   st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
+                    "finishing":   finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
+                    "overlay":     st.session_state.rb_overlay   if st.session_state.rb_overlay   != "— none —" else None,
+                    "cutpath":     st.session_state.rb_cutpath   if st.session_state.rb_cutpath   != "— none —" else None,
+                }
+                saved = save_profile_to_disk(recipe_to_save)
+                st.success(f"Saved → {saved.name}")
+    with cl_col:
+        if st.button("🗑  Clear", use_container_width=True):
+            for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","100k"),
+                         ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —")]:
+                st.session_state[k] = v
             st.rerun()
 
-    # ── Right: step list + controls + save ─────────────────────────────────────
-    with right_b:
-        steps_b = st.session_state.builder_steps
-        n = len(steps_b)
-
-        st.markdown(f"#### Step Sequence  <span style='font-size:0.75rem; color:#7f9bb5;'>({n} step{'s' if n!=1 else ''})</span>", unsafe_allow_html=True)
-
-        if not steps_b:
-            st.markdown('<div class="info-box" style="text-align:center; padding:2rem;">← Add steps from the left panel to build your profile.</div>', unsafe_allow_html=True)
-        else:
-            for i, step in enumerate(steps_b):
-                op_meta = ws.AVAILABLE_OPS.get(step["op"], {})
-                label   = op_meta.get("label", step["op"])
-                pstr    = params_summary(step)
-                ffeat   = op_meta.get("ffeat", "")
-
-                col_card, col_up, col_dn, col_del = st.columns([10, 1, 1, 1])
-                with col_card:
-                    st.markdown(f"""
-                    <div class="step-card">
-                        <span class="step-num">{i+1}.</span>&nbsp;
-                        <span class="step-label">{label}</span>
-                        {"<span style='font-size:0.65rem; color:#3b82f6; margin-left:8px;'>ffeat: " + ffeat + "</span>" if ffeat else ""}
-                        <div class="step-params">{pstr}</div>
-                    </div>""", unsafe_allow_html=True)
-                with col_up:
-                    if i > 0 and st.button("↑", key=f"up_{i}", help="Move up"):
-                        steps_b[i-1], steps_b[i] = steps_b[i], steps_b[i-1]
-                        st.rerun()
-                with col_dn:
-                    if i < n-1 and st.button("↓", key=f"dn_{i}", help="Move down"):
-                        steps_b[i], steps_b[i+1] = steps_b[i+1], steps_b[i]
-                        st.rerun()
-                with col_del:
-                    if st.button("✕", key=f"del_{i}", help="Remove step"):
-                        steps_b.pop(i)
-                        st.rerun()
-
+    # ── Test run ───────────────────────────────────────────────────────────────
+    if stages_defined:
         st.divider()
+        st.markdown("#### Test Run")
+        test_up = st.file_uploader("Upload a PDF to test this recipe",
+                                   type=["pdf"], key="recipe_test_upload")
+        if test_up:
+            # Clear stored result if file changes
+            btest_key = f"btest|{test_up.name}|{st.session_state.rb_name}"
+            if st.session_state.get("btest_key") != btest_key:
+                st.session_state.btest_key    = btest_key
+                st.session_state.btest_result = None
+                st.session_state.btest_stem   = None
 
-        # Save + test
-        save_col, clear_col = st.columns([3, 1])
-        with save_col:
-            if st.button("💾  Save Profile", use_container_width=True, disabled=not steps_b):
-                if not st.session_state.builder_name.strip():
-                    st.error("Give the profile a name first.")
-                else:
-                    profile_to_save = {
-                        "name":        st.session_state.builder_name.strip(),
-                        "description": st.session_state.builder_desc.strip(),
-                        "category":    st.session_state.builder_cat,
-                        "steps":       steps_b,
-                    }
-                    saved_path = save_profile_to_disk(profile_to_save)
-                    st.success(f"Saved → {saved_path.name}")
-        with clear_col:
-            if st.button("🗑  Clear", use_container_width=True):
-                st.session_state.builder_steps = []
-                st.session_state.builder_name  = "New Profile"
-                st.session_state.builder_desc  = ""
-                st.rerun()
+            if st.button("▶  Test Recipe", use_container_width=True):
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_in:
+                    tmp_in.write(test_up.read())
+                    t_in = tmp_in.name
+                test_recipe = {
+                    "type":      "recipe",
+                    "name":      st.session_state.rb_name,
+                    "preflight": st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
+                    "finishing": finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
+                    "overlay":   st.session_state.rb_overlay  if st.session_state.rb_overlay  != "— none —" else None,
+                    "cutpath":   st.session_state.rb_cutpath  if st.session_state.rb_cutpath  != "— none —" else None,
+                }
+                with st.spinner("Running recipe…"):
+                    try:
+                        result = ws.run_recipe(t_in, test_recipe,
+                                               profiles_dir=str(PROFILES_DIR),
+                                               overlays_dir=str(OVERLAYS_DIR),
+                                               cutpaths_dir=str(CUTPATHS_DIR))
+                        st.session_state.btest_result = result
+                        st.session_state.btest_stem   = Path(test_up.name).stem
+                    except Exception as e:
+                        st.error(f"❌ {e}")
 
-        # Test run
-        if steps_b:
-            st.divider()
-            st.markdown("#### Test Run")
-            test_upload = st.file_uploader("Upload a PDF to test this profile",
-                                           type=["pdf"], key="builder_test_upload")
-            if test_upload:
-                if st.button("▶  Test Profile", use_container_width=True):
-                    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_in:
-                        tmp_in.write(test_upload.read())
-                        t_input = tmp_in.name
-                    t_output = tempfile.mktemp(suffix=".pdf")
-                    test_profile = {
-                        "name":  st.session_state.builder_name,
-                        "steps": steps_b,
-                    }
-                    with st.spinner("Testing profile…"):
-                        try:
-                            ws.run_profile(t_input, t_output, test_profile)
-                            if os.path.exists(t_output):
-                                success_banner("Test run complete")
-                                stem = Path(test_upload.name).stem
-                                with open(t_output, "rb") as f:
-                                    st.download_button("⬇  Download Test Result", f.read(),
-                                                       file_name=f"{stem}_test.pdf",
-                                                       mime="application/pdf",
-                                                       use_container_width=True)
-                        except Exception as e:
-                            st.error(f"❌ {e}")
+            if st.session_state.get("btest_result"):
+                success_banner("Recipe test complete")
+                recipe_download_buttons(st.session_state.btest_result,
+                                        st.session_state.btest_stem)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — PREFLIGHT CHECK
+# PAGE: PREFLIGHT CHECK
 # ══════════════════════════════════════════════════════════════════════════════
-with tab_preflight:
+elif page == "preflight":
     pf_col1, pf_col2 = st.columns([1, 2])
 
     with pf_col1:

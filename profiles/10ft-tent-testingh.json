@@ -1,0 +1,9 @@
+{
+  "type": "recipe",
+  "name": "10ft-tent-testingh",
+  "description": "",
+  "preflight": "100k",
+  "finishing": "10ft_tent",
+  "overlay": "10ft_Canopy_V2_overlay_V2.pdf",
+  "cutpath": null
+}

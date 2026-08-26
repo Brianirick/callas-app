@@ -46,17 +46,12 @@ st.markdown("""
         background-color: #1e2a3e !important; color: #e2e8f0 !important;
         border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 6px !important;
     }
-    /* Selected value text inside selectbox */
-    .stSelectbox [data-baseweb="select"] span,
-    .stSelectbox [data-baseweb="select"] div,
-    .stSelectbox [data-baseweb="select"] input,
-    [data-baseweb="select"] [data-testid="stMarkdown"],
-    [data-baseweb="select"] p,
-    [data-baseweb="value-container"] * { color: #e2e8f0 !important; }
-    /* The actual visible selected text */
-    [data-baseweb="select"] [aria-selected] { color: #e2e8f0 !important; }
-    .stSelectbox div[class*="placeholder"] { color: #7f9bb5 !important; }
-    .stSelectbox div[class*="singleValue"] { color: #e2e8f0 !important; }
+    /* Force all text inside any selectbox to be white */
+    .stSelectbox * { color: #e2e8f0 !important; }
+    .stSelectbox [data-baseweb="select"] { background-color: #1e2a3e !important; }
+    div[data-baseweb="select"] * { color: #e2e8f0 !important; }
+    div[data-baseweb="value-container"] * { color: #e2e8f0 !important; }
+    div[class*="placeholder"] { color: #7f9bb5 !important; }
     [data-baseweb="popover"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] { background-color: #1e2a3e !important; }
     [data-baseweb="menu"] li { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
@@ -105,34 +100,34 @@ st.markdown("""
     .step-label { color: #e2e8f0; font-weight: 600; font-size: 0.9rem; }
     .step-params { color: #7f9bb5; font-size: 0.78rem; margin-top: 2px; }
 
-    /* Tab styling — button look */
+    /* Tab styling — match Upload button exactly */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #0d1520 !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
-        border-radius: 10px !important;
-        padding: 5px !important;
-        gap: 4px !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        gap: 8px !important;
     }
     .stTabs [data-baseweb="tab"] {
-        background-color: transparent !important;
-        color: #7f9bb5 !important;
-        border-radius: 20px !important;
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
         font-weight: 600 !important;
-        font-size: 0.88rem !important;
-        padding: 0.45rem 1.4rem !important;
+        font-size: 0.87rem !important;
+        padding: 0.48rem 1.4rem !important;
         border: none !important;
         letter-spacing: 0.01em !important;
+        opacity: 0.55 !important;
         transition: all 0.15s ease !important;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #1a2540 !important;
-        color: #c8d8f0 !important;
+        opacity: 0.8 !important;
+        box-shadow: 0 0 12px rgba(59,130,246,0.4) !important;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
+        background-color: #3b82f6 !important;
         color: #ffffff !important;
-        box-shadow: 0 2px 10px rgba(59,130,246,0.45) !important;
-        border-radius: 20px !important;
+        opacity: 1 !important;
+        box-shadow: 0 0 18px rgba(59,130,246,0.6) !important;
     }
     .stTabs [data-baseweb="tab-highlight"] { display: none !important; }
     .stTabs [data-baseweb="tab-border"]    { display: none !important; }

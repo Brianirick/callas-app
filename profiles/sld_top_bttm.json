@@ -1,0 +1,12 @@
+{
+  "name": "Full Finishing — SLD 4.2 Top/Bottom",
+  "description": "Mirrors SLD_4_2_TOP_BTTM_FINISH_. Origin → TrimBox stroke → enlarge +4.5\" top/bottom → BleedBox from CropBox → thru-cut spot.",
+  "category": "Finishing",
+  "steps": [
+    { "op": "set_mediabox_to_origin" },
+    { "op": "add_trimbox_stroke", "params": { "stroke_width_pt": 0.25 } },
+    { "op": "enlarge_page", "params": { "top_inch": 4.5, "bottom_inch": 4.5, "left_inch": 0.0, "right_inch": 0.0 } },
+    { "op": "set_bleedbox_from_cropbox" },
+    { "op": "add_thrucut_spot", "params": { "stroke_width_pt": 0.25 } }
+  ]
+}

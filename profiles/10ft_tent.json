@@ -1,0 +1,11 @@
+{
+  "name": "Full Finishing — 10ft Tent",
+  "description": "Mirrors 10FT_TENT_FINISH_NB_V2. Origin → artwork layer → cutpath layer → crop to 118×86.25\".",
+  "category": "Finishing",
+  "steps": [
+    { "op": "set_mediabox_to_origin" },
+    { "op": "create_artwork_layer" },
+    { "op": "create_cutpath_layer" },
+    { "op": "set_page_box", "params": { "box_type": "MediaBox", "width_inch": 118.0, "height_inch": 86.25 } }
+  ]
+}

@@ -804,6 +804,183 @@ def profile_sld_top_bttm(input_path: str, output_path: str):
 
 
 # ---------------------------------------------------------------------------
+# OPERATION CATALOG  — metadata for Profile Builder UI
+# ---------------------------------------------------------------------------
+
+AVAILABLE_OPS = {
+    "set_mediabox_to_origin": {
+        "label": "Set MediaBox to Origin",
+        "category": "Page Geometry",
+        "ffeat": "SetMediaBoxTo00",
+        "description": "Moves MediaBox so lower-left corner is at (0,0). Required before most finishing steps.",
+        "params": [],
+    },
+    "set_page_box": {
+        "label": "Set Page Box",
+        "category": "Page Geometry",
+        "ffeat": "SetPageBoxEx",
+        "description": "Sets any page box (TrimBox, BleedBox, etc.) to specific dimensions, centered on the page.",
+        "params": [
+            {"name": "box_type", "type": "select", "label": "Box Type",
+             "options": ["TrimBox", "MediaBox", "BleedBox", "CropBox", "ArtBox"], "default": "TrimBox"},
+            {"name": "width_inch",  "type": "float", "label": "Width (in)",  "default": 118.0,  "step": 0.25},
+            {"name": "height_inch", "type": "float", "label": "Height (in)", "default": 86.25, "step": 0.25},
+        ],
+    },
+    "enlarge_page": {
+        "label": "Enlarge Page",
+        "category": "Page Geometry",
+        "ffeat": "EnlargePage",
+        "description": "Expands the MediaBox by adding blank space on any side. Content stays in place.",
+        "params": [
+            {"name": "top_inch",    "type": "float", "label": "Top (in)",    "default": 0.0, "step": 0.25},
+            {"name": "bottom_inch", "type": "float", "label": "Bottom (in)", "default": 0.0, "step": 0.25},
+            {"name": "left_inch",   "type": "float", "label": "Left (in)",   "default": 0.0, "step": 0.25},
+            {"name": "right_inch",  "type": "float", "label": "Right (in)",  "default": 0.0, "step": 0.25},
+        ],
+    },
+    "correct_page_geometry": {
+        "label": "Correct Page Boxes",
+        "category": "Page Geometry",
+        "ffeat": "CorrectPageBoxes",
+        "description": "Clamps all page boxes to MediaBox boundaries.",
+        "params": [],
+    },
+    "set_bleedbox_from_cropbox": {
+        "label": "Set BleedBox = CropBox",
+        "category": "Page Geometry",
+        "ffeat": "SetPageBoxEx",
+        "description": "Sets BleedBox equal to CropBox on every page.",
+        "params": [],
+    },
+    "remove_bleed": {
+        "label": "Remove Bleed",
+        "category": "Page Geometry",
+        "ffeat": "SetPageBoxEx",
+        "description": "Sets CropBox equal to TrimBox, hiding bleed area from output.",
+        "params": [],
+    },
+    "create_identical_pages": {
+        "label": "Duplicate to N Pages",
+        "category": "Pages",
+        "ffeat": "CreateIdenticalPages",
+        "description": "Duplicates the artwork to N identical pages (e.g., for gang-run printing).",
+        "params": [
+            {"name": "count", "type": "int", "label": "Page Count", "default": 5, "min": 1, "max": 20},
+        ],
+    },
+    "create_artwork_layer": {
+        "label": "Create Artwork Layer",
+        "category": "Layers",
+        "ffeat": "PutObjectsOnLayer",
+        "description": "Wraps all existing page content in an 'artwork' OCG layer.",
+        "params": [],
+    },
+    "create_cutpath_layer": {
+        "label": "Create Cutpath Layer",
+        "category": "Layers",
+        "ffeat": "PutObjectsOnLayer",
+        "description": "Creates an empty 'cutpath' OCG layer on the page.",
+        "params": [],
+    },
+    "outline_fonts": {
+        "label": "Outline Fonts",
+        "category": "Fonts & Metadata",
+        "ffeat": "ConvertFontsToOutlines",
+        "description": "Converts all fonts to outlines via pdftocairo. Eliminates font dependencies.",
+        "params": [],
+    },
+    "remove_private_data": {
+        "label": "Remove Private Data",
+        "category": "Fonts & Metadata",
+        "ffeat": "DscrdPrvtDtOfOthrApps",
+        "description": "Strips XMP metadata, document info, and private application data.",
+        "params": [],
+    },
+    "add_trimbox_stroke": {
+        "label": "Stroke TrimBox (100K)",
+        "category": "Marks & Lines",
+        "ffeat": "OutlinePBox",
+        "description": "Draws a 100% black (CMYK 0,0,0,1) hairline at the TrimBox boundary.",
+        "params": [
+            {"name": "stroke_width_pt", "type": "float", "label": "Stroke Width (pt)", "default": 0.25, "step": 0.25},
+        ],
+    },
+    "add_thrucut_spot": {
+        "label": "Thru-Cut Spot at BleedBox",
+        "category": "Marks & Lines",
+        "ffeat": "OutlinePBox",
+        "description": "Draws the BleedBox border as a 'thru-cut' Separation spot color for RIPs and cutters.",
+        "params": [
+            {"name": "stroke_width_pt", "type": "float", "label": "Stroke Width (pt)", "default": 0.25, "step": 0.25},
+        ],
+    },
+}
+
+# Grouped view for UI dropdowns
+OP_CATEGORIES = {}
+for _op_id, _op_meta in AVAILABLE_OPS.items():
+    _cat = _op_meta["category"]
+    OP_CATEGORIES.setdefault(_cat, []).append(_op_id)
+
+
+# ---------------------------------------------------------------------------
+# PROFILE RUNNER  — executes a JSON profile dict
+# ---------------------------------------------------------------------------
+
+def run_profile(input_path: str, output_path: str, profile: dict):
+    """
+    Execute a profile definition against a PDF.
+
+    profile format:
+        {
+          "name": "My Profile",
+          "steps": [
+            {"op": "set_mediabox_to_origin"},
+            {"op": "set_page_box", "params": {"box_type": "TrimBox",
+                                               "width_inch": 118.0,
+                                               "height_inch": 86.25}}
+          ]
+        }
+    """
+    import functools
+
+    OP_MAP = {
+        "set_mediabox_to_origin":   set_mediabox_to_origin,
+        "set_page_box":             set_page_box,
+        "set_trimbox_all_pages":    set_trimbox_all_pages,
+        "create_artwork_layer":     create_artwork_layer,
+        "create_cutpath_layer":     create_cutpath_layer,
+        "create_identical_pages":   create_identical_pages,
+        "remove_bleed":             remove_bleed,
+        "correct_page_geometry":    correct_page_geometry,
+        "outline_fonts":            outline_fonts,
+        "remove_private_data":      remove_private_data,
+        "enlarge_page":             enlarge_page,
+        "add_trimbox_stroke":       add_trimbox_stroke,
+        "set_bleedbox_from_cropbox":set_bleedbox_from_cropbox,
+        "add_thrucut_spot":         add_thrucut_spot,
+    }
+
+    steps = []
+    for step_def in profile.get("steps", []):
+        op_name = step_def["op"]
+        params   = step_def.get("params", {})
+        fn = OP_MAP.get(op_name)
+        if fn is None:
+            raise ValueError(f"Unknown operation in profile: '{op_name}'")
+        if params:
+            bound = functools.partial(fn, **params)
+            label = ", ".join(f"{k}={v}" for k, v in params.items())
+            bound.__name__ = f"{op_name}({label})"
+            steps.append(bound)
+        else:
+            steps.append(fn)
+
+    run_pipeline(input_path, output_path, steps)
+
+
+# ---------------------------------------------------------------------------
 # CLI  — run from terminal
 # ---------------------------------------------------------------------------
 

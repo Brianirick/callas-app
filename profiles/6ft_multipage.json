@@ -1,0 +1,9 @@
+{
+  "name": "Full Finishing — 6ft Multi-Page",
+  "description": "Mirrors 6ft-4-MULTI-5PC-BLEED-V1. Duplicate to 5 identical pages then correct page geometry.",
+  "category": "Finishing",
+  "steps": [
+    { "op": "create_identical_pages", "params": { "count": 5 } },
+    { "op": "correct_page_geometry" }
+  ]
+}

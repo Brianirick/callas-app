@@ -1,0 +1,9 @@
+{
+  "name": "Outline Fonts + Clean Metadata",
+  "description": "Mirrors OUTLINE-FONTS.kfpx. Converts all fonts to outlines then strips private application data.",
+  "category": "Preparation",
+  "steps": [
+    { "op": "outline_fonts" },
+    { "op": "remove_private_data" }
+  ]
+}

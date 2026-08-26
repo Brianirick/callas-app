@@ -94,11 +94,37 @@ st.markdown("""
     .step-label { color: #e2e8f0; font-weight: 600; font-size: 0.9rem; }
     .step-params { color: #7f9bb5; font-size: 0.78rem; margin-top: 2px; }
 
-    /* Tab styling */
-    .stTabs [data-baseweb="tab-list"] { background-color: #131d2e !important; border-radius: 8px; padding: 4px; gap: 4px; }
-    .stTabs [data-baseweb="tab"] { background-color: transparent !important; color: #7f9bb5 !important; border-radius: 6px; font-weight: 600; }
-    .stTabs [aria-selected="true"] { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
-    .stTabs [data-baseweb="tab-panel"] { padding-top: 1.2rem; }
+    /* Tab styling — button look */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #0d1520 !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        padding: 5px !important;
+        gap: 4px !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: transparent !important;
+        color: #7f9bb5 !important;
+        border-radius: 7px !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        padding: 0.5rem 1.4rem !important;
+        border: none !important;
+        letter-spacing: 0.01em !important;
+        transition: all 0.15s ease !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #1a2540 !important;
+        color: #c8d8f0 !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 10px rgba(59,130,246,0.45) !important;
+    }
+    .stTabs [data-baseweb="tab-highlight"] { display: none !important; }
+    .stTabs [data-baseweb="tab-border"]    { display: none !important; }
+    .stTabs [data-baseweb="tab-panel"] { padding-top: 1.2rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -213,7 +239,7 @@ with tab_run:
         left, right = st.columns([1, 2])
 
         with left:
-            st.markdown('<div style="font-size:0.75rem; color:#7f9bb5; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:0.4rem;">Select Profile</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:0.72rem; color:#60a5fa; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; margin-bottom:0.4rem;">Select Profile</div>', unsafe_allow_html=True)
             profile_name = st.selectbox("Profile", list(all_profiles.keys()), label_visibility="collapsed")
             _, profile_data = all_profiles[profile_name]
 

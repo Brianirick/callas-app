@@ -939,27 +939,154 @@ for _op_id, _op_meta in AVAILABLE_OPS.items():
 
 
 # ---------------------------------------------------------------------------
+# CHECK FUNCTIONS  — inspect PDF and return pass/fail results (no file change)
+# ---------------------------------------------------------------------------
+
+def check_page_size(input_path: str,
+                    width_inch: float = None, height_inch: float = None,
+                    box: str = "TrimBox", tolerance_inch: float = 0.1) -> list:
+    """
+    Check that each page's box matches expected dimensions (±tolerance).
+    Returns list of {page, passed, message} dicts.
+    """
+    doc = fitz.open(input_path)
+    results = []
+    for i, page in enumerate(doc):
+        rect = getattr(page, box.lower(), None) or page.mediabox
+        w, h = rect.width / 72, rect.height / 72
+        ok   = True
+        msgs = [f"Page {i+1}: {box} = {w:.3f}\" × {h:.3f}\""]
+        if width_inch is not None and abs(w - width_inch) > tolerance_inch:
+            ok = False
+            msgs.append(f"width mismatch — expected {width_inch:.3f}\"")
+        if height_inch is not None and abs(h - height_inch) > tolerance_inch:
+            ok = False
+            msgs.append(f"height mismatch — expected {height_inch:.3f}\"")
+        results.append({"page": i+1, "passed": ok, "message": " | ".join(msgs)})
+    doc.close()
+    return results
+
+
+def check_has_trimbox(input_path: str) -> list:
+    """Check that every page has a TrimBox set."""
+    doc  = fitz.open(input_path)
+    results = []
+    for i, page in enumerate(doc):
+        mb = page.mediabox
+        tb = page.trimbox
+        ok = (tb != mb) and (tb.width > 0)
+        results.append({
+            "page": i+1, "passed": ok,
+            "message": f"Page {i+1}: TrimBox {'present' if ok else 'MISSING'} "
+                       f"({tb.width/72:.3f}\" × {tb.height/72:.3f}\")"
+        })
+    doc.close()
+    return results
+
+
+def check_bleed(input_path: str, min_bleed_inch: float = 0.125) -> list:
+    """Check that BleedBox extends at least min_bleed beyond TrimBox on all sides."""
+    doc = fitz.open(input_path)
+    results = []
+    for i, page in enumerate(doc):
+        tb = page.trimbox
+        bb = page.bleedbox
+        min_pt = min_bleed_inch * 72
+        ok = (bb.x0 <= tb.x0 - min_pt and bb.y0 <= tb.y0 - min_pt and
+              bb.x1 >= tb.x1 + min_pt and bb.y1 >= tb.y1 + min_pt)
+        bleed_l = (tb.x0 - bb.x0) / 72
+        bleed_b = (tb.y0 - bb.y0) / 72
+        bleed_r = (bb.x1 - tb.x1) / 72
+        bleed_t = (bb.y1 - tb.y1) / 72
+        results.append({
+            "page": i+1, "passed": ok,
+            "message": f"Page {i+1}: bleed L={bleed_l:.3f}\" B={bleed_b:.3f}\" "
+                       f"R={bleed_r:.3f}\" T={bleed_t:.3f}\" "
+                       f"(min {min_bleed_inch}\")"
+        })
+    doc.close()
+    return results
+
+
+def check_spot_colors(input_path: str, allowed: list = None) -> list:
+    """
+    Check for spot colors. Pass if only allowed spot colors are present
+    (or allowed=None to just list what's found without failing).
+    """
+    report = preflight_report(input_path)
+    spots  = list(report.get("spot_colors", {}).keys())
+    if allowed is None:
+        passed = True
+        msg = f"Spot colors found: {', '.join(spots) if spots else 'None'}"
+    else:
+        unexpected = [s for s in spots if s not in allowed]
+        passed = len(unexpected) == 0
+        msg = (f"Spot colors OK: {spots}" if passed
+               else f"Unexpected spot colors: {unexpected}")
+    return [{"page": "all", "passed": passed, "message": msg}]
+
+
+# Catalog of available checks for the Profile Builder UI
+AVAILABLE_CHECKS = {
+    "check_page_size": {
+        "label": "Check Page Size",
+        "category": "Page Geometry",
+        "description": "Verifies each page's box matches expected W × H (±tolerance).",
+        "params": [
+            {"name": "box",          "type": "select", "label": "Box Type",
+             "options": ["TrimBox","MediaBox","BleedBox","CropBox"], "default": "TrimBox"},
+            {"name": "width_inch",   "type": "float",  "label": "Expected Width (in)",  "default": 0.0, "step": 0.25},
+            {"name": "height_inch",  "type": "float",  "label": "Expected Height (in)", "default": 0.0, "step": 0.25},
+            {"name": "tolerance_inch","type": "float", "label": "Tolerance (in)",       "default": 0.1, "step": 0.01},
+        ],
+    },
+    "check_has_trimbox": {
+        "label": "Check TrimBox Present",
+        "category": "Page Geometry",
+        "description": "Fails if any page is missing a TrimBox.",
+        "params": [],
+    },
+    "check_bleed": {
+        "label": "Check Bleed",
+        "category": "Page Geometry",
+        "description": "Verifies BleedBox extends beyond TrimBox by at least the specified amount.",
+        "params": [
+            {"name": "min_bleed_inch", "type": "float", "label": "Min Bleed (in)", "default": 0.125, "step": 0.0625},
+        ],
+    },
+    "check_spot_colors": {
+        "label": "Check Spot Colors",
+        "category": "Colors",
+        "description": "Lists spot colors found. Leave 'Allowed' blank to just report without failing.",
+        "params": [],
+    },
+}
+
+
+# ---------------------------------------------------------------------------
 # PROFILE RUNNER  — executes a JSON profile dict
 # ---------------------------------------------------------------------------
 
-def run_profile(input_path: str, output_path: str, profile: dict):
+def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
     """
     Execute a profile definition against a PDF.
 
-    profile format:
-        {
-          "name": "My Profile",
-          "steps": [
-            {"op": "set_mediabox_to_origin"},
-            {"op": "set_page_box", "params": {"box_type": "TrimBox",
-                                               "width_inch": 118.0,
-                                               "height_inch": 86.25}}
-          ]
-        }
+    Supports two step types:
+      Fixup:  {"op": "set_mediabox_to_origin"}
+      Check:  {"op": "check_page_size", "type": "check",
+               "params": {"width_inch": 10.0, "height_inch": 8.0}}
+
+    Returns dict:
+      {
+        "output_path":   str,
+        "check_results": [  # one entry per check step
+          {"step": int, "op": str, "label": str, "results": [...]}
+        ]
+      }
     """
     import functools
 
-    OP_MAP = {
+    FIXUP_MAP = {
         "set_mediabox_to_origin":   set_mediabox_to_origin,
         "set_page_box":             set_page_box,
         "set_trimbox_all_pages":    set_trimbox_all_pages,
@@ -976,22 +1103,62 @@ def run_profile(input_path: str, output_path: str, profile: dict):
         "add_thrucut_spot":         add_thrucut_spot,
     }
 
-    steps = []
-    for step_def in profile.get("steps", []):
-        op_name = step_def["op"]
-        params   = step_def.get("params", {})
-        fn = OP_MAP.get(op_name)
-        if fn is None:
-            raise ValueError(f"Unknown operation in profile: '{op_name}'")
-        if params:
-            bound = functools.partial(fn, **params)
-            label = ", ".join(f"{k}={v}" for k, v in params.items())
-            bound.__name__ = f"{op_name}({label})"
-            steps.append(bound)
-        else:
-            steps.append(fn)
+    CHECK_MAP = {
+        "check_page_size":    check_page_size,
+        "check_has_trimbox":  check_has_trimbox,
+        "check_bleed":        check_bleed,
+        "check_spot_colors":  check_spot_colors,
+    }
 
-    run_pipeline(input_path, output_path, steps)
+    fixup_steps    = []   # (fn,) for run_pipeline
+    check_schedule = []   # (step_idx, op_name, params) to run after fixups
+    check_results  = []
+
+    for i, step_def in enumerate(profile.get("steps", [])):
+        op_name   = step_def["op"]
+        params    = step_def.get("params", {})
+        step_type = step_def.get("type", "fixup")
+
+        if step_type == "check":
+            fn = CHECK_MAP.get(op_name)
+            if fn is None:
+                raise ValueError(f"Unknown check operation: '{op_name}'")
+            check_schedule.append((i, op_name, params, fn))
+        else:
+            fn = FIXUP_MAP.get(op_name)
+            if fn is None:
+                raise ValueError(f"Unknown fixup operation: '{op_name}'")
+            if params:
+                bound = functools.partial(fn, **params)
+                label = ", ".join(f"{k}={v}" for k, v in params.items())
+                bound.__name__ = f"{op_name}({label})"
+                fixup_steps.append(bound)
+            else:
+                fixup_steps.append(fn)
+
+    # Run fixups
+    if fixup_steps:
+        run_pipeline(input_path, output_path, fixup_steps)
+    else:
+        import shutil
+        shutil.copy2(input_path, output_path)
+
+    # Run checks against the output (post-fixup state)
+    check_path = output_path if fixup_steps else input_path
+    for step_idx, op_name, params, fn in check_schedule:
+        results = fn(check_path, **params) if params else fn(check_path)
+        meta = AVAILABLE_CHECKS.get(op_name, {})
+        check_results.append({
+            "step":    step_idx,
+            "op":      op_name,
+            "label":   meta.get("label", op_name),
+            "results": results,
+        })
+
+    return {
+        "output_path":   output_path,
+        "check_results": check_results,
+    }
 
 
 # ---------------------------------------------------------------------------

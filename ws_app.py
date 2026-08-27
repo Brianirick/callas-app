@@ -428,6 +428,262 @@ if page == "run":
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "build":
 
+    # ── Sub-mode toggle ────────────────────────────────────────────────────────
+    if "bp_mode" not in st.session_state:
+        st.session_state.bp_mode = "recipe"
+    _bmode = st.session_state.bp_mode
+    _bm1, _bm2, _bm_sp = st.columns([1.1, 1.8, 5])
+    with _bm1:
+        if st.button("📋  Recipe", use_container_width=True,
+                     type="primary" if _bmode == "recipe" else "secondary",
+                     key="bm_recipe"):
+            st.session_state.bp_mode = "recipe"
+            st.rerun()
+    with _bm2:
+        if st.button("🔩  Finishing Profile", use_container_width=True,
+                     type="primary" if _bmode == "finishing" else "secondary",
+                     key="bm_finishing"):
+            st.session_state.bp_mode = "finishing"
+            st.rerun()
+    st.markdown('<div style="margin-bottom:0.25rem;"></div>', unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FINISHING PROFILE BUILDER
+    # ══════════════════════════════════════════════════════════════════════════
+    if _bmode == "finishing":
+
+        # Init session state
+        for _k, _v in [("fp_steps", []), ("fp_name", "New Finishing Profile"),
+                       ("fp_desc", ""), ("fp_op_type", "fixup")]:
+            if _k not in st.session_state:
+                st.session_state[_k] = _v
+
+        # Load existing finishing profile
+        _all_fps = {
+            data.get("name", p.stem): (p, data)
+            for p in sorted(PROFILES_DIR.glob("*.json"))
+            if (data := json.loads(p.read_text(encoding="utf-8")))
+            and data.get("type") != "recipe"
+        }
+        _fl1, _fl2 = st.columns([4, 1])
+        with _fl1:
+            _fp_load_choice = st.selectbox("Load existing finishing profile",
+                                           ["— start fresh —"] + list(_all_fps.keys()),
+                                           label_visibility="collapsed", key="fp_load_sel")
+        with _fl2:
+            if st.button("Load →", use_container_width=True, key="fp_load_btn") \
+               and _fp_load_choice != "— start fresh —":
+                _, _fpdata = _all_fps[_fp_load_choice]
+                st.session_state.fp_name  = _fpdata.get("name", "")
+                st.session_state.fp_desc  = _fpdata.get("description", "")
+                st.session_state.fp_steps = _fpdata.get("steps", [])
+                st.rerun()
+
+        st.divider()
+
+        # Name / Description
+        _fn1, _fn2 = st.columns([1, 2])
+        with _fn1:
+            st.session_state.fp_name = st.text_input(
+                "Profile Name", value=st.session_state.fp_name, key="fp_name_inp")
+        with _fn2:
+            st.session_state.fp_desc = st.text_input(
+                "Description",  value=st.session_state.fp_desc, key="fp_desc_inp")
+
+        st.markdown('<div style="margin-top:0.4rem;"></div>', unsafe_allow_html=True)
+
+        # ── Two-column builder ─────────────────────────────────────────────────
+        _add_col, _steps_col = st.columns([1, 1.2])
+
+        with _add_col:
+            st.markdown(
+                '<div style="font-size:0.68rem; color:#3b82f6; text-transform:uppercase;'
+                'letter-spacing:0.12em; font-weight:700; margin-bottom:0.6rem;">➕ Add Step</div>',
+                unsafe_allow_html=True
+            )
+            _ta, _tb = st.columns(2)
+            with _ta:
+                if st.button("🔧 Fixup", use_container_width=True, key="fp_t_fixup",
+                             type="primary" if st.session_state.fp_op_type == "fixup" else "secondary"):
+                    st.session_state.fp_op_type = "fixup"
+                    st.rerun()
+            with _tb:
+                if st.button("🔍 Check", use_container_width=True, key="fp_t_check",
+                             type="primary" if st.session_state.fp_op_type == "check" else "secondary"):
+                    st.session_state.fp_op_type = "check"
+                    st.rerun()
+
+            _catalog = ws.AVAILABLE_OPS if st.session_state.fp_op_type == "fixup" else ws.AVAILABLE_CHECKS
+            _cats    = sorted({v["category"] for v in _catalog.values()})
+            _sel_cat = st.selectbox("Category", ["All"] + _cats, key="fp_cat_sel")
+
+            _ops_filtered = {k: v for k, v in _catalog.items()
+                             if _sel_cat == "All" or v["category"] == _sel_cat}
+            _op_ids    = list(_ops_filtered.keys())
+            _op_labels = [_ops_filtered[k]["label"] for k in _op_ids]
+
+            if not _op_ids:
+                st.caption("No operations in this category.")
+            else:
+                _sel_op_idx = st.selectbox("Operation", range(len(_op_ids)),
+                                           format_func=lambda i: _op_labels[i],
+                                           key="fp_op_sel")
+                _sel_op_id   = _op_ids[_sel_op_idx]
+                _sel_op_meta = _ops_filtered[_sel_op_id]
+                st.markdown(
+                    f'<div style="font-size:0.71rem; color:#7f9bb5; margin-bottom:0.35rem;">'
+                    f'{_sel_op_meta.get("description","")}</div>',
+                    unsafe_allow_html=True
+                )
+
+                # Dynamic param inputs
+                _pvals = {}
+                for _pm in _sel_op_meta.get("params", []):
+                    _pk = f"fp_p_{_sel_op_id}_{_pm['name']}"
+                    if _pm["type"] == "float":
+                        _pvals[_pm["name"]] = st.number_input(
+                            _pm["label"], value=float(_pm.get("default", 0.0)),
+                            step=float(_pm.get("step", 0.01)), format="%.4f", key=_pk)
+                    elif _pm["type"] == "int":
+                        _pvals[_pm["name"]] = int(st.number_input(
+                            _pm["label"], value=int(_pm.get("default", 0)), step=1, key=_pk))
+                    elif _pm["type"] == "select":
+                        _opts = _pm["options"]
+                        _def_idx = _opts.index(_pm["default"]) if _pm.get("default") in _opts else 0
+                        _pvals[_pm["name"]] = st.selectbox(_pm["label"], _opts, index=_def_idx, key=_pk)
+                    elif _pm["type"] == "bool":
+                        _pvals[_pm["name"]] = st.checkbox(
+                            _pm["label"], value=bool(_pm.get("default", False)), key=_pk)
+                    else:
+                        _pvals[_pm["name"]] = st.text_input(
+                            _pm["label"], value=str(_pm.get("default", "")), key=_pk)
+
+                _btn_lbl = ("🔧 Add Fixup Step" if st.session_state.fp_op_type == "fixup"
+                            else "🔍 Add Check Step")
+                if st.button(_btn_lbl, use_container_width=True, type="primary", key="fp_add_btn"):
+                    _new_step = {"op": _sel_op_id}
+                    if st.session_state.fp_op_type == "check":
+                        _new_step["type"] = "check"
+                    if _pvals:
+                        _new_step["params"] = _pvals
+                    st.session_state.fp_steps.append(_new_step)
+                    st.rerun()
+
+        with _steps_col:
+            st.markdown(
+                '<div style="font-size:0.68rem; color:#3b82f6; text-transform:uppercase;'
+                'letter-spacing:0.12em; font-weight:700; margin-bottom:0.6rem;">📋 Profile Steps</div>',
+                unsafe_allow_html=True
+            )
+            if not st.session_state.fp_steps:
+                st.caption("No steps yet — add one from the left.")
+            else:
+                for _si, _step in enumerate(st.session_state.fp_steps):
+                    _is_chk   = _step.get("type") == "check"
+                    _cat_ref  = ws.AVAILABLE_CHECKS if _is_chk else ws.AVAILABLE_OPS
+                    _sm       = _cat_ref.get(_step["op"], {})
+                    _slabel   = _sm.get("label", _step["op"])
+                    _badge_c  = "#3b82f6" if _is_chk else "#f97316"
+                    _badge_t  = "CHECK"   if _is_chk else "FIXUP"
+                    _pstr     = (", ".join(f"{k}={v}" for k, v in _step["params"].items())
+                                 if _step.get("params") else "")
+                    _rc1, _rc2 = st.columns([6, 1])
+                    with _rc1:
+                        st.markdown(
+                            f'<div style="background:#1e2a3a;border-radius:6px;padding:7px 11px;'
+                            f'margin-bottom:5px;border-left:3px solid {_badge_c};">'
+                            f'<span style="font-size:0.60rem;color:{_badge_c};text-transform:uppercase;'
+                            f'font-weight:700;letter-spacing:0.1em;">{_badge_t}</span>'
+                            f'<span style="font-size:0.72rem;color:#e2e8f0;margin-left:8px;font-weight:600;">'
+                            f'{_si+1}. {_slabel}</span>'
+                            + (f'<div style="font-size:0.64rem;color:#7f9bb5;margin-top:2px;">{_pstr}</div>'
+                               if _pstr else "")
+                            + "</div>",
+                            unsafe_allow_html=True
+                        )
+                    with _rc2:
+                        if st.button("✕", key=f"fp_rm_{_si}", help="Remove"):
+                            st.session_state.fp_steps.pop(_si)
+                            st.rerun()
+
+            st.markdown('<div style="margin-top:0.7rem;"></div>', unsafe_allow_html=True)
+            _fsv, _fcl = st.columns([3, 1])
+            with _fsv:
+                if st.button("💾  Save Profile", use_container_width=True, key="fp_save_btn",
+                             disabled=not st.session_state.fp_steps):
+                    if not st.session_state.fp_name.strip():
+                        st.error("Give the profile a name first.")
+                    else:
+                        _saved = save_profile_to_disk({
+                            "name":        st.session_state.fp_name.strip(),
+                            "description": st.session_state.fp_desc.strip(),
+                            "steps":       st.session_state.fp_steps,
+                        })
+                        st.success(f"Saved → {_saved.name}")
+            with _fcl:
+                if st.button("🗑  Clear", use_container_width=True, key="fp_clear_btn"):
+                    st.session_state.fp_steps = []
+                    st.session_state.fp_name  = "New Finishing Profile"
+                    st.session_state.fp_desc  = ""
+                    st.rerun()
+
+        # ── Test run ─────────────────────────────────────────────────────────
+        if st.session_state.fp_steps:
+            st.divider()
+            st.markdown("#### Test Run")
+            _fp_up = st.file_uploader("Upload a PDF to test this profile",
+                                      type=["pdf"], key="fp_test_up")
+            if _fp_up:
+                _fptest_key = f"fptest|{_fp_up.name}|{st.session_state.fp_name}"
+                if st.session_state.get("fptest_key") != _fptest_key:
+                    st.session_state.fptest_key    = _fptest_key
+                    st.session_state.fptest_result = None
+
+                if st.button("▶  Test Profile", use_container_width=True, key="fp_run_btn"):
+                    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as _ti:
+                        _ti.write(_fp_up.read())
+                        _t_in = _ti.name
+                    _t_out = tempfile.mktemp(suffix=".pdf")
+                    with st.spinner("Running profile…"):
+                        try:
+                            _fpr = ws.run_profile(_t_in, _t_out, {
+                                "name":  st.session_state.fp_name,
+                                "steps": st.session_state.fp_steps,
+                            })
+                            st.session_state.fptest_result = _fpr
+                        except Exception as _fpe:
+                            st.error(f"❌ {_fpe}")
+
+                if st.session_state.get("fptest_result"):
+                    _fpr = st.session_state.fptest_result
+                    success_banner("Profile test complete")
+                    _fp_out = _fpr.get("output_path")
+                    if _fp_out and Path(_fp_out).exists():
+                        _stem = Path(_fp_up.name).stem
+                        st.download_button(
+                            "⬇  Download Finished PDF",
+                            data=open(_fp_out, "rb").read(),
+                            file_name=f"{_stem}_finished.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                            key="fp_dl_btn",
+                        )
+                    _chk_res = _fpr.get("check_results", [])
+                    if _chk_res:
+                        st.markdown("**Check Results:**")
+                        for _chk in _chk_res:
+                            _all_pass = all(r.get("passed", True) for r in _chk["results"])
+                            with st.expander(f"{'✅' if _all_pass else '❌'}  {_chk['label']}"):
+                                for _cr in _chk["results"]:
+                                    st.markdown(
+                                        f"{'✅' if _cr.get('passed', True) else '❌'}  {_cr['message']}")
+
+        st.stop()   # don't render recipe builder below
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RECIPE BUILDER (existing)
+    # ═══════════════════════════════════════════════════════════════════════════
+
     # ── Discover available assets ──────────────────────────────────────────────
     finishing_profiles = {
         data.get("name", p.stem): p.stem

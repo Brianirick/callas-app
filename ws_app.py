@@ -747,7 +747,7 @@ elif page == "build":
     # ── Session state ──────────────────────────────────────────────────────────
     for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                  ("rb_finishing","— none —"), ("rb_overlay","— none —"),
-                 ("rb_cutpath","— none —"), ("rb_check_size", False),
+                 ("rb_cutpath","— none —"), ("rb_check_size", True),
                  ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
         if k not in st.session_state:
             st.session_state[k] = v
@@ -958,7 +958,7 @@ elif page == "build":
         if st.button("🗑  Clear", use_container_width=True):
             for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                          ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
-                         ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
+                         ("rb_check_size", True), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
                 st.session_state[k] = v
             st.rerun()
 

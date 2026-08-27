@@ -1836,6 +1836,17 @@ def run_recipe(input_path: str, recipe: dict,
             print(f"  [preflight] unknown target '{preflight}', skipping.")
         shutil.copy2(input_path, tmp_pf)
 
+    # ── 1b. Page size check (runs on preflighted file) ───────────────────────
+    check_sz = recipe.get("check_size") or {}
+    if check_sz and check_sz.get("width_inch") and check_sz.get("height_inch"):
+        print(f"  [check] page size {check_sz['width_inch']}×{check_sz['height_inch']}in")
+        results["check_size_results"] = check_page_size(
+            tmp_pf,
+            width_inch=check_sz["width_inch"],
+            height_inch=check_sz["height_inch"],
+            tolerance_inch=check_sz.get("tolerance_inch", 0.1),
+        )
+
     # ── 2. Original JPEG (preflighted, no overlay) ────────────────────────────
     tmp_orig_jpg = tempfile.mktemp(suffix=".jpg")
     results["original_jpeg"] = export_jpeg(tmp_pf, tmp_orig_jpg)

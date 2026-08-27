@@ -23,6 +23,26 @@ _QP_EXPORT    = BASE_DIR / "Exported Library from QuickProof Server" / "PDFs"
 OVERLAYS_DIR  = _QP_EXPORT / "Overlay"
 CUTPATHS_DIR  = _QP_EXPORT / "Cutpath"
 
+GITHUB_REPO   = "Brianirick/callas-app"
+
+def _github_upload(repo_path: str, file_bytes: bytes, commit_msg: str):
+    """Commit a file to GitHub so it persists after Streamlit Cloud reboots.
+    Requires GITHUB_TOKEN in st.secrets. Silently skips if token not configured."""
+    try:
+        token = st.secrets.get("GITHUB_TOKEN")
+        if not token:
+            return
+        from github import Github
+        g = Github(token)
+        repo = g.get_repo(GITHUB_REPO)
+        try:
+            existing = repo.get_contents(repo_path)
+            repo.update_file(repo_path, commit_msg, file_bytes, existing.sha)
+        except Exception:
+            repo.create_file(repo_path, commit_msg, file_bytes)
+    except Exception as e:
+        st.warning(f"GitHub sync skipped: {e}")
+
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="CallasFlow", page_icon="📄", layout="wide")
 
@@ -424,9 +444,18 @@ if page == "run":
 
                 # Always render results if they exist for this file+profile combo
                 if st.session_state.get("run_result"):
+                    result = st.session_state.run_result
+                    # Page size check results
+                    sz_results = result.get("check_size_results", [])
+                    if sz_results:
+                        all_pass = all(r.get("passed", True) for r in sz_results)
+                        label = "✅ Page Size Check" if all_pass else "❌ Page Size Check"
+                        with st.expander(label, expanded=not all_pass):
+                            for r in sz_results:
+                                icon = "✅" if r.get("passed", True) else "❌"
+                                st.markdown(f"{icon}  {r['message']}")
                     success_banner(f"{profile_name} complete")
-                    recipe_download_buttons(st.session_state.run_result,
-                                            st.session_state.run_stem)
+                    recipe_download_buttons(result, st.session_state.run_stem)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -718,7 +747,8 @@ elif page == "build":
     # ── Session state ──────────────────────────────────────────────────────────
     for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                  ("rb_finishing","— none —"), ("rb_overlay","— none —"),
-                 ("rb_cutpath","— none —")]:
+                 ("rb_cutpath","— none —"), ("rb_check_size", False),
+                 ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
         if k not in st.session_state:
             st.session_state[k] = v
 
@@ -749,6 +779,11 @@ elif page == "build":
             st.session_state.rb_finishing  = fin_name
             st.session_state.rb_overlay    = rdata.get("overlay") or "— none —"
             st.session_state.rb_cutpath    = rdata.get("cutpath") or "— none —"
+            _sz = rdata.get("check_size") or {}
+            st.session_state.rb_check_size = bool(_sz)
+            st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
+            st.session_state.rb_height     = float(_sz.get("height_inch", 0.0))
+            st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 0.1))
             st.rerun()
 
     st.divider()
@@ -823,11 +858,66 @@ elif page == "build":
         if not CUTPATHS_DIR.exists():
             st.caption("⚠ Cutpath folder missing")
 
+    # ── Page size check ────────────────────────────────────────────────────────
+    st.markdown('<div style="margin-top:0.75rem;"></div>', unsafe_allow_html=True)
+    _chk_header, _chk_rest = st.columns([1, 3])
+    with _chk_header:
+        st.session_state.rb_check_size = st.checkbox(
+            "📐  Check page size",
+            value=st.session_state.rb_check_size
+        )
+    if st.session_state.rb_check_size:
+        with _chk_rest:
+            _sz1, _sz2, _sz3 = st.columns(3)
+            with _sz1:
+                st.session_state.rb_width = st.number_input(
+                    "Width (in)", value=st.session_state.rb_width,
+                    min_value=0.0, step=0.25, format="%.2f")
+            with _sz2:
+                st.session_state.rb_height = st.number_input(
+                    "Height (in)", value=st.session_state.rb_height,
+                    min_value=0.0, step=0.25, format="%.2f")
+            with _sz3:
+                st.session_state.rb_tol = st.number_input(
+                    "Tolerance (in)", value=st.session_state.rb_tol,
+                    min_value=0.0, step=0.05, format="%.2f")
+
+    # ── Upload new overlay / cutpath ───────────────────────────────────────────
+    with st.expander("📤  Upload New Overlay / Cutpath"):
+        up_col1, up_col2 = st.columns(2)
+        with up_col1:
+            st.caption("Overlay PDF")
+            ov_upload = st.file_uploader("Upload overlay", type=["pdf"],
+                                         key="ov_uploader", label_visibility="collapsed")
+            if ov_upload and st.button("Save Overlay", key="save_ov"):
+                OVERLAYS_DIR.mkdir(parents=True, exist_ok=True)
+                dest = OVERLAYS_DIR / ov_upload.name
+                dest.write_bytes(ov_upload.read())
+                _github_upload(f"Exported Library from QuickProof Server/PDFs/Overlay/{ov_upload.name}",
+                               dest.read_bytes(), f"Upload overlay: {ov_upload.name}")
+                st.success(f"Saved {ov_upload.name}")
+                st.rerun()
+        with up_col2:
+            st.caption("Cutpath PDF")
+            cp_upload = st.file_uploader("Upload cutpath", type=["pdf"],
+                                         key="cp_uploader", label_visibility="collapsed")
+            if cp_upload and st.button("Save Cutpath", key="save_cp"):
+                CUTPATHS_DIR.mkdir(parents=True, exist_ok=True)
+                dest = CUTPATHS_DIR / cp_upload.name
+                dest.write_bytes(cp_upload.read())
+                _github_upload(f"Exported Library from QuickProof Server/PDFs/Cutpath/{cp_upload.name}",
+                               dest.read_bytes(), f"Upload cutpath: {cp_upload.name}")
+                st.success(f"Saved {cp_upload.name}")
+                st.rerun()
+
     # ── Recipe preview ─────────────────────────────────────────────────────────
     st.divider()
     stages_defined = [
         s for s in [
             st.session_state.rb_preflight  if st.session_state.rb_preflight  != "— skip —" else None,
+            (f"check {st.session_state.rb_width}×{st.session_state.rb_height}in"
+             if st.session_state.rb_check_size and st.session_state.rb_width and st.session_state.rb_height
+             else None),
             st.session_state.rb_finishing  if st.session_state.rb_finishing  != "— none —" else None,
             st.session_state.rb_overlay    if st.session_state.rb_overlay    != "— none —" else None,
             st.session_state.rb_cutpath    if st.session_state.rb_cutpath    != "— none —" else None,
@@ -853,6 +943,11 @@ elif page == "build":
                     "name":        st.session_state.rb_name.strip(),
                     "description": st.session_state.rb_desc.strip(),
                     "preflight":   st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
+                    "check_size":  {
+                        "width_inch":     st.session_state.rb_width,
+                        "height_inch":    st.session_state.rb_height,
+                        "tolerance_inch": st.session_state.rb_tol,
+                    } if st.session_state.rb_check_size and st.session_state.rb_width and st.session_state.rb_height else None,
                     "finishing":   finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
                     "overlay":     st.session_state.rb_overlay   if st.session_state.rb_overlay   != "— none —" else None,
                     "cutpath":     st.session_state.rb_cutpath   if st.session_state.rb_cutpath   != "— none —" else None,
@@ -862,7 +957,8 @@ elif page == "build":
     with cl_col:
         if st.button("🗑  Clear", use_container_width=True):
             for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
-                         ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —")]:
+                         ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
+                         ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
                 st.session_state[k] = v
             st.rerun()
 

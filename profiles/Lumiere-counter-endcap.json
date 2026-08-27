@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-counter-endcap",
+  "description": "Auto-imported from QuickProof (Id=608)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 14.25,
+    "height_inch": 42.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Lumiere_Light_Wall_Counter_TemplateENDCAP.pdf",
+  "cutpath": "Lumiere_Light_Wall_Counter_Template ENDCAP-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Kerwin-Test2",
+  "description": "Auto-imported from QuickProof (Id=1110)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 100.0,
+    "height_inch": 50.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "kerwin-test-overlay.pdf",
+  "cutpath": "kerwin-test-cp.pdf"
+}

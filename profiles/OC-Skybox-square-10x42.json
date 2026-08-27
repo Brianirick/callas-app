@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-Skybox-square-10x42",
+  "description": "Auto-imported from QuickProof (Id=653)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 22.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC-10ftx42in_Square-half-overlay.pdf",
+  "cutpath": "OC-Skybox-square-10x42-CP.pdf"
+}

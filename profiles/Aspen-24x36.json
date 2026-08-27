@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-24x36",
+  "description": "Auto-imported from QuickProof (Id=340)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 25.0,
+    "height_inch": 37.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "24W+x+36H+(backlit_non-backlit)-overlay.pdf",
+  "cutpath": "24Wx36H-CP.pdf"
+}

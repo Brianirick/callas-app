@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-Cap-throw",
+  "description": "Auto-imported from QuickProof (Id=327)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 106.0,
+    "height_inch": 37.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft_Tablecap_Throw-overlay.pdf",
+  "cutpath": "8ft_Tablecap_Throw-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mesh-Flag-3x2-double",
+  "description": "Auto-imported from QuickProof (Id=1005)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 72.25,
+    "height_inch": 24.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Flag-3x2-G2_overlay.pdf",
+  "cutpath": "Flag-3x2-G2_CP_.pdf"
+}

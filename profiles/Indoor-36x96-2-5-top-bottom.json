@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Indoor-36x96-2-5-top-bottom",
+  "description": "Auto-imported from QuickProof (Id=566)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 96.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

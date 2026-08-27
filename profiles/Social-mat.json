@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Social-mat",
+  "description": "Auto-imported from QuickProof (Id=784)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 11.0,
+    "height_inch": 11.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Social_Distancing_Floor_Label-overlay.pdf",
+  "cutpath": "Social_Distancing_Floor_Label-CP.pdf"
+}

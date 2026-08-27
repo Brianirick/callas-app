@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Backwall-Double",
+  "description": "Auto-imported from QuickProof (Id=894)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 115.0,
+    "height_inch": 82.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft-backwall-double-REG.pdf",
+  "cutpath": "115x82-5-Cp-V3_slits.pdf"
+}

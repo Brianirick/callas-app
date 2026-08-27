@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mamba Small Single",
+  "description": "Auto-imported from QuickProof (Id=618)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 32.0,
+    "height_inch": 98.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Zund_mamba_small_single.pdf",
+  "cutpath": "Zund_mamba_small_single-CP-V2-.pdf"
+}

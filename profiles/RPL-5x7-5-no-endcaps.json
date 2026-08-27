@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-5x7-5-no-endcaps",
+  "description": "Auto-imported from QuickProof (Id=738)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 60.75,
+    "height_inch": 88.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL-5x7-5ft-Straight-Nocaps_Template-overlay.pdf",
+  "cutpath": "RPL_5x7_5_NO_Endcaps_CP.pdf"
+}

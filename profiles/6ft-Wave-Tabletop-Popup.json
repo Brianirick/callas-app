@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-Wave-Tabletop-Popup",
+  "description": "Auto-imported from QuickProof (Id=316)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 96.063,
+    "height_inch": 59.646,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "tabletop6ft_overlay-.pdf",
+  "cutpath": null
+}

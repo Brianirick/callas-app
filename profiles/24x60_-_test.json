@@ -1,0 +1,22 @@
+{
+  "name": "24x60 - test",
+  "description": "testing enlargin pages",
+  "steps": [
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 2.0,
+        "bottom_inch": 2.0,
+        "left_inch": 0.0,
+        "right_inch": 0.0,
+        "update_trimbox": true
+      }
+    },
+    {
+      "op": "add_trimbox_stroke",
+      "params": {
+        "stroke_width_pt": 100.0
+      }
+    }
+  ]
+}

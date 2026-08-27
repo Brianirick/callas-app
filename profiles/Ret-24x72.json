@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-24x72",
+  "description": "Auto-imported from QuickProof (Id=666)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "banner-24-72-.pdf",
+  "cutpath": null
+}

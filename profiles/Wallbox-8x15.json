@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Wallbox-8x15",
+  "description": "Auto-imported from QuickProof (Id=939)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 133.0,
+    "height_inch": 179.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8x15_wallbox_overlay.pdf",
+  "cutpath": "8x15_wallbox_CP.pdf"
+}

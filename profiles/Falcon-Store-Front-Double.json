@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Falcon-Store-Front-Double",
+  "description": "Auto-imported from QuickProof (Id=1045)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 41.0,
+    "height_inch": 69.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Falcon-Storefront-Double_overlay.pdf",
+  "cutpath": "Falcon-Storefront-Double_Template-V2-stroke.pdf"
+}

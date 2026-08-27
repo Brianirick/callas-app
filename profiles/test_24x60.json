@@ -1,0 +1,27 @@
+{
+  "name": "Test 24x60",
+  "description": "",
+  "steps": [
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "check_page_size",
+      "type": "check",
+      "params": {
+        "box": "TrimBox",
+        "width_inch": 24.0,
+        "height_inch": 60.0,
+        "tolerance_inch": 0.1
+      }
+    },
+    {
+      "op": "set_page_box",
+      "params": {
+        "box_type": "TrimBox",
+        "width_inch": 26.0,
+        "height_inch": 62.0
+      }
+    }
+  ]
+}

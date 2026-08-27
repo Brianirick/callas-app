@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-3-multi",
+  "description": "Auto-imported from QuickProof (Id=308)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 135.3,
+    "height_inch": 88.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "6ft_3-sided_Stretch_Table_Throw.pdf",
+  "cutpath": "6ft_3-sided_Stretch_Table_Throw_CP--.pdf"
+}

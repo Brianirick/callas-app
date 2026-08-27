@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Podium-large-lam-pvc",
+  "description": "Auto-imported from QuickProof (Id=661)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 72.625,
+    "height_inch": 31.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Podium-lam-.pdf",
+  "cutpath": "podium-lam-cp.pdf"
+}

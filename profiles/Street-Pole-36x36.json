@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Street-Pole-36x36",
+  "description": "Auto-imported from QuickProof (Id=934)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 73.0,
+    "height_inch": 41.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "StreetPoleBanner-36x36_overlay.pdf",
+  "cutpath": null
+}

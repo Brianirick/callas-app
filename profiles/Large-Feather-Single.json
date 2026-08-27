@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Large-Feather-Single",
+  "description": "Auto-imported from QuickProof (Id=591)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 30.0,
+    "height_inch": 163.6,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "featherbanner-L1-WCP.pdf",
+  "cutpath": "feather banner-L1-WCP-F.pdf"
+}

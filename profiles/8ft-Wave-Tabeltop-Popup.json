@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-Wave-Tabeltop-Popup",
+  "description": "Auto-imported from QuickProof (Id=335)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 123.2,
+    "height_inch": 59.646,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "tabletop8ft_overlay-(1).pdf",
+  "cutpath": null
+}

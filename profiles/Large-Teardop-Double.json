@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Large-Teardop-Double",
+  "description": "Auto-imported from QuickProof (Id=596)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 73.5,
+    "height_inch": 141.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Teardrop-Large-double-BF_OVERLAY.pdf",
+  "cutpath": "Teardrop-Large-double-BF_CUTPATH.pdf"
+}

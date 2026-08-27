@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-36x36",
+  "description": "Auto-imported from QuickProof (Id=676)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SS-36-36-.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Tower-60x97-backlit",
+  "description": "Auto-imported from QuickProof (Id=1049)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 97.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyTower-32D_5x8-overlay.pdf",
+  "cutpath": "BigSkyTower-32D_5x8-cp.pdf"
+}

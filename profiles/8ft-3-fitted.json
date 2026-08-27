@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-3-fitted",
+  "description": "Auto-imported from QuickProof (Id=320)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 155.25,
+    "height_inch": 64.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft-3sided-FittedTablethrow_.pdf",
+  "cutpath": "8ft-3sided-FittedTablethrow_158x68H---.pdf"
+}

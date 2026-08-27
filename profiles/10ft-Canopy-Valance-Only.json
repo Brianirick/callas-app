@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Canopy-Valance-Only",
+  "description": "Auto-imported from QuickProof (Id=1033)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 118.0,
+    "height_inch": 12.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft-Casita-Air-ValanceOnly_overlay.pdf",
+  "cutpath": "10ft-Casita-Air-ValanceOnly_CP.pdf"
+}

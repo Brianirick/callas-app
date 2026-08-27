@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Real-Estate-24x24-with-rider",
+  "description": "Auto-imported from QuickProof (Id=1001)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 30.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RealEsateSignPost-L-Rider_OVERLAY.pdf",
+  "cutpath": "RealEsateSignPost-24x24-Rider-cp--.pdf"
+}

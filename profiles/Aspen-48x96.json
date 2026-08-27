@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-48x96",
+  "description": "Auto-imported from QuickProof (Id=362)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 49.0,
+    "height_inch": 97.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "48Wx96H-(backlit_non-backlit)-overlay.pdf",
+  "cutpath": "48Wx96H-CP.pdf"
+}

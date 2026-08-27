@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Zeppy-27x67",
+  "description": "Auto-imported from QuickProof (Id=1071)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 27.0,
+    "height_inch": 67.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "ZPY1-27x67_Template-overlay.pdf",
+  "cutpath": null
+}

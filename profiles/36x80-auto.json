@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "36x80-auto",
+  "description": "Auto-imported from QuickProof (Id=279)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 80.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Banner-36-80-.pdf",
+  "cutpath": null
+}

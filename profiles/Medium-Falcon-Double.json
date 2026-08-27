@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-Falcon-Double",
+  "description": "Auto-imported from QuickProof (Id=619)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 48.5,
+    "height_inch": 104.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "M_FalconDouble.pdf",
+  "cutpath": "M_FalconDouble-CP-O.pdf"
+}

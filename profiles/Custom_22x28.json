@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Custom_22x28_",
+  "description": "Auto-imported from QuickProof (Id=1200)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 22.0,
+    "height_inch": 28.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": "custom-8-5x11-CP.pdf"
+}

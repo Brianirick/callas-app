@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Falcon-Store-Front-Single",
+  "description": "Auto-imported from QuickProof (Id=1044)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 20.0,
+    "height_inch": 68.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Falcon-Storefront-Single_overlay.pdf",
+  "cutpath": "XS-falcon-single-CP-O.pdf"
+}

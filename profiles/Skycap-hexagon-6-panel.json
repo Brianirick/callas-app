@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Skycap-hexagon-6-panel",
+  "description": "Auto-imported from QuickProof (Id=762)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 88.34,
+    "height_inch": 45.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "6PanelUmbrella-UV_overlay.pdf",
+  "cutpath": "6PanelUmbrella-UV_CP.pdf"
+}

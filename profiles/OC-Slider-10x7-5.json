@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-Slider-10x7-5",
+  "description": "Auto-imported from QuickProof (Id=874)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC-Slider-10x75_Template-overlay.pdf",
+  "cutpath": "OC-Slider-10x75_Template-CP-jessa.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RP-large-straight-double",
+  "description": "Auto-imported from QuickProof (Id=799)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 130.25,
+    "height_inch": 44.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RP_Large_Double-half-only-v3-overlay.pdf",
+  "cutpath": null
+}

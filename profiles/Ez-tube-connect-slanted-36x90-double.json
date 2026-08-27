@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-tube-connect-slanted-36x90-double",
+  "description": "Auto-imported from QuickProof (Id=527)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 75.0,
+    "height_inch": 89.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZCNCT-SLT-36x90-Front-bacl-double-overlay.pdf",
+  "cutpath": "EZCNCT-SLT-36x90-Front-bacl-double-cp.pdf"
+}

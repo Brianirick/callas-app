@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Golf Towel",
+  "description": "Auto-imported from QuickProof (Id=910)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 18.0,
+    "height_inch": 27.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "TOWEL-GOLF_overlay-fix-NEW.pdf",
+  "cutpath": "TOWEL-GOLF_CP.pdf"
+}

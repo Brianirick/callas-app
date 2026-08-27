@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "15ft-Canopy-10ft-side",
+  "description": "Auto-imported from QuickProof (Id=253)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.25,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_side_15x10-temp.pdf",
+  "cutpath": "10ft_side_15x10_CP.pdf"
+}

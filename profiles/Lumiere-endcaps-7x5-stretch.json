@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-endcaps-7x5-stretch",
+  "description": "Auto-imported from QuickProof (Id=989)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 14.25,
+    "height_inch": 60.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "7x5_lumiere_Endcaps.pdf",
+  "cutpath": "7x5_lumiere_Endcaps-CP-V2.pdf"
+}

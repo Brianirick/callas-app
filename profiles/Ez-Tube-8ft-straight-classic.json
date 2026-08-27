@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-8ft-straight-classic",
+  "description": "Auto-imported from QuickProof (Id=510)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 91.0,
+    "height_inch": 91.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Overlay_8ftEZTubeStraight-yellow.pdf",
+  "cutpath": "EZTube_Classic_10ft_Straight_Single_sided_CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Econo-Tube-doublesided",
+  "description": "Auto-imported from QuickProof (Id=409)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 69.5,
+    "height_inch": 91.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Econotube_DS-overlay.pdf",
+  "cutpath": "Econotube_DS_CP.pdf"
+}

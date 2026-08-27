@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-EZ-Tube-Connect-K-Double",
+  "description": "Auto-imported from QuickProof (Id=1051)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 161.0,
+    "height_inch": 180.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZTube-Connect-10ft-K-Double_overlay.pdf",
+  "cutpath": null
+}

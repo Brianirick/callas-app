@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Storefront Double",
+  "description": "Auto-imported from QuickProof (Id=785)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 50.0,
+    "height_inch": 80.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Storefrontflag-double-OVERLAY.pdf",
+  "cutpath": "Storefrontflag-double-CP-V2.pdf"
+}

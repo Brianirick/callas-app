@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Indoor-24x62",
+  "description": "Auto-imported from QuickProof (Id=553)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 62.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

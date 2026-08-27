@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Genie",
+  "description": "Auto-imported from QuickProof (Id=538)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 72.4,
+    "height_inch": 33.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Genie_Counter_Case_overlay.pdf",
+  "cutpath": "Genie_Counter_Case_CP.pdf"
+}

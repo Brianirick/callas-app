@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Skybox-Flat-Panel-8x5",
+  "description": "Auto-imported from QuickProof (Id=1209)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 97.0,
+    "height_inch": 61.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "HBPANEL8x60_Template-overlay-v2.pdf",
+  "cutpath": "HBPANEL8x60_Template-CP-V1.pdf"
+}

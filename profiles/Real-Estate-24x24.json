@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Real-Estate-24x24",
+  "description": "Auto-imported from QuickProof (Id=1000)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 24.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RealEsateSignPost-L_OVERLAY.pdf",
+  "cutpath": "RealEsateSignPost-24x24-cp-.pdf"
+}

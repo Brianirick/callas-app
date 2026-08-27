@@ -1795,7 +1795,8 @@ def convert_lab_to_cmyk(input_path: str, output_path: str) -> None:
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
-               cutpaths_dir: str = None) -> dict:
+               cutpaths_dir: str = None,
+               status_cb=None) -> dict:
     """
     Execute a structured recipe and return a dict of output paths:
 
@@ -1818,6 +1819,9 @@ def run_recipe(input_path: str, recipe: dict,
     import tempfile, shutil, json
 
     results: dict = {}
+    def _step(msg):
+        print(f"  {msg}")
+        if status_cb: status_cb(msg)
 
     # ── 1. Preflight  (order matches Callas KFPX: white spots → Lab→CMYK → black adj) ──
     tmp_pf   = tempfile.mktemp(suffix=".pdf")
@@ -1825,21 +1829,21 @@ def run_recipe(input_path: str, recipe: dict,
     if preflight in _PREFLIGHT_TARGETS:
         tmp_a = tempfile.mktemp(suffix=".pdf")
         tmp_b = tempfile.mktemp(suffix=".pdf")
-        print(f"  [preflight] remapping white spot colors")
+        _step("🎨 Remapping white spot colors…")
         remap_white_spot_colors(input_path, tmp_a)
-        print(f"  [preflight] converting Lab → CMYK")
+        _step("🔬 Converting Lab → CMYK…")
         convert_lab_to_cmyk(tmp_a, tmp_b)
-        print(f"  [preflight] adjusting vector blacks → {preflight}")
+        _step(f"⚫ Adjusting vector blacks → {preflight}…")
         adjust_black_vectors(tmp_b, tmp_pf, target=preflight)
     else:
         if preflight:
-            print(f"  [preflight] unknown target '{preflight}', skipping.")
+            _step(f"⚠️ Unknown preflight target '{preflight}', skipping.")
         shutil.copy2(input_path, tmp_pf)
 
     # ── 1b. Page size check (runs on preflighted file) ───────────────────────
     check_sz = recipe.get("check_size") or {}
     if check_sz and check_sz.get("width_inch") and check_sz.get("height_inch"):
-        print(f"  [check] page size {check_sz['width_inch']}×{check_sz['height_inch']}in")
+        _step(f"📐 Checking page size {check_sz['width_inch']}\" × {check_sz['height_inch']}\"…")
         results["check_size_results"] = check_page_size(
             tmp_pf,
             width_inch=check_sz["width_inch"],
@@ -1848,6 +1852,7 @@ def run_recipe(input_path: str, recipe: dict,
         )
 
     # ── 2. Original JPEG (preflighted, no overlay) ────────────────────────────
+    _step("🖼 Generating preview JPEG…")
     tmp_orig_jpg = tempfile.mktemp(suffix=".jpg")
     results["original_jpeg"] = export_jpeg(tmp_pf, tmp_orig_jpg)
 
@@ -1856,6 +1861,7 @@ def run_recipe(input_path: str, recipe: dict,
     if overlay and overlays_dir:
         ov_path = Path(overlays_dir) / overlay
         if ov_path.exists():
+            _step(f"📄 Stamping overlay: {overlay}…")
             tmp_ov     = tempfile.mktemp(suffix=".pdf")
             tmp_ov_jpg = tempfile.mktemp(suffix=".jpg")
             stamp_overlay(tmp_pf, tmp_ov, str(ov_path))
@@ -1884,11 +1890,15 @@ def run_recipe(input_path: str, recipe: dict,
     if cutpath and cutpaths_dir:
         cp_path = Path(cutpaths_dir) / cutpath
         if cp_path.exists():
+            _step(f"✂️ Stamping cutpath: {cutpath}…")
+            tmp_cp     = tempfile.mktemp(suffix=".pdf")
             tmp_cp_jpg = tempfile.mktemp(suffix=".jpg")
-            results["cutpath_pdf"]  = str(cp_path)
-            results["cutpath_jpeg"] = export_jpeg(str(cp_path), tmp_cp_jpg)
+            stamp_overlay(tmp_pf, tmp_cp, str(cp_path), opacity=1.0)
+            results["cutpath_pdf"]  = tmp_cp
+            results["cutpath_jpeg"] = export_jpeg(tmp_cp, tmp_cp_jpg)
         else:
-            print(f"  [cutpath] file not found: {cp_path}")
+            _step(f"⚠️ Cutpath not found: {cutpath}")
+    _step("✅ Done!")
 
     return results
 

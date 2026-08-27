@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Yard Sign Small Single",
+  "description": "Auto-imported from QuickProof (Id=858)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 18.0,
+    "height_inch": 11.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "YardSign-SMALL-Single_overlay.pdf",
+  "cutpath": "YardSign-SMALL-Single_CP.pdf"
+}

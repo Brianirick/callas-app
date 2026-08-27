@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-30ft",
+  "description": "Auto-imported from QuickProof (Id=218)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 185.5,
+    "height_inch": 44.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "30ftx7_5_RPL-half-v3.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Counter-70-x-40-25",
+  "description": "Auto-imported from QuickProof (Id=1126)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 70.0,
+    "height_inch": 40.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyCounter-4ft-GP_Template_overlay_.pdf",
+  "cutpath": "BigSkyCounter-4ft-GP_Template-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-39.25x74",
+  "description": "Auto-imported from QuickProof (Id=684)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 39.25,
+    "height_inch": 74.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Babystep-39-74-.pdf",
+  "cutpath": null
+}

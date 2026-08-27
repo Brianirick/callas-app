@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aluminum-Dye-Sub--18x36",
+  "description": "Auto-imported from QuickProof (Id=1151)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 18.375,
+    "height_inch": 36.375,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "DSA-18x36_Template-overlay.pdf",
+  "cutpath": "18x36.pdf"
+}

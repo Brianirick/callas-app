@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-EZ-Tube-Connect-D-Single",
+  "description": "Auto-imported from QuickProof (Id=206)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 122.5,
+    "height_inch": 89.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Config-D-overlay-single.pdf",
+  "cutpath": "d-config-single-stroke.pdf"
+}

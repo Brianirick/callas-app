@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Skybox-triangle-5x72",
+  "description": "Auto-imported from QuickProof (Id=761)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 180.0,
+    "height_inch": 75.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "5ftx72in_triangle_ALL.pdf",
+  "cutpath": "180x75-CP.pdf"
+}

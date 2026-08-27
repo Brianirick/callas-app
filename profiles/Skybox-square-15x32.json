@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Skybox-square-15x32",
+  "description": "Auto-imported from QuickProof (Id=1170)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 180.0,
+    "height_inch": 18.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "15ftx32in_Square_2-SEC-V-overlay.pdf",
+  "cutpath": null
+}

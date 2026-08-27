@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Ez-Pillar",
+  "description": "Auto-imported from QuickProof (Id=164)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 50.75,
+    "height_inch": 117.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft-EZ-Pillar_Template-overlay.pdf",
+  "cutpath": "10ft-EZ-Pillar_Template-cp-11-19-24.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-counter-backlit-back",
+  "description": "Auto-imported from QuickProof (Id=868)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 40.0,
+    "height_inch": 40.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Lumiere_Counter_Non-Backlit-back-only-overlay.pdf",
+  "cutpath": "Lumiere-counter-backlit_back_CP_V2.pdf"
+}

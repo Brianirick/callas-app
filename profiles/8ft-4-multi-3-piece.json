@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-4-multi-3-piece",
+  "description": "Auto-imported from QuickProof (Id=961)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 157.8,
+    "height_inch": 87.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft_4-sided_Stretch_Table_Throw-overlay-V2-.pdf",
+  "cutpath": "8ft_4-sided_Stretch_Table_Throw-CP--.pdf"
+}

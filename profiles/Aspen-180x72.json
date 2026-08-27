@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-180x72",
+  "description": "Auto-imported from QuickProof (Id=922)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 181.0,
+    "height_inch": 73.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "180Wx72H-OVERLAY-Radiant.pdf",
+  "cutpath": "180Wx72H-OVERLAY-Radiant-CP.pdf"
+}

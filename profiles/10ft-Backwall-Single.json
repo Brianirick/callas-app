@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Backwall-Single",
+  "description": "Auto-imported from QuickProof (Id=113)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 115.0,
+    "height_inch": 88.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft-backwall-single-REG.pdf",
+  "cutpath": "10ft_20ft_SINGLE_115x88H_CP_V2.pdf"
+}

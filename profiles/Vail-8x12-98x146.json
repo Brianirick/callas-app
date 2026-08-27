@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Vail-8x12-98x146",
+  "description": "Auto-imported from QuickProof (Id=1079)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 98.0,
+    "height_inch": 146.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "VAIL-180D-8x12_Template-overlay.pdf",
+  "cutpath": "Vail-8x12-98x146-CP.pdf"
+}

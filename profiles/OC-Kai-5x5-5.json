@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-Kai-5x5-5",
+  "description": "Auto-imported from QuickProof (Id=644)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 25.0,
+    "height_inch": 65.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC-Kai-2x5-5_single-overlay-.pdf",
+  "cutpath": "OC-Kai-2x5-5_single-cutpath-v3.pdf"
+}

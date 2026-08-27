@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-Ret-36x80-zero",
+  "description": "Auto-imported from QuickProof (Id=648)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 80.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Banner-36-80-no-bleed.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "3ft-4-sided-runner",
+  "description": "Auto-imported from QuickProof (Id=281)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 84.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "3ft4-Sided-Cutpath-re-.pdf",
+  "cutpath": "3ft4-Sided-Cutpath-.pdf"
+}

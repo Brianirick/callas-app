@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "4ft-3-throw",
+  "description": "Auto-imported from QuickProof (Id=287)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 102.0,
+    "height_inch": 62.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "4ft_3-sided-custom-trim.pdf",
+  "cutpath": "4ft_3-sided-custom-CutPath-CP-V2.pdf"
+}

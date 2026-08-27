@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Connect-G-Double",
+  "description": "Auto-imported from QuickProof (Id=303)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 123.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "20ft-G-CONFIG-double-SPOT-overlay.pdf",
+  "cutpath": null
+}

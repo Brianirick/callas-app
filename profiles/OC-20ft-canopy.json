@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-20ft-canopy",
+  "description": "Auto-imported from QuickProof (Id=643)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 176.75,
+    "height_inch": 43.85,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "One_Choice_20ft_Classic_Dye-Sub_Template-OVERLAY.pdf",
+  "cutpath": "OC_20ft_Canopy_both_half_scale-CP.pdf"
+}

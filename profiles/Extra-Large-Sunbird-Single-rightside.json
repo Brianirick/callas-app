@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Large-Sunbird-Single-rightside",
+  "description": "Auto-imported from QuickProof (Id=422)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 45.0,
+    "height_inch": 159.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "XL_SunbirdSingle-O-RIGHT-SIDE.pdf",
+  "cutpath": "XL_SunbirdSingle-CP-RIGHT-SIDE.pdf"
+}

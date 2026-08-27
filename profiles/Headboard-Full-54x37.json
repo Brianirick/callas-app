@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Headboard-Full-54x37",
+  "description": "Auto-imported from QuickProof (Id=1182)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 55.25,
+    "height_inch": 39.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZT-FULLHB-54x37_Template-overlay-v2.pdf",
+  "cutpath": "EZT-FULLHB-54x37_Template-CP-v2.pdf"
+}

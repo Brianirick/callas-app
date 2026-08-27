@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Slider-5x8-2",
+  "description": "Auto-imported from QuickProof (Id=768)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 96.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Slider_5x8-tb-only-F.pdf",
+  "cutpath": null
+}

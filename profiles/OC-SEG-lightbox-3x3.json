@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-SEG-lightbox-3x3",
+  "description": "Auto-imported from QuickProof (Id=650)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 103.63,
+    "height_inch": 44.4,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC_3x3_SEG_Pop_Up-front-back-half_half-only-overlay.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Yard Sign Small Double",
+  "description": "Auto-imported from QuickProof (Id=857)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 11.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "YardSign-SMALL-Double_overlay.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Large-Feather-Double",
+  "description": "Auto-imported from QuickProof (Id=414)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 52.4,
+    "height_inch": 190.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Feather-ExtraLarge-double-BF_OVERLAY.pdf",
+  "cutpath": "Feather-ExtraLarge-double-BF_CUTPATH.pdf"
+}

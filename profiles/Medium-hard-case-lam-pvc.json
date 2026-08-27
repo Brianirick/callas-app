@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-hard-case-lam-pvc",
+  "description": "Auto-imported from QuickProof (Id=626)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 62.375,
+    "height_inch": 32.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "medium_hard_case_lam_overlay.pdf",
+  "cutpath": "MHC-LAM-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-13ft-Mondo-Double",
+  "description": "Auto-imported from QuickProof (Id=846)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 62.0,
+    "height_inch": 121.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC_Mondo13ft_Double_Template-OVERLAY.pdf",
+  "cutpath": "OC-Mondo-13ft-Double_Groms-stroke-V2-.pdf"
+}

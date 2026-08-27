@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-5x7",
+  "description": "Auto-imported from QuickProof (Id=604)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "5x7_Lumiere_Light_Wall.pdf",
+  "cutpath": "5x7_Lumiere_Light_Wall_CP.pdf"
+}

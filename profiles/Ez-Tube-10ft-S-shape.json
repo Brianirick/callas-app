@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-10ft-S-shape",
+  "description": "Auto-imported from QuickProof (Id=499)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 132.0,
+    "height_inch": 91.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Overlay_10ft_EZTubeSShape__132x91H_yellow.pdf",
+  "cutpath": "10ft_EZTubeSShape_CP.pdf"
+}

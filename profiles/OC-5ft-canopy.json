@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-5ft-canopy",
+  "description": "Auto-imported from QuickProof (Id=850)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 59.0,
+    "height_inch": 50.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "5ft-Tent_Template_V4_overlay.pdf",
+  "cutpath": "5ft-Tent_Template_V4_CP.pdf"
+}

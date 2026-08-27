@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Connect-J-Single",
+  "description": "Auto-imported from QuickProof (Id=861)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 160.25,
+    "height_inch": 44.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZTube-Connect-20ft-J-Single_Template-overlay.pdf",
+  "cutpath": "EZTube-Connect-20ft-J-Single_CP.pdf"
+}

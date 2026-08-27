@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mondo-17ft-double",
+  "description": "Auto-imported from QuickProof (Id=635)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 94.0,
+    "height_inch": 162.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Mondo17_double_sided_OVERLAY.pdf",
+  "cutpath": "Mondo17-double-Groms-1-22-26-cp.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-Counter-doublesided",
+  "description": "Auto-imported from QuickProof (Id=1107)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 95.0,
+    "height_inch": 35.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL-Counter-DoubleSided_Template-overlay-v2.pdf",
+  "cutpath": "RPL-Counter-DoubleSided_Template-CP.pdf"
+}

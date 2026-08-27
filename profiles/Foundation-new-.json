@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Foundation-new-",
+  "description": "Auto-imported from QuickProof (Id=967)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 77.5,
+    "height_inch": 38.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Foundation_Template-overlay.pdf",
+  "cutpath": null
+}

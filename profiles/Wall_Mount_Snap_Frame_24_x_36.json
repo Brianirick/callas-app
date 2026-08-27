@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Wall Mount Snap Frame 24 x 36",
+  "description": "Auto-imported from QuickProof (Id=1054)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SNAP-24x36_Template-overlay.pdf",
+  "cutpath": "SNAP-24x36_Template-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "L-banner-curved-all-3",
+  "description": "Auto-imported from QuickProof (Id=586)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 94.5,
+    "height_inch": 79.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "3Lstand-CURVED-overlay.pdf",
+  "cutpath": "l-banner-curved-all-CP.pdf"
+}

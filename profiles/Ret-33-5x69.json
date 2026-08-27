@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-33-5x69",
+  "description": "Auto-imported from QuickProof (Id=673)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 33.5,
+    "height_inch": 69.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Banner-335-69-.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-120x72-Radiant",
+  "description": "Auto-imported from QuickProof (Id=924)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "120Wx72H-template.pdf",
+  "cutpath": "120W_x_72H-Radiant-CP.pdf"
+}

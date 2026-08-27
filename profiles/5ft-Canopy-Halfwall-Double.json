@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "5ft-Canopy-Halfwall-Double",
+  "description": "Auto-imported from QuickProof (Id=298)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 55.25,
+    "height_inch": 33.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "5ft_Casita_Halfwall_Double-overlay.pdf",
+  "cutpath": "5ft_Casita_Halfwall_Double-cutpath.pdf"
+}

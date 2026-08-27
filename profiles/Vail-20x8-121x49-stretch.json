@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Vail-20x8-121x49-stretch",
+  "description": "Auto-imported from QuickProof (Id=1095)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 121.0,
+    "height_inch": 49.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "VAIL-180D-20x8_Template-overlay.pdf",
+  "cutpath": "Vail-20x8-121x49-CP.pdf"
+}

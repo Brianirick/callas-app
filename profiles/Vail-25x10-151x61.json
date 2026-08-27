@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Vail-25x10-151x61",
+  "description": "Auto-imported from QuickProof (Id=1100)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 151.0,
+    "height_inch": 61.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "VAIL-180D-25x10_Template-overlay.pdf",
+  "cutpath": "Vail-25x10-151x61-CP.pdf"
+}

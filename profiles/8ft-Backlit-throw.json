@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-Backlit-throw",
+  "description": "Auto-imported from QuickProof (Id=326)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 100.0,
+    "height_inch": 32.3,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft_Backlit_Table_Throw-overlay.pdf",
+  "cutpath": "8ft_Backlit_Table_Throw-CP.pdf"
+}

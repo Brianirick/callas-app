@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RP-medium-curved",
+  "description": "Auto-imported from QuickProof (Id=711)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 108.75,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RP_Medium_Curved.pdf",
+  "cutpath": "RP_MedCurved_wEndcaps_CP.pdf"
+}

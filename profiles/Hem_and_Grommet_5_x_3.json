@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 5 x 3",
+  "description": "Auto-imported from QuickProof (Id=831)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Scrim-5x3_Template-overlay.pdf",
+  "cutpath": null
+}

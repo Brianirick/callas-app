@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-3-throw",
+  "description": "Auto-imported from QuickProof (Id=309)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 126.5,
+    "height_inch": 62.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "6ft_3-sided-custom-trim.pdf",
+  "cutpath": "6ft_3-sided-custom-CutPath-CP_V1_.pdf"
+}

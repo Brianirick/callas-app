@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 7 x 6",
+  "description": "Auto-imported from QuickProof (Id=1221)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 84.0,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Scrim-7x6_Template-overlay.pdf",
+  "cutpath": null
+}

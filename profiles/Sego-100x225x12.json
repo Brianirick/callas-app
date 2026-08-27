@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Sego-100x225x12",
+  "description": "Auto-imported from QuickProof (Id=747)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 39.75,
+    "height_inch": 88.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SEGO-100X225X12-overlay.pdf",
+  "cutpath": "SEGO-100X225X12-CP-BL.pdf"
+}

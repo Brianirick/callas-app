@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Straight",
+  "description": "Auto-imported from QuickProof (Id=60)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 117.5,
+    "height_inch": 45.63,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "20ft_EZ_Tube_Straight_HALF_Overlay.pdf",
+  "cutpath": null
+}

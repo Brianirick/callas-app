@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-tube-connect-straight-24x90-single",
+  "description": "Auto-imported from QuickProof (Id=533)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 25.0,
+    "height_inch": 89.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZCNCT-STR-24x90-overlay.pdf",
+  "cutpath": "EZCNCT-STR-24x90-cp.pdf"
+}

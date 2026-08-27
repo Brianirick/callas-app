@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-10ft-Halfwall-Single",
+  "description": "Auto-imported from QuickProof (Id=641)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 112.0,
+    "height_inch": 47.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "ONE-CHOICE-Halfwall_single_112x47_75H.pdf",
+  "cutpath": "ONE-CHOICE-Halfwall_SINGLE_CP_V2_.pdf"
+}

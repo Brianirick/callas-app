@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Outdoor-27.5x69",
+  "description": "Auto-imported from QuickProof (Id=656)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 27.5,
+    "height_inch": 69.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

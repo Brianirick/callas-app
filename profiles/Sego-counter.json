@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Sego-counter",
+  "description": "Auto-imported from QuickProof (Id=752)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 39.65,
+    "height_inch": 39.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SEGO-CNTR.pdf",
+  "cutpath": "SEGO-CNTR-cp-BL.pdf"
+}

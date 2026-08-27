@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Small-Falcon-Single",
+  "description": "Auto-imported from QuickProof (Id=418)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 20.0,
+    "height_inch": 68.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "XS_FalconSingle.pdf",
+  "cutpath": "XS-falcon-single-CP-O.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "13ft-Falcon-Single",
+  "description": "Auto-imported from QuickProof (Id=251)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 30.0,
+    "height_inch": 140.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "falcon-13ft-single.pdf",
+  "cutpath": "zuned-falcon-13ft-single--CP.pdf"
+}

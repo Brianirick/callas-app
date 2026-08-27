@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 15 X 5 - MESH",
+  "description": "Auto-imported from QuickProof (Id=824)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 90.0,
+    "height_inch": 28.0,
+    "tolerance_inch": 0.0
+  },
+  "finishing": null,
+  "overlay": "FENCEMESH-5x15_overlay.pdf",
+  "cutpath": null
+}

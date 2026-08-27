@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem-and-grommets-3x8",
+  "description": "Auto-imported from QuickProof (Id=541)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 96.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Hem_and_Grommet-3x8-overlay-middle.pdf",
+  "cutpath": null
+}

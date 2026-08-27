@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hard-Trolley-Case-Multi",
+  "description": "Auto-imported from QuickProof (Id=926)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 102.0,
+    "height_inch": 42.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "HTC2_MultiStretch-overlay.pdf",
+  "cutpath": "HTC2_MultiStretch-cp.pdf"
+}

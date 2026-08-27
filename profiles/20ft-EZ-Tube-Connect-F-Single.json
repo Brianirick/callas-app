@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Connect-F-Single",
+  "description": "Auto-imported from QuickProof (Id=302)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 244.5,
+    "height_inch": 89.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "20FT-F-CONFIG-single-SPOT-overlay.pdf",
+  "cutpath": null
+}

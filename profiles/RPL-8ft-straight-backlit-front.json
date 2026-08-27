@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-8ft-straight-backlit-front",
+  "description": "Auto-imported from QuickProof (Id=1194)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 113.625,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL3X3-BL-G1F_Template-overlay-.pdf",
+  "cutpath": "RPL3X3-BL-G1F_FRONT-CP.pdf"
+}

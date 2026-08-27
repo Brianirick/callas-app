@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Sherpa Luxe Throw",
+  "description": "Auto-imported from QuickProof (Id=916)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 64.0,
+    "height_inch": 54.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BLANKET-SHERPA-60_overlay.pdf",
+  "cutpath": "BLANKET-SHERPA-60_CP.pdf"
+}

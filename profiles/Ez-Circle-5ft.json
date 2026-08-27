@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Circle-5ft",
+  "description": "Auto-imported from QuickProof (Id=427)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 61.0,
+    "height_inch": 61.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "5ft_RoundEZ_Extend_template.pdf",
+  "cutpath": "5ft_RoundEZ_Extend_CP_V2_.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-15x10",
+  "description": "Auto-imported from QuickProof (Id=727)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 100.375,
+    "height_inch": 59.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL_15x10_200_752_x_118--Half-OVERLAY.pdf",
+  "cutpath": null
+}

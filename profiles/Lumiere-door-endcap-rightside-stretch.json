@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-door-endcap-rightside-stretch",
+  "description": "Auto-imported from QuickProof (Id=985)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 45.25,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Lumiere_Door_Endcaps-RIGHT-SIDE.pdf",
+  "cutpath": "Lumiere_Door_Endcaps-RIGHT-SIDE-CP.pdf"
+}

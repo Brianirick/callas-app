@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Social Distancing Seat",
+  "description": "Auto-imported from QuickProof (Id=888)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 16.0,
+    "height_inch": 28.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SocialDistancing_Seat_OVERLAY.pdf",
+  "cutpath": "SocialDistancing_Seat_CP.pdf"
+}

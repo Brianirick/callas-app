@@ -97,6 +97,13 @@ st.markdown("""
         background-color: #1e2a3e !important; color: #e2e8f0 !important;
         border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 6px !important;
     }
+    /* Text area — all possible selectors */
+    .stTextArea, .stTextArea > div, .stTextArea > div > div,
+    .stTextArea > label + div, .stTextArea > label + div > div { background-color: #1e2a3e !important; }
+    [data-baseweb="textarea"], [data-baseweb="base-input"],
+    [data-baseweb="textarea"] textarea, [data-baseweb="base-input"] textarea,
+    textarea { background-color: #1e2a3e !important; color: #e2e8f0 !important; }
+    textarea::placeholder { color: #4a6080 !important; }
     /* Selectbox — force white on every possible selector Streamlit generates */
     .stSelectbox *, .stSelectbox *::before, .stSelectbox *::after { color: #e2e8f0 !important; }
     [data-baseweb="select"] { background-color: #1e2a3e !important; }
@@ -124,9 +131,22 @@ st.markdown("""
     .stFileUploader label { color: #7f9bb5 !important; }
     [data-testid="stFileUploaderDropzone"] { background-color: #1a2540 !important; border: none !important; }
     [data-testid="stFileUploaderDropzone"] button { background-color: #3b82f6 !important; color: white !important; border: none !important; border-radius: 6px !important; }
+    [data-testid="stFileUploaderDropzone"] small,
+    [data-testid="stFileUploaderDropzone"] span,
+    [data-testid="stFileUploaderDropzoneInstructions"] small,
+    [data-testid="stFileUploaderDropzoneInstructions"] span { color: #4a6080 !important; }
 
     .streamlit-expanderHeader { background-color: #1a2540 !important; color: #e2e8f0 !important; border-radius: 6px; }
     .streamlit-expanderContent { background-color: #161f31 !important; border: 1px solid rgba(255,255,255,0.06); border-radius: 0 0 6px 6px; }
+    /* Newer Streamlit expander selectors */
+    [data-testid="stExpander"] { background-color: #1a2540 !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 6px !important; }
+    [data-testid="stExpander"] details { background-color: #1a2540 !important; }
+    [data-testid="stExpander"] summary { background-color: #1a2540 !important; color: #e2e8f0 !important; }
+    [data-testid="stExpander"] summary:hover { background-color: #1e2f4a !important; }
+    [data-testid="stExpander"] summary * { color: #e2e8f0 !important; }
+    [data-testid="stExpander"] summary svg { fill: #e2e8f0 !important; }
+    [data-testid="stExpanderDetails"] { background-color: #161f31 !important; color: #e2e8f0 !important; }
+    [data-testid="stExpanderDetails"] * { color: #e2e8f0 !important; }
 
     hr { border-color: rgba(255,255,255,0.08) !important; }
     .stCaption, footer { color: #4a6080 !important; }
@@ -284,7 +304,8 @@ def recipe_download_buttons(result: dict, stem: str):
                 with open(path, "rb") as f:
                     cols[col_idx % 2].download_button(
                         label, f.read(), file_name=fname, mime=mime,
-                        use_container_width=True
+                        use_container_width=True,
+                        key=f"dl_{key}_{col_idx}_{stem}"
                     )
                 col_idx += 1
 
@@ -379,13 +400,7 @@ if page == "run":
             desc = profile_data.get("description", "")
             cat  = profile_data.get("category", "")
             if desc:
-                st.markdown(f"""
-                <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2);
-                            border-radius:8px; padding:0.75rem; margin:0.5rem 0 0.75rem 0;
-                            font-size:0.8rem; color:#93b4d4; line-height:1.5;">
-                    {"<span style='font-size:0.65rem; color:#3b82f6; text-transform:uppercase; font-weight:700; letter-spacing:0.08em;'>" + cat + "</span><br>" if cat else ""}
-                    {desc}
-                </div>""", unsafe_allow_html=True)
+                st.markdown(f'<div class="info-box">{desc}</div>', unsafe_allow_html=True)
 
             # Step summary
             steps = profile_data.get("steps", [])
@@ -416,31 +431,34 @@ if page == "run":
                 st.divider()
 
                 is_recipe = profile_data.get("type") == "recipe"
-                # Clear stored result if user changed file or profile
+                # Auto-run whenever file or profile changes
                 run_key = f"{uploaded.name}|{profile_name}"
                 if st.session_state.get("run_key") != run_key:
                     st.session_state.run_key    = run_key
                     st.session_state.run_result = None
                     st.session_state.run_stem   = None
-
-                if st.button(f"▶  Run: {profile_name}", use_container_width=True):
-                    with st.spinner(f"Running {profile_name}…"):
+                    with st.status(f"Processing {profile_name}…", expanded=True) as _status:
                         try:
                             stem = Path(uploaded.name).stem
                             if is_recipe:
                                 result = ws.run_recipe(input_path, profile_data,
                                                        profiles_dir=str(PROFILES_DIR),
                                                        overlays_dir=str(OVERLAYS_DIR),
-                                                       cutpaths_dir=str(CUTPATHS_DIR))
+                                                       cutpaths_dir=str(CUTPATHS_DIR),
+                                                       status_cb=lambda msg: st.write(msg))
                                 st.session_state.run_result = result
                                 st.session_state.run_stem   = stem
                             else:
+                                st.write("⚙️ Running finishing profile…")
                                 output_path = tempfile.mktemp(suffix=".pdf")
                                 ws.run_profile(input_path, output_path, profile_data)
+                                st.write("✅ Done!")
                                 st.session_state.run_result = {"finished_pdf": output_path}
                                 st.session_state.run_stem   = Path(uploaded.name).stem
+                            _status.update(label=f"✅ {profile_name} complete!", state="complete", expanded=False)
                         except Exception as e:
-                            st.error(f"❌ Error: {e}")
+                            _status.update(label="❌ Error", state="error")
+                            st.error(f"Error: {e}")
 
                 # Always render results if they exist for this file+profile combo
                 if st.session_state.get("run_result"):

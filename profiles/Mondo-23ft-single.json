@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mondo-23ft-single",
+  "description": "Auto-imported from QuickProof (Id=899)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 30.0,
+    "height_inch": 110.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Mondo23_single_sided_HALF-OVERLAY.pdf",
+  "cutpath": null
+}

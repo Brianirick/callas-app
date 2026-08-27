@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RP-large-straight",
+  "description": "Auto-imported from QuickProof (Id=708)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 142.75,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RP_Large_Straight.pdf",
+  "cutpath": "RP_LrgStraight_wEndcaps_CP.pdf"
+}

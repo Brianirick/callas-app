@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "JEREMY-TEST",
+  "description": "Auto-imported from QuickProof (Id=225)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 50.0,
+    "height_inch": 50.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZ-Extend-2x11-5_double-overlay-testing.pdf",
+  "cutpath": "EZ-Extend-2x11-5_double-CP-testing.pdf"
+}

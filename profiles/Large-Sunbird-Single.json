@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Large-Sunbird-Single",
+  "description": "Auto-imported from QuickProof (Id=594)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 41.0,
+    "height_inch": 120.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "L_SunbirdSingle-O.pdf",
+  "cutpath": "L_SunbirdSingle-CP.pdf"
+}

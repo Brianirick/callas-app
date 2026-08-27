@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lstand-24x72-no-allowance",
+  "description": "Auto-imported from QuickProof (Id=599)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": "24x72-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-tube-barrier-small",
+  "description": "Auto-imported from QuickProof (Id=512)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 42.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Barrier-S-42x36H-tflow.pdf",
+  "cutpath": "ez-barrier-small-cp.pdf"
+}

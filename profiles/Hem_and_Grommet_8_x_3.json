@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 8 x 3",
+  "description": "Auto-imported from QuickProof (Id=841)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 96.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "One_Choice_Banner_Template_mesh-overlay.pdf",
+  "cutpath": null
+}

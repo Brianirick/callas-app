@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Large-Falcon-Double",
+  "description": "Auto-imported from QuickProof (Id=411)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 48.5,
+    "height_inch": 183.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "XL_FalconDouble.pdf",
+  "cutpath": "XL_FalconDouble-CP-O.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-Feather-Double",
+  "description": "Auto-imported from QuickProof (Id=622)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 150.7,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Feather-Medium-double-BF_CP-OVERLAY.pdf",
+  "cutpath": "Feather-Medium-double-BF_CP-CUTPATH.pdf"
+}

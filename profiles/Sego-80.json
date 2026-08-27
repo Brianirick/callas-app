@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Sego-80",
+  "description": "Auto-imported from QuickProof (Id=1043)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 40.0,
+    "height_inch": 79.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SEGO-80_overlay.pdf",
+  "cutpath": "SEGO-80_CP.pdf"
+}

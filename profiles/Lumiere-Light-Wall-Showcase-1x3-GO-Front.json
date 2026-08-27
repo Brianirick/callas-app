@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-Light-Wall-Showcase-1x3-GO-Front",
+  "description": "Auto-imported from QuickProof (Id=1138)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 49.75,
+    "height_inch": 61.375,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "LLW-SC1X3-GOF_Template-overlay.pdf",
+  "cutpath": "LLW-SC1X3-GOF_Template-CP.pdf"
+}

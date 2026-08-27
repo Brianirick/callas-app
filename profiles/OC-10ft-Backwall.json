@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-10ft-Backwall",
+  "description": "Auto-imported from QuickProof (Id=638)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 115.0,
+    "height_inch": 82.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_Backwall_115x82_5-ONE-CHOICE-.pdf",
+  "cutpath": "10ft_Backwall_115x82_5-ONE-CHOICE-CP-V3_.pdf"
+}

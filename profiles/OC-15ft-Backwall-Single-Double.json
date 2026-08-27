@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-15ft-Backwall-Single-Double",
+  "description": "Auto-imported from QuickProof (Id=847)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 172.5,
+    "height_inch": 82.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "ONE-CHOICE-15ft_Backwall_.pdf",
+  "cutpath": "ONE-CHOICE-15ft_Backwall_CP.pdf"
+}

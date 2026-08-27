@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Jumbo-4x7",
+  "description": "Auto-imported from QuickProof (Id=578)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 48.0,
+    "height_inch": 84.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "jmb_4x7.pdf",
+  "cutpath": null
+}

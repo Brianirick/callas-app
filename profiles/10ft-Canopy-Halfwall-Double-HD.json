@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Canopy-Halfwall-Double-HD",
+  "description": "Auto-imported from QuickProof (Id=116)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 108.5,
+    "height_inch": 41.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "HeavyDuty_halfwall_double_sided-overlay.pdf",
+  "cutpath": "HeavyDuty_halfwall_double_sided-CP.pdf"
+}

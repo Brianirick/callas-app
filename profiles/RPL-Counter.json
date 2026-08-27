@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-Counter",
+  "description": "Auto-imported from QuickProof (Id=1105)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 35.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL-Counter_Template-overlay.pdf",
+  "cutpath": "RPL-Counter_Template-CP.pdf"
+}

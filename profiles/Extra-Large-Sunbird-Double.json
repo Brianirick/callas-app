@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Large-Sunbird-Double",
+  "description": "Auto-imported from QuickProof (Id=420)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 78.0,
+    "height_inch": 159.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "XL_SunbirdDouble-overlay.pdf",
+  "cutpath": "XL_SunbirdDouble-Cp.pdf"
+}

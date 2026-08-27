@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Gopher",
+  "description": "Auto-imported from QuickProof (Id=539)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 79.0,
+    "height_inch": 40.625,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "GopherPopUp_counter_79x40.625H--.pdf",
+  "cutpath": "GopherPopUpCounter_CP-REV.pdf"
+}

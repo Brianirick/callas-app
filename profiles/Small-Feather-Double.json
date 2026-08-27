@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Small-Feather-Double",
+  "description": "Auto-imported from QuickProof (Id=775)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 49.0,
+    "height_inch": 93.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Feather-Small-double-BF_CP-OVERLAY.pdf",
+  "cutpath": "Feather-Small-double-BF_CP-CUTPATH.pdf"
+}

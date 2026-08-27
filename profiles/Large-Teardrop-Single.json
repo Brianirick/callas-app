@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Large-Teardrop-Single",
+  "description": "Auto-imported from QuickProof (Id=598)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 42.5,
+    "height_inch": 140.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "teardropbanner-L1-WCP--.pdf",
+  "cutpath": "teardropbanner-L1-FINISH.pdf"
+}

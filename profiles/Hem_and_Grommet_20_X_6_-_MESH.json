@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 20 X 6 - MESH",
+  "description": "Auto-imported from QuickProof (Id=829)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 34.0,
+    "tolerance_inch": 0.0
+  },
+  "finishing": null,
+  "overlay": "FENCEMESH-6x20_overlay.pdf",
+  "cutpath": null
+}

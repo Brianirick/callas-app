@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-22x22",
+  "description": "Auto-imported from QuickProof (Id=1024)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 23.0,
+    "height_inch": 23.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Aspen-Slim-22x22_overlay.pdf",
+  "cutpath": "Aspen-Slim-22x22_Cp.pdf"
+}

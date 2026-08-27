@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Vail-60S-9x15-55x91",
+  "description": "Auto-imported from QuickProof (Id=1038)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 55.0,
+    "height_inch": 91.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "VAIL-60S-9x15_overlay.pdf",
+  "cutpath": null
+}

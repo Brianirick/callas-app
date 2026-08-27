@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Wallbox-8x8-Single-",
+  "description": "Auto-imported from QuickProof (Id=1153)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 133.0,
+    "height_inch": 96.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "WB-8X8-G1_Template-overlay.pdf",
+  "cutpath": "WB-8X8-G1_CP.pdf"
+}

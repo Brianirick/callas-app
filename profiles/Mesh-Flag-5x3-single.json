@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mesh-Flag-5x3-single",
+  "description": "Auto-imported from QuickProof (Id=1003)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 62.125,
+    "height_inch": 36.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Flag-5x3-G1_overlay.pdf",
+  "cutpath": "Flag-5x3-G1_CP_.pdf"
+}

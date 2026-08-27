@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Wave-Popup-PVC",
+  "description": "Auto-imported from QuickProof (Id=248)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 159.842,
+    "height_inch": 88.96,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_Big_Wave_overlay_.pdf",
+  "cutpath": null
+}

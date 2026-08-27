@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Triangle-23-75x97",
+  "description": "Auto-imported from QuickProof (Id=404)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.75,
+    "height_inch": 97.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyTriangle2ft-overlay-v2.pdf",
+  "cutpath": "BigSkyTriangle2ft-CP.pdf"
+}

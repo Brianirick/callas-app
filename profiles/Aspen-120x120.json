@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-120x120",
+  "description": "Auto-imported from QuickProof (Id=236)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 121.0,
+    "height_inch": 121.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "120Wx120H-template.pdf",
+  "cutpath": "120Wx120H-CP.pdf"
+}

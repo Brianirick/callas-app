@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RR-counter",
+  "description": "Auto-imported from QuickProof (Id=745)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 62.5,
+    "height_inch": 34.12,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "ready_pop_counter_NEW_60x34.13H.pdf",
+  "cutpath": "ready_pop_counter_NEW_62.5x34.13H-CP.pdf"
+}

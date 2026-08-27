@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "9ft Umbrella",
+  "description": "Auto-imported from QuickProof (Id=876)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 105.0,
+    "height_inch": 45.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Umbrella_Template_V2_OVERLAY.pdf",
+  "cutpath": "Umbrella_overlay_CP-TFLOW.pdf"
+}

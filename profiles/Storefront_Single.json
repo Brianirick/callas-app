@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Storefront Single",
+  "description": "Auto-imported from QuickProof (Id=786)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 28.0,
+    "height_inch": 84.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Storefrontflag-single.pdf",
+  "cutpath": "Storefrontflag-single-CP--.pdf"
+}

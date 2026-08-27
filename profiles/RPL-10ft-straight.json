@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-10ft-straight",
+  "description": "Auto-imported from QuickProof (Id=721)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 143.75,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_straight_with-endcaps_overlay.pdf",
+  "cutpath": "RPL_Large_Straight_wEndcaps_CP_V1_.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Subli-Plush Velour Beach Towel",
+  "description": "Auto-imported from QuickProof (Id=911)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 62.5,
+    "height_inch": 33.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "TOWEL-VEL-60_overlay.pdf",
+  "cutpath": "TOWEL-VEL-60_CP.pdf"
+}

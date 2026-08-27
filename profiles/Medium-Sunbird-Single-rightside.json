@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-Sunbird-Single-rightside",
+  "description": "Auto-imported from QuickProof (Id=629)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 33.0,
+    "height_inch": 97.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "M_SunbirdSingle-O-RIGHT-SIDE.pdf",
+  "cutpath": "M_SunbirdSingle-CP-RIGHT-SIDE.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-60x72",
+  "description": "Auto-imported from QuickProof (Id=696)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SS-60-72-.pdf",
+  "cutpath": null
+}

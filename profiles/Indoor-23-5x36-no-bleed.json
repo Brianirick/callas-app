@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Indoor-23-5x36-no-bleed",
+  "description": "Auto-imported from QuickProof (Id=546)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": "23-5x36-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Tahoe-classic-81-75x81-75",
+  "description": "Auto-imported from QuickProof (Id=788)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 80.25,
+    "height_inch": 80.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "tahoe_a_80.25x80.25H-overlay-.pdf",
+  "cutpath": "80-25x80-25-CP.pdf"
+}

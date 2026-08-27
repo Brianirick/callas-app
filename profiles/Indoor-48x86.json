@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Indoor-48x86",
+  "description": "Auto-imported from QuickProof (Id=568)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 48.0,
+    "height_inch": 86.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

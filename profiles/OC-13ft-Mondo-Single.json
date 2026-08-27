@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-13ft-Mondo-Single",
+  "description": "Auto-imported from QuickProof (Id=845)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 30.0,
+    "height_inch": 121.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC_Mondo13ft_Single_Template-OVERLAY-.pdf",
+  "cutpath": "OC-Mondo-13ft-Single_Groms.pdf"
+}

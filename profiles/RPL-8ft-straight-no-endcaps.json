@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-8ft-straight-no-endcaps",
+  "description": "Auto-imported from QuickProof (Id=744)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 87.75,
+    "height_inch": 88.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL8ftStraight_no-endcaps.pdf",
+  "cutpath": "RPL_MedStraight_NO_Endcaps_CP_V2_.pdf"
+}

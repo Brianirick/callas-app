@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Splash Single 7ft",
+  "description": "Auto-imported from QuickProof (Id=891)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 34.0,
+    "height_inch": 88.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Splash_7ft_single_sided-overlay.pdf",
+  "cutpath": "Splash_7ft_single_sided-CP.pdf"
+}

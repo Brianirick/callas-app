@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Waterbase-Snapframe",
+  "description": "Auto-imported from QuickProof (Id=1032)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 33.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "WBSF_overlay.pdf",
+  "cutpath": "WBSF_cp.pdf"
+}

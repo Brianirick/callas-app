@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-bridge-with-endcaps-lights",
+  "description": "Auto-imported from QuickProof (Id=866)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 48.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "2x7_Lumiere_Bridge_Endcaps_Ceiling_Lights-OVERLAY.pdf",
+  "cutpath": "2x7_Lumiere_Bridge_Endcaps-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "QSEG-40x75",
+  "description": "Auto-imported from QuickProof (Id=1198)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 17.75,
+    "height_inch": 31.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "QSEG-40x75_Template-overlay.pdf",
+  "cutpath": "QSEG-40x75_Template-CP-v3.pdf"
+}

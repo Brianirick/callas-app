@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-24x76",
+  "description": "Auto-imported from QuickProof (Id=668)",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 76.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SS-24-76-.pdf",
+  "cutpath": null
+}

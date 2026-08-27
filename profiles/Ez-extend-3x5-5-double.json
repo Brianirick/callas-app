@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-extend-3x5-5-double",
+  "description": "Auto-imported from QuickProof (Id=450)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 74.5,
+    "height_inch": 65.5,
+    "tolerance_inch": 0.0
+  },
+  "finishing": null,
+  "overlay": "EZ-Extend-3x5-5_double-overlay-V2.pdf",
+  "cutpath": "EZ-Extend-3x5-5_double-CP-V3.pdf"
+}

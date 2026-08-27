@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-Lightbox-3-piece",
+  "description": "Auto-imported from QuickProof (Id=646)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 80.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC_Light_Box_Double-Sided-overlay-3PIECE.pdf",
+  "cutpath": "OC_Light_Box_Double-Sided-3PIECE-CP.pdf"
+}

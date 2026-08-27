@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-extend-4x10-5-single",
+  "description": "Auto-imported from QuickProof (Id=461)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 49.0,
+    "height_inch": 124.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZ-Extend-4x10-5_single.pdf",
+  "cutpath": "EZExtend-4x10-5-V2-.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Stand-3x7-5-double",
+  "description": "Auto-imported from QuickProof (Id=491)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 78.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZ-Stand-3x7-5_double.pdf",
+  "cutpath": "EZ-Stand-3x7-5_double-no-template.pdf"
+}

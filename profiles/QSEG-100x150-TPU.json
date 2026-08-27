@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "QSEG-100x150-TPU",
+  "description": "Auto-imported from QuickProof (Id=883)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 61.5,
+    "height_inch": 63.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "QSEG-150x225-28in-TPU_overlay.pdf",
+  "cutpath": "QSEG-150x225-28in-TPU_CP.pdf"
+}

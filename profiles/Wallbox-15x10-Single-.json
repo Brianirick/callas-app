@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Wallbox-15x10-Single-",
+  "description": "Auto-imported from QuickProof (Id=1162)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 107.75,
+    "height_inch": 60.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "WB-15X10-G1_Template-overlay.pdf",
+  "cutpath": "WB-15X10-G1_CP.pdf"
+}

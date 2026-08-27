@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "L-banner-curved-31-5x79",
+  "description": "Auto-imported from QuickProof (Id=585)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 31.5,
+    "height_inch": 79.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

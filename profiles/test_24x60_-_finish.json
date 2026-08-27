@@ -1,0 +1,21 @@
+{
+  "name": "Test 24x60 - Finish",
+  "description": "WIll add bleed to make the production file 26 x 62 and stroke outside perimeter",
+  "steps": [
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 2.0,
+        "bottom_inch": 2.0,
+        "left_inch": 0.0,
+        "right_inch": 0.0
+      }
+    },
+    {
+      "op": "add_trimbox_stroke",
+      "params": {
+        "stroke_width_pt": 0.25
+      }
+    }
+  ]
+}

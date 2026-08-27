@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mamba Small Double",
+  "description": "Auto-imported from QuickProof (Id=617)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 65.0,
+    "height_inch": 98.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Zund_mamba_small_double.pdf",
+  "cutpath": "Zund_mamba_small_double-CP-V2-.pdf"
+}

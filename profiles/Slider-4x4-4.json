@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Slider-4x4-4",
+  "description": "Auto-imported from QuickProof (Id=767)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 48.0,
+    "height_inch": 48.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Slider_4x4-all4-only-.pdf",
+  "cutpath": null
+}

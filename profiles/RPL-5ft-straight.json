@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-5ft-straight",
+  "description": "Auto-imported from QuickProof (Id=735)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 85.0,
+    "height_inch": 60.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL-2x2-Straight_overlay.pdf",
+  "cutpath": "RPL_Small_wEndcaps_CP_V2_.pdf"
+}

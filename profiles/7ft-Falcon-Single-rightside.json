@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "7ft-Falcon-Single-rightside",
+  "description": "Auto-imported from QuickProof (Id=319)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 20.0,
+    "height_inch": 68.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "falcon-7ft-single-RIGHTSIDE-.pdf",
+  "cutpath": "falcon-7ft-single-RIGHTSIDE-CP-.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-Falcon-Single-rightside",
+  "description": "Auto-imported from QuickProof (Id=621)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.25,
+    "height_inch": 104.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "M_FalconSingle-O-right-side.pdf",
+  "cutpath": "M_FalconSingle-CP-right-side.pdf"
+}

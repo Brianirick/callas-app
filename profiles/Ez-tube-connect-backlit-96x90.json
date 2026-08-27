@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-tube-connect-backlit-96x90",
+  "description": "Auto-imported from QuickProof (Id=518)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 98.0,
+    "height_inch": 88.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "EZCNCT-BL-96x90-overlay.pdf",
+  "cutpath": "EZCNCT-BL-96x90-CP.pdf"
+}

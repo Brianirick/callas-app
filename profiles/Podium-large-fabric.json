@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Podium-large-fabric",
+  "description": "Auto-imported from QuickProof (Id=660)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 74.0,
+    "height_inch": 58.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "PU-POD_Template-overlay-v2-.pdf",
+  "cutpath": "PU-POD_Template-CP.pdf"
+}

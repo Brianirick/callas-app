@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-EZ-Tube-Connect-H-Double",
+  "description": "Auto-imported from QuickProof (Id=213)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 122.5,
+    "height_inch": 180.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft-Config-H-overlay-double.pdf",
+  "cutpath": "10ft-Config-H-overlay-double-stroke.pdf"
+}

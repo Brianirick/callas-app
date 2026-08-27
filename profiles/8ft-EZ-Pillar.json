@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-EZ-Pillar",
+  "description": "Auto-imported from QuickProof (Id=328)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 50.75,
+    "height_inch": 97.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft-EZ-Pillar_Template-overlay.pdf",
+  "cutpath": "8ft-EZ-Pillar_Template-cp-11-19-24.pdf"
+}

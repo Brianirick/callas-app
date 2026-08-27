@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-classic-canopy",
+  "description": "Auto-imported from QuickProof (Id=927)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 176.75,
+    "height_inch": 43.85,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "_20ft_Classic_Canopy_both_half_scale-overlay.pdf",
+  "cutpath": "OC_20ft_Canopy_both_half_scale-CP.pdf"
+}

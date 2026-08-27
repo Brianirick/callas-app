@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mamba Large Single",
+  "description": "Auto-imported from QuickProof (Id=615)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 31.5,
+    "height_inch": 175.9,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Zund_mamba_large_single-.pdf",
+  "cutpath": "Zund_mamba_large_single-CP-V2.pdf"
+}

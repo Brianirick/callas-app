@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "8ft-3-throw",
+  "description": "Auto-imported from QuickProof (Id=322)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 150.5,
+    "height_inch": 62.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8ft_3-sided-custom-trim.pdf",
+  "cutpath": "8ft_3-sided-custom-CutPath-CP-thru-v2.pdf"
+}

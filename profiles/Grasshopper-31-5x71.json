@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Grasshopper-31-5x71",
+  "description": "Auto-imported from QuickProof (Id=1065)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 31.5,
+    "height_inch": 71.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "GRH-31-5x71_Template-overlay.pdf",
+  "cutpath": null
+}

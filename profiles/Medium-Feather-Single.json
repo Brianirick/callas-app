@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Medium-Feather-Single",
+  "description": "Auto-imported from QuickProof (Id=623)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 30.0,
+    "height_inch": 150.6,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "featherbanner-M1-WCP.pdf",
+  "cutpath": "feather banner-M1-FLAT-WCP-F.pdf"
+}

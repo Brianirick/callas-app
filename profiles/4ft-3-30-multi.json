@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "4ft-3-30-multi",
+  "description": "Auto-imported from QuickProof (Id=283)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 107.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "4ft_3sided_Stretch_Table_Throw_30in.pdf",
+  "cutpath": "4ft_3sided_Stretch_Table_Throw_30in-CP--.pdf"
+}

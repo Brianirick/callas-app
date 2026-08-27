@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "QSEG-600x225",
+  "description": "Auto-imported from QuickProof (Id=882)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 120.5,
+    "height_inch": 45.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "QSEG-600x225_overlay.pdf",
+  "cutpath": null
+}

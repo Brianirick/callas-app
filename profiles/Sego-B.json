@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Sego-B",
+  "description": "Auto-imported from QuickProof (Id=751)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 118.625,
+    "height_inch": 88.625,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "SEGO-Config-B.pdf",
+  "cutpath": "SEGO-Config-B-cp.pdf"
+}

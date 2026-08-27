@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-10ft-Canopy",
+  "description": "Auto-imported from QuickProof (Id=639)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 126.0,
+    "height_inch": 87.031,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_Canopy_V3-overlay.pdf",
+  "cutpath": null
+}

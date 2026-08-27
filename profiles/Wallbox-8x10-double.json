@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Wallbox-8x10-double",
+  "description": "Auto-imported from QuickProof (Id=952)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 66.5,
+    "height_inch": 120.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "8x10_wallbox_double-sided-overlay.pdf",
+  "cutpath": null
+}

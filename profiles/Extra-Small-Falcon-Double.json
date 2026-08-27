@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Extra-Small-Falcon-Double",
+  "description": "Auto-imported from QuickProof (Id=417)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 37.85,
+    "height_inch": 66.64,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Falcon-7ft-Extra-Small-Double-sided-V2-overlay.pdf",
+  "cutpath": "Falcon-7ft-Extra-Small-Double-sided-V2-CP-white-only.pdf"
+}

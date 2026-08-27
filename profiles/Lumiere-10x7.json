@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-10x7",
+  "description": "Auto-imported from QuickProof (Id=602)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 118.5,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10x7_Lumiere_Light_Wall.pdf",
+  "cutpath": "10x7_Lumiere_Light_Wall-CP.pdf"
+}

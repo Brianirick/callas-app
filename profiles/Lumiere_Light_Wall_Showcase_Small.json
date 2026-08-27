@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere Light Wall Showcase Small",
+  "description": "Auto-imported from QuickProof (Id=1111)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 71.5,
+    "height_inch": 41.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "LLW-SC-1X2-ISC_Template-overlay.pdf",
+  "cutpath": "LLW-SC-1X2-ISC_Template-CP.pdf"
+}

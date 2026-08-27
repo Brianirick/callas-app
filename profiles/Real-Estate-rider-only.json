@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Real-Estate-rider-only",
+  "description": "Auto-imported from QuickProof (Id=997)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 6.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RealEsateSignPost-Rider_overlay.pdf",
+  "cutpath": "RealEsateSignPost-Rider_CP.pdf"
+}

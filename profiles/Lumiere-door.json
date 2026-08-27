@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Lumiere-door",
+  "description": "Auto-imported from QuickProof (Id=609)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 31.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Lumiere_Door.pdf",
+  "cutpath": "Lumiere_Door-CP.pdf"
+}

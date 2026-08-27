@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Stand-10ft-single-double",
+  "description": "Auto-imported from QuickProof (Id=488)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 119.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10FT_EZ_Stand-overlay.pdf",
+  "cutpath": "10FT_EZ_Stand-CP-V5_B-V5-.pdf"
+}

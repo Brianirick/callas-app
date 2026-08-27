@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Small-Sunbird-Double",
+  "description": "Auto-imported from QuickProof (Id=778)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 42.0,
+    "height_inch": 82.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "S_SunbirdDouble-overlay.pdf",
+  "cutpath": "S_SunbirdDouble_FIXED_CP.pdf"
+}

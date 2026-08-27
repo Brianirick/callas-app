@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "4ft-3-fitted",
+  "description": "Auto-imported from QuickProof (Id=284)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 106.0,
+    "height_inch": 59.7,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "4ft-3sided-FittedTablethrow-v2.pdf",
+  "cutpath": "4ft-3sided-FittedTablethrow---.pdf"
+}

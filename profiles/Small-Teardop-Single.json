@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Small-Teardop-Single",
+  "description": "Auto-imported from QuickProof (Id=782)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 38.0,
+    "height_inch": 74.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "teardropbanner-S1-WCP--.pdf",
+  "cutpath": "teardropbanner-S1-FINISH.pdf"
+}

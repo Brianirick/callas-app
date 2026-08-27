@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-72x72",
+  "description": "Auto-imported from QuickProof (Id=378)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 73.0,
+    "height_inch": 73.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "72Wx72H-template.pdf",
+  "cutpath": "72Wx72H-CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "13ft-Falcon-Double",
+  "description": "Auto-imported from QuickProof (Id=249)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 56.0,
+    "height_inch": 139.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "falcon-13ft-double-BF_-OVERLAY.pdf",
+  "cutpath": "falcon-13ft-double-BF_CP--.pdf"
+}

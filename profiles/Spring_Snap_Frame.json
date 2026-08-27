@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Spring Snap Frame",
+  "description": "Auto-imported from QuickProof (Id=893)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 32.75,
+    "height_inch": 23.125,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Spring_snap_frame_overlay.pdf",
+  "cutpath": "Spring_snap_frame_overlay-CP.pdf"
+}

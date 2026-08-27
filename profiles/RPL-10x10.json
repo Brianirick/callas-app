@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RPL-10x10",
+  "description": "Auto-imported from QuickProof (Id=723)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 142.75,
+    "height_inch": 118.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "RPL_10x10-142.75x118.pdf",
+  "cutpath": "RPL_10x10_wEndcaps_CP-V2-.pdf"
+}

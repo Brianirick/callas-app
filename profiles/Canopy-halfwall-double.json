@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Canopy-halfwall-double",
+  "description": "Auto-imported from QuickProof (Id=406)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 112.0,
+    "height_inch": 41.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Halfwall_double_112x41.5H-overlay.pdf",
+  "cutpath": "Halfwall_double_CP_V2.pdf"
+}

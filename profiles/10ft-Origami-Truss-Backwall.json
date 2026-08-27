@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Origami-Truss-Backwall",
+  "description": "Auto-imported from QuickProof (Id=895)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 108.0,
+    "height_inch": 84.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ftTrussBackwall_revised_108x84.5H.pdf",
+  "cutpath": "108x84-5-CP.pdf"
+}

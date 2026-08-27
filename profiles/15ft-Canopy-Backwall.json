@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "15ft-Canopy-Backwall",
+  "description": "Auto-imported from QuickProof (Id=255)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 172.5,
+    "height_inch": 82.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "15ft-backwall-single.pdf",
+  "cutpath": "15ftCasitaCanopyBackWall_172-5x82-5-CP.pdf"
+}

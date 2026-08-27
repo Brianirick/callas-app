@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "RP-large-curved-no-endcaps",
+  "description": "Auto-imported from QuickProof (Id=707)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 109.0,
+    "height_inch": 89.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "ReadyPopLargeCurved_no-endcaps.pdf",
+  "cutpath": "RP_LrgCurved_NO_Endcaps_CP.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Aspen-48x36",
+  "description": "Auto-imported from QuickProof (Id=357)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 49.0,
+    "height_inch": 37.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "48Wx36H-template.pdf",
+  "cutpath": "48Wx36H-CP.pdf"
+}

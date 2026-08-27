@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Quilted Blanket",
+  "description": "Auto-imported from QuickProof (Id=915)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 62.5,
+    "height_inch": 54.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BLANKET-QUILT-60_overlay.pdf",
+  "cutpath": "BLANKET-QUILT-60_CP.pdf"
+}

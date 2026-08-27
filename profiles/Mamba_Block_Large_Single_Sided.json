@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mamba Block Large Single Sided",
+  "description": "Auto-imported from QuickProof (Id=870)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.75,
+    "height_inch": 104.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Mamba-Large-Single_overlay.pdf",
+  "cutpath": "Falcon-Mamba-Large-Single_Template-CP-V2.pdf"
+}

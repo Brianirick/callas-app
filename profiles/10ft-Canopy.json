@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Canopy",
+  "description": "Auto-imported from QuickProof (Id=115)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 89.4,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "CasitaCanopy10-canopy-overlay.pdf",
+  "cutpath": "CasitaCanopy10-canopy1-CP.pdf"
+}

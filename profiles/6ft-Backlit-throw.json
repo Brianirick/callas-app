@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-Backlit-throw",
+  "description": "Auto-imported from QuickProof (Id=313)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 76.5,
+    "height_inch": 31.2,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "6ft_Backlit_Table_Throw-overlay.pdf",
+  "cutpath": "6ft_Backlit_Table_Throw-CP.pdf"
+}

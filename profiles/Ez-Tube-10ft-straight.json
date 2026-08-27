@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-10ft-straight",
+  "description": "Auto-imported from QuickProof (Id=500)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 114.0,
+    "height_inch": 91.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Overlay_10ftEZTubeStraight_yellow1.pdf",
+  "cutpath": "EZTube_10ft_Straight_Single_sided_CP-V2-.pdf"
+}

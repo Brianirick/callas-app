@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-Wave-Popup-Center-LAM",
+  "description": "Auto-imported from QuickProof (Id=245)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 108.66,
+    "height_inch": 88.96,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "10ft_Big_Wave_overlay-center.pdf",
+  "cutpath": null
+}

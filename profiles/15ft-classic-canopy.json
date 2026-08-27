@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "15ft-classic-canopy",
+  "description": "Auto-imported from QuickProof (Id=928)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 149.0,
+    "height_inch": 45.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "OC_15ft_Canopy_both_half_scale_V4_overlay.pdf",
+  "cutpath": "OC_15ft_Canopy_both_half_scale-CP.pdf"
+}

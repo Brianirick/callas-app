@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Indoor-12x42-2-5-top-bottom",
+  "description": "Auto-imported from QuickProof (Id=544)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 12.0,
+    "height_inch": 42.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": null,
+  "cutpath": null
+}

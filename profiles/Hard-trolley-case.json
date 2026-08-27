@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Hard-trolley-case",
+  "description": "Auto-imported from QuickProof (Id=540)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 104.0,
+    "height_inch": 35.625,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Hard_Trolley_Case_REV__104x35.625H-7-3-17.pdf",
+  "cutpath": "Hard_Trolley_Case_REG-CP.pdf"
+}

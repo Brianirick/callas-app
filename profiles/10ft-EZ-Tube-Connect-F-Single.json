@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "10ft-EZ-Tube-Connect-F-Single",
+  "description": "Auto-imported from QuickProof (Id=210)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 114.0,
+    "height_inch": 89.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Config-F-overlay-single.pdf",
+  "cutpath": "config_f_single-stroke.pdf"
+}

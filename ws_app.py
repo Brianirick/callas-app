@@ -764,7 +764,8 @@ elif page == "build":
 
     # ── Session state ──────────────────────────────────────────────────────────
     for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
-                 ("rb_finishing","— none —"), ("rb_overlay","— none —"),
+                 ("rb_finishing","— none —"), ("rb_finishing_dict", None),
+                 ("rb_overlay","— none —"),
                  ("rb_cutpath","— none —"), ("rb_check_size", True),
                  ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
         if k not in st.session_state:
@@ -778,40 +779,51 @@ elif page == "build":
         and data.get("type") == "recipe"
     }
     load_opts = ["— start fresh —"] + list(all_recipes.keys())
-    lc1, lc2 = st.columns([4, 1])
-    with lc1:
-        load_choice = st.selectbox("Load existing recipe", load_opts,
-                                   label_visibility="collapsed")
-    with lc2:
-        if st.button("Load →", use_container_width=True) and load_choice != "— start fresh —":
-            _, rdata = all_recipes[load_choice]
-            st.session_state.rb_name       = rdata.get("name", "")
-            st.session_state.rb_desc       = rdata.get("description", "")
-            # normalise legacy keys
-            _pf_raw = rdata.get("preflight") or "60-50-50-100"
-            _pf_map = {"100k": "60-50-50-100", "75x3": "75-75-75-100"}
-            st.session_state.rb_preflight  = _pf_map.get(_pf_raw, _pf_raw)
-            # Map stored stems back to display names
-            fin_stem = rdata.get("finishing", "")
-            fin_name = next((n for n, s in finishing_profiles.items() if s == fin_stem), "— none —")
-            st.session_state.rb_finishing  = fin_name
-            st.session_state.rb_overlay    = rdata.get("overlay") or "— none —"
-            st.session_state.rb_cutpath    = rdata.get("cutpath") or "— none —"
-            _sz = rdata.get("check_size") or {}
-            st.session_state.rb_check_size = bool(_sz)
-            st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
-            st.session_state.rb_height     = float(_sz.get("height_inch", 0.0))
-            st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 0.1))
-            st.rerun()
+    load_choice = st.selectbox("Load existing recipe", load_opts,
+                               label_visibility="collapsed")
+
+    # Auto-load whenever the dropdown selection changes
+    if load_choice != "— start fresh —" and st.session_state.get("rb_last_load") != load_choice:
+        st.session_state.rb_last_load = load_choice
+        _, rdata = all_recipes[load_choice]
+        st.session_state.rb_name       = rdata.get("name", "")
+        st.session_state.rb_desc       = rdata.get("description", "")
+        # normalise legacy keys
+        _pf_raw = rdata.get("preflight") or "60-50-50-100"
+        _pf_map = {"100k": "60-50-50-100", "75x3": "75-75-75-100"}
+        st.session_state.rb_preflight  = _pf_map.get(_pf_raw, _pf_raw)
+        # Map stored finishing back to display
+        fin_raw = rdata.get("finishing", "")
+        if isinstance(fin_raw, dict):
+            # Auto-generated dict finishing (hem, thru-cut, etc.)
+            st.session_state.rb_finishing_dict = fin_raw
+            st.session_state.rb_finishing      = "— none —"
+        else:
+            st.session_state.rb_finishing_dict = None
+            fin_name = next((n for n, s in finishing_profiles.items() if s == fin_raw), "— none —")
+            st.session_state.rb_finishing      = fin_name
+        # Case-insensitive match for overlay/cutpath filenames
+        _ov_raw = rdata.get("overlay") or ""
+        _cp_raw = rdata.get("cutpath") or ""
+        ov_map  = {f.lower(): f for f in overlay_files}
+        cp_map  = {f.lower(): f for f in cutpath_files}
+        st.session_state.rb_overlay = ov_map.get(_ov_raw.lower(), "— none —")
+        st.session_state.rb_cutpath = cp_map.get(_cp_raw.lower(), "— none —")
+        _sz = rdata.get("check_size") or {}
+        st.session_state.rb_check_size = bool(_sz)
+        st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
+        st.session_state.rb_height     = float(_sz.get("height_inch", 0.0))
+        st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 0.1))
+        st.rerun()
 
     st.divider()
 
     # ── Recipe fields ──────────────────────────────────────────────────────────
     nm_col, desc_col = st.columns([1, 2])
     with nm_col:
-        st.session_state.rb_name = st.text_input("Recipe Name", value=st.session_state.rb_name)
+        st.text_input("Recipe Name", key="rb_name")
     with desc_col:
-        st.session_state.rb_desc = st.text_input("Description", value=st.session_state.rb_desc)
+        st.text_input("Description", key="rb_desc")
 
     st.markdown('<div style="margin-top:1rem;"></div>', unsafe_allow_html=True)
 
@@ -826,11 +838,9 @@ elif page == "build":
 
     with c_pf:
         _stage_header("🔍", "Preflight", "Black ink standard")
-        pf_opts = ["60-50-50-100", "75-75-75-100"]
-        pf_idx  = pf_opts.index(st.session_state.rb_preflight) if st.session_state.rb_preflight in pf_opts else 0
-        st.session_state.rb_preflight = st.selectbox(
-            "Preflight", pf_opts + ["— skip —"],
-            index=pf_idx, label_visibility="collapsed",
+        st.selectbox(
+            "Preflight", ["60-50-50-100", "75-75-75-100", "— skip —"],
+            key="rb_preflight", label_visibility="collapsed",
             help="60-50-50-100 = WS Display standard · 75-75-75-100 = rich black"
         )
         st.markdown(
@@ -841,38 +851,33 @@ elif page == "build":
 
     with c_fin:
         _stage_header("⚙️", "Finishing", "Python finishing profile")
-        fin_idx = finishing_opts.index(st.session_state.rb_finishing) \
-                  if st.session_state.rb_finishing in finishing_opts else 0
-        st.session_state.rb_finishing = st.selectbox(
-            "Finishing", finishing_opts,
-            index=fin_idx, label_visibility="collapsed"
-        )
+        st.selectbox("Finishing", finishing_opts, key="rb_finishing", label_visibility="collapsed")
         if st.session_state.rb_finishing != "— none —":
             st.markdown(
                 f'<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.3rem;">'
                 f'{finishing_profiles.get(st.session_state.rb_finishing,"")}.json</div>',
                 unsafe_allow_html=True
             )
+        elif st.session_state.get("rb_finishing_dict"):
+            _fd    = st.session_state.rb_finishing_dict
+            _ftype = _fd.get("type","")
+            _top   = _fd.get("top_inch", 0)
+            _bot   = _fd.get("bottom_inch", 0)
+            _label = f"{_ftype} · {_top}\" ↑ / {_bot}\" ↓" if _top or _bot else _ftype
+            st.markdown(
+                f'<div style="font-size:0.72rem; color:#4ade80; margin-top:0.3rem;">⚙️ {_label}</div>',
+                unsafe_allow_html=True
+            )
 
     with c_ov:
         _stage_header("🖼", "Overlay", "Template overlay PDF")
-        ov_idx = overlay_files.index(st.session_state.rb_overlay) \
-                 if st.session_state.rb_overlay in overlay_files else 0
-        st.session_state.rb_overlay = st.selectbox(
-            "Overlay", overlay_files,
-            index=ov_idx, label_visibility="collapsed"
-        )
+        st.selectbox("Overlay", overlay_files, key="rb_overlay", label_visibility="collapsed")
         if not OVERLAYS_DIR.exists():
             st.caption("⚠ Overlay folder missing")
 
     with c_cp:
         _stage_header("✂️", "Cutpath", "Die cut path PDF")
-        cp_idx = cutpath_files.index(st.session_state.rb_cutpath) \
-                 if st.session_state.rb_cutpath in cutpath_files else 0
-        st.session_state.rb_cutpath = st.selectbox(
-            "Cutpath", cutpath_files,
-            index=cp_idx, label_visibility="collapsed"
-        )
+        st.selectbox("Cutpath", cutpath_files, key="rb_cutpath", label_visibility="collapsed")
         if not CUTPATHS_DIR.exists():
             st.caption("⚠ Cutpath folder missing")
 
@@ -880,25 +885,16 @@ elif page == "build":
     st.markdown('<div style="margin-top:0.75rem;"></div>', unsafe_allow_html=True)
     _chk_header, _chk_rest = st.columns([1, 3])
     with _chk_header:
-        st.session_state.rb_check_size = st.checkbox(
-            "📐  Check page size",
-            value=st.session_state.rb_check_size
-        )
+        st.checkbox("📐  Check page size", key="rb_check_size")
     if st.session_state.rb_check_size:
         with _chk_rest:
             _sz1, _sz2, _sz3 = st.columns(3)
             with _sz1:
-                st.session_state.rb_width = st.number_input(
-                    "Width (in)", value=st.session_state.rb_width,
-                    min_value=0.0, step=0.25, format="%.2f")
+                st.number_input("Width (in)", min_value=0.0, step=0.25, format="%.2f", key="rb_width")
             with _sz2:
-                st.session_state.rb_height = st.number_input(
-                    "Height (in)", value=st.session_state.rb_height,
-                    min_value=0.0, step=0.25, format="%.2f")
+                st.number_input("Height (in)", min_value=0.0, step=0.25, format="%.2f", key="rb_height")
             with _sz3:
-                st.session_state.rb_tol = st.number_input(
-                    "Tolerance (in)", value=st.session_state.rb_tol,
-                    min_value=0.0, step=0.05, format="%.2f")
+                st.number_input("Tolerance (in)", min_value=0.0, step=0.05, format="%.2f", key="rb_tol")
 
     # ── Upload new overlay / cutpath ───────────────────────────────────────────
     with st.expander("📤  Upload New Overlay / Cutpath"):
@@ -966,7 +962,9 @@ elif page == "build":
                         "height_inch":    st.session_state.rb_height,
                         "tolerance_inch": st.session_state.rb_tol,
                     } if st.session_state.rb_check_size and st.session_state.rb_width and st.session_state.rb_height else None,
-                    "finishing":   finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
+                    "finishing":   (finishing_profiles.get(st.session_state.rb_finishing)
+                                   if st.session_state.rb_finishing != "— none —"
+                                   else st.session_state.get("rb_finishing_dict")),
                     "overlay":     st.session_state.rb_overlay   if st.session_state.rb_overlay   != "— none —" else None,
                     "cutpath":     st.session_state.rb_cutpath   if st.session_state.rb_cutpath   != "— none —" else None,
                 }
@@ -1002,7 +1000,9 @@ elif page == "build":
                     "type":      "recipe",
                     "name":      st.session_state.rb_name,
                     "preflight": st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
-                    "finishing": finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
+                    "finishing": (finishing_profiles.get(st.session_state.rb_finishing)
+                                  if st.session_state.rb_finishing != "— none —"
+                                  else st.session_state.get("rb_finishing_dict")),
                     "overlay":   st.session_state.rb_overlay  if st.session_state.rb_overlay  != "— none —" else None,
                     "cutpath":   st.session_state.rb_cutpath  if st.session_state.rb_cutpath  != "— none —" else None,
                 }

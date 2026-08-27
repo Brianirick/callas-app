@@ -44,7 +44,7 @@ def _github_upload(repo_path: str, file_bytes: bytes, commit_msg: str):
         st.warning(f"GitHub sync skipped: {e}")
 
 # ── Page config ────────────────────────────────────────────────────────────────
-st.set_page_config(page_title="CallasFlow", page_icon="📄", layout="wide")
+st.set_page_config(page_title="PreFlow", page_icon="🔵", layout="wide")
 
 # ── Styles ─────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -213,13 +213,13 @@ st.markdown("""
 <div style="display:flex; align-items:center; gap:1.2rem; padding:0.5rem 0 1.2rem 0;
             border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem;">
     <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6); width:64px; height:64px; border-radius:12px;
-                display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900;
+                display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:900;
                 color:white; letter-spacing:-0.03em; flex-shrink:0;
-                box-shadow:0 0 28px rgba(59,130,246,0.5), 0 4px 12px rgba(0,0,0,0.4);">CF</div>
+                box-shadow:0 0 28px rgba(59,130,246,0.5), 0 4px 12px rgba(0,0,0,0.4);">PF</div>
     <div>
-        <div style="font-size:1.6rem; font-weight:800; color:#fff; letter-spacing:-0.02em; line-height:1.1;">CallasFlow</div>
+        <div style="font-size:1.6rem; font-weight:900; color:#fff; letter-spacing:-0.01em; line-height:1.1;">PreFlow</div>
         <div style="font-size:0.7rem; color:#3b82f6; letter-spacing:0.12em; text-transform:uppercase; font-weight:600; margin-top:2px;">
-            WS Display &nbsp;·&nbsp; PDF Finishing &nbsp;·&nbsp; Profile Builder
+            Prepress &nbsp;·&nbsp; Workflow &nbsp;·&nbsp; System
         </div>
     </div>
 </div>

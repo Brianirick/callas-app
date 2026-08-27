@@ -65,6 +65,12 @@ st.markdown("""
         background-color: rgba(59,130,246,0.35) !important; color: white !important;
         box-shadow: 0 0 12px rgba(59,130,246,0.3) !important;
     }
+    /* Disabled buttons — dark background so arrows/text stay visible */
+    .stButton>button:disabled, .stButton>button[disabled] {
+        background-color: #1a2535 !important; color: #3d5068 !important;
+        border: 1px solid rgba(59,130,246,0.1) !important;
+        box-shadow: none !important; opacity: 1 !important;
+    }
 
     .stSelectbox>div>div, .stNumberInput>div>div>input, .stTextInput>div>div>input,
     .stTextArea textarea {
@@ -587,7 +593,7 @@ elif page == "build":
                     _badge_t  = "CHECK"   if _is_chk else "FIXUP"
                     _pstr     = (", ".join(f"{k}={v}" for k, v in _step["params"].items())
                                  if _step.get("params") else "")
-                    _rc1, _rc2 = st.columns([6, 1])
+                    _rc1, _rup, _rdn, _rc2 = st.columns([6, 0.6, 0.6, 0.7])
                     with _rc1:
                         st.markdown(
                             f'<div style="background:#1e2a3a;border-radius:6px;padding:7px 11px;'
@@ -601,8 +607,22 @@ elif page == "build":
                             + "</div>",
                             unsafe_allow_html=True
                         )
+                    with _rup:
+                        if st.button("↑", key=f"fp_up_{_si}", help="Move up",
+                                     type="primary", disabled=_si == 0):
+                            _s = st.session_state.fp_steps
+                            _s[_si - 1], _s[_si] = _s[_si], _s[_si - 1]
+                            st.rerun()
+                    with _rdn:
+                        if st.button("↓", key=f"fp_dn_{_si}", help="Move down",
+                                     type="primary",
+                                     disabled=_si == len(st.session_state.fp_steps) - 1):
+                            _s = st.session_state.fp_steps
+                            _s[_si + 1], _s[_si] = _s[_si], _s[_si + 1]
+                            st.rerun()
                     with _rc2:
-                        if st.button("✕", key=f"fp_rm_{_si}", help="Remove"):
+                        if st.button("✕", key=f"fp_rm_{_si}", help="Remove",
+                                     type="primary"):
                             st.session_state.fp_steps.pop(_si)
                             st.rerun()
 
@@ -696,7 +716,7 @@ elif page == "build":
     finishing_opts = ["— none —"] + list(finishing_profiles.keys())
 
     # ── Session state ──────────────────────────────────────────────────────────
-    for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","100k"),
+    for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                  ("rb_finishing","— none —"), ("rb_overlay","— none —"),
                  ("rb_cutpath","— none —")]:
         if k not in st.session_state:
@@ -719,7 +739,10 @@ elif page == "build":
             _, rdata = all_recipes[load_choice]
             st.session_state.rb_name       = rdata.get("name", "")
             st.session_state.rb_desc       = rdata.get("description", "")
-            st.session_state.rb_preflight  = rdata.get("preflight", "100k") or "100k"
+            # normalise legacy keys
+            _pf_raw = rdata.get("preflight") or "60-50-50-100"
+            _pf_map = {"100k": "60-50-50-100", "75x3": "75-75-75-100"}
+            st.session_state.rb_preflight  = _pf_map.get(_pf_raw, _pf_raw)
             # Map stored stems back to display names
             fin_stem = rdata.get("finishing", "")
             fin_name = next((n for n, s in finishing_profiles.items() if s == fin_stem), "— none —")
@@ -750,16 +773,16 @@ elif page == "build":
 
     with c_pf:
         _stage_header("🔍", "Preflight", "Black ink standard")
-        pf_opts = ["100k", "75x3"]
+        pf_opts = ["60-50-50-100", "75-75-75-100"]
         pf_idx  = pf_opts.index(st.session_state.rb_preflight) if st.session_state.rb_preflight in pf_opts else 0
         st.session_state.rb_preflight = st.selectbox(
             "Preflight", pf_opts + ["— skip —"],
             index=pf_idx, label_visibility="collapsed",
-            help="100k = (0,0,0,100) · 75x3 = (75,75,75,100)"
+            help="60-50-50-100 = WS Display standard · 75-75-75-100 = rich black"
         )
         st.markdown(
             '<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.3rem;">'
-            '100k = pure black<br>75x3 = rich black</div>',
+            '60-50-50-100 = WS standard<br>75-75-75-100 = rich black</div>',
             unsafe_allow_html=True
         )
 
@@ -838,7 +861,7 @@ elif page == "build":
                 st.success(f"Saved → {saved.name}")
     with cl_col:
         if st.button("🗑  Clear", use_container_width=True):
-            for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","100k"),
+            for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                          ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —")]:
                 st.session_state[k] = v
             st.rerun()
@@ -894,8 +917,8 @@ elif page == "preflight":
 
     with pf_col1:
         st.markdown("#### Options")
-        black_target = st.selectbox("Black ink target", ["100k", "75x3"],
-                                    help="100k = pure black (0,0,0,100). 75x3 = rich black (75,75,75,100).")
+        black_target = st.selectbox("Black ink target", ["60-50-50-100", "75-75-75-100"],
+                                    help="60-50-50-100 = WS Display standard. 75-75-75-100 = rich black.")
         st.markdown('<div style="font-size:0.8rem; color:#7f9bb5; margin-top:0.5rem;">Checks for spot colors, page geometry issues, and validates against your black standard.</div>', unsafe_allow_html=True)
 
     with pf_col2:

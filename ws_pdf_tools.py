@@ -508,12 +508,18 @@ def remove_private_data(input_path: str, output_path: str):
 
 def enlarge_page(input_path: str, output_path: str,
                  top_inch: float = 0.0, bottom_inch: float = 0.0,
-                 left_inch: float = 0.0, right_inch: float = 0.0):
+                 left_inch: float = 0.0, right_inch: float = 0.0,
+                 update_trimbox: bool = True):
     """
     Replicates: EnlargePage
     Expands the MediaBox by the given amounts on each side.
     Content remains at its original position; blank space is added outside.
-    All other page boxes (TrimBox, BleedBox, etc.) are left untouched.
+
+    update_trimbox=True (default): TrimBox and BleedBox are updated to match
+      the new MediaBox — use this when adding canvas that is part of the
+      finished print size (pole pockets, top/bottom canvas, etc.).
+    update_trimbox=False: TrimBox stays at its original position — use when
+      adding bleed outside an existing TrimBox.
     """
     top_pt    = top_inch    * 72.0
     bottom_pt = bottom_inch * 72.0
@@ -528,7 +534,12 @@ def enlarge_page(input_path: str, output_path: str,
         y0 = float(mb.bottom) - bottom_pt  # expand downward in PDF space
         x1 = float(mb.right)  + right_pt
         y1 = float(mb.top)    + top_pt     # expand upward in PDF space
-        page.mediabox = RectangleObject([x0, y0, x1, y1])
+        new_rect = RectangleObject([x0, y0, x1, y1])
+        page.mediabox = new_rect
+        if update_trimbox:
+            page.cropbox  = new_rect   # CropBox controls display in Acrobat
+            page.trimbox  = new_rect
+            page.bleedbox = new_rect
         writer.add_page(page)
     with open(output_path, "wb") as f:
         writer.write(f)
@@ -845,12 +856,13 @@ AVAILABLE_OPS = {
         "label": "Enlarge Page",
         "category": "Page Geometry",
         "ffeat": "EnlargePage",
-        "description": "Expands the MediaBox by adding blank space on any side. Content stays in place.",
+        "description": "Expands the MediaBox by adding blank space on any side. Enable 'Update TrimBox' when adding canvas (pole pockets, etc.); disable when adding bleed outside an existing TrimBox.",
         "params": [
-            {"name": "top_inch",    "type": "float", "label": "Top (in)",    "default": 0.0, "step": 0.25},
-            {"name": "bottom_inch", "type": "float", "label": "Bottom (in)", "default": 0.0, "step": 0.25},
-            {"name": "left_inch",   "type": "float", "label": "Left (in)",   "default": 0.0, "step": 0.25},
-            {"name": "right_inch",  "type": "float", "label": "Right (in)",  "default": 0.0, "step": 0.25},
+            {"name": "top_inch",       "type": "float", "label": "Top (in)",           "default": 0.0,  "step": 0.25},
+            {"name": "bottom_inch",    "type": "float", "label": "Bottom (in)",         "default": 0.0,  "step": 0.25},
+            {"name": "left_inch",      "type": "float", "label": "Left (in)",           "default": 0.0,  "step": 0.25},
+            {"name": "right_inch",     "type": "float", "label": "Right (in)",          "default": 0.0,  "step": 0.25},
+            {"name": "update_trimbox", "type": "bool",  "label": "Update TrimBox/BleedBox to new size", "default": True},
         ],
     },
     "correct_page_geometry": {
@@ -928,6 +940,29 @@ AVAILABLE_OPS = {
         "params": [
             {"name": "stroke_width_pt", "type": "float", "label": "Stroke Width (pt)", "default": 0.25, "step": 0.25},
         ],
+    },
+    "adjust_black_vectors": {
+        "label": "Adjust Black Vectors",
+        "category": "Colors",
+        "description": "Converts black/near-black vector colors to a WS Display standard target CMYK value.",
+        "params": [
+            {"name": "target", "type": "select", "label": "Target Black",
+             "options": ["60-50-50-100", "75-75-75-100"], "default": "60-50-50-100"},
+        ],
+    },
+    "remap_white_spot_colors": {
+        "label": "Remap White Spot → CMYK 0,0,0,0",
+        "category": "Colors",
+        "ffeat": "MapSpotColors",
+        "description": "Finds Separation spot colors whose name contains 'white' (case-insensitive) and remaps their tint function to output CMYK (0,0,0,0).",
+        "params": [],
+    },
+    "convert_lab_to_cmyk": {
+        "label": "Convert Lab to CMYK",
+        "category": "Colors",
+        "ffeat": "CCSettings",
+        "description": "Converts CIE Lab colorspace objects (vectors, text, images) to DeviceCMYK. Uses approximate D50 Lab→XYZ→sRGB→CMYK conversion.",
+        "params": [],
     },
 }
 
@@ -1101,6 +1136,9 @@ def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
         "add_trimbox_stroke":       add_trimbox_stroke,
         "set_bleedbox_from_cropbox":set_bleedbox_from_cropbox,
         "add_thrucut_spot":         add_thrucut_spot,
+        "adjust_black_vectors":     adjust_black_vectors,
+        "remap_white_spot_colors":  remap_white_spot_colors,
+        "convert_lab_to_cmyk":      convert_lab_to_cmyk,
     }
 
     CHECK_MAP = {
@@ -1254,6 +1292,503 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150):
 
 
 # ---------------------------------------------------------------------------
+# BLACK VECTOR COLOR ADJUSTMENT
+# ---------------------------------------------------------------------------
+
+# Source colors in PDF 0-1 scale from WS Display Callas mapping tables.
+# Both targets (60-50-50-100 and 75-75-75-100) share the same source list.
+_BLACK_SOURCES_CMYK = [
+    (0.75,   0.75,   0.75,   1.00),    # 75 75 75 100
+    (1.00,   1.00,   1.00,   1.00),    # 100 100 100 100
+    (0.60,   0.40,   0.40,   1.00),    # 60 40 40 100
+    (0.75,   0.67,   0.67,   0.99),    # 75 67 67 99
+    (0.6982, 0.6745, 0.6386, 0.7394),  # 69.82 67.45 63.86 73.94
+    (0.75,   0.679,  0.671,  0.901),   # 75 67.9 67.1 90.1
+    (0.30,   0.30,   0.30,   1.00),    # 30 30 30 100
+    (0.7461, 0.7458, 0.6680, 0.8984),  # 74.61 74.58 66.8 89.84
+    (0.40,   0.30,   0.20,   1.00),    # 40 30 20 100
+    (0.40,   0.30,   0.30,   1.00),    # 40 30 30 100
+    (0.50,   0.50,   0.50,   1.00),    # 50 50 50 100
+    (0.7342, 0.68,   0.657,  0.8575),  # 73.42 68 65.7 85.75
+    (0.75,   0.68,   0.67,   0.90),    # 75 68 67 90
+    (0.40,   0.40,   0.40,   1.00),    # 40 40 40 100
+    (0.60,   0.60,   0.60,   1.00),    # 60 60 60 100
+    (0.80,   0.80,   0.80,   1.00),    # 80 80 80 100
+    (0.50,   0.40,   0.40,   1.00),    # 50 40 40 100
+    (0.749,  0.678,  0.671,  0.902),   # 74.9 67.8 67.1 90.2
+    # Note: 0,0,0,100 (pure K) is NOT converted — Callas scopes that entry to "None"
+]
+_BLACK_SOURCES_RGB = [(0.0, 0.0, 0.0)]  # RGB 0 0 0
+_BLACK_MATCH_TOL   = 0.005              # ±0.5% per channel
+
+_PREFLIGHT_TARGETS = {
+    "60-50-50-100": (0.60, 0.50, 0.50, 1.00),
+    "75-75-75-100": (0.75, 0.75, 0.75, 1.00),
+    "100k":         (0.60, 0.50, 0.50, 1.00),  # legacy alias
+    "75x3":         (0.75, 0.75, 0.75, 1.00),  # legacy alias
+}
+
+
+def _bv_cmyk_matches(c, m, y, k):
+    t = _BLACK_MATCH_TOL
+    return any(abs(c-sc)<=t and abs(m-sm)<=t and abs(y-sy)<=t and abs(k-sk)<=t
+               for sc, sm, sy, sk in _BLACK_SOURCES_CMYK)
+
+
+def _bv_rgb_matches(r, g, b):
+    t = _BLACK_MATCH_TOL
+    return any(abs(r-sr)<=t and abs(g-sg)<=t and abs(b-sb)<=t
+               for sr, sg, sb in _BLACK_SOURCES_RGB)
+
+
+def _bv_fmt(v: float) -> bytes:
+    s = f"{v:.5f}".rstrip("0").rstrip(".")
+    return (s or "0").encode()
+
+
+import re as _re
+_BV_NUM = _re.compile(rb'[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?')
+_BV_WS  = _re.compile(rb'[ \t\r\n]+')
+_BV_OP  = _re.compile(rb"[A-Za-z'\"*]+")
+
+
+def _bv_tokenize(data: bytes) -> list:
+    """Tokenize a PDF content stream → [(type, raw_bytes), ...]."""
+    tokens, i, n = [], 0, len(data)
+    while i < n:
+        ch = data[i:i+1]
+        m = _BV_WS.match(data, i)
+        if m:
+            tokens.append(('ws', m.group())); i = m.end(); continue
+        if ch == b'%':                         # comment → treat as ws
+            j = i
+            while j < n and data[j:j+1] not in (b'\r', b'\n'): j += 1
+            tokens.append(('ws', data[i:j])); i = j; continue
+        if ch == b'(':                          # string literal
+            depth, j = 1, i + 1
+            while j < n and depth > 0:
+                c2 = data[j:j+1]
+                if c2 == b'\\': j += 2
+                elif c2 == b'(': depth += 1; j += 1
+                elif c2 == b')': depth -= 1; j += 1
+                else: j += 1
+            tokens.append(('str', data[i:j])); i = j; continue
+        if ch == b'<' and data[i+1:i+2] != b'<':  # hex string
+            j = data.index(b'>', i) + 1
+            tokens.append(('str', data[i:j])); i = j; continue
+        if data[i:i+2] in (b'<<', b'>>'):
+            tokens.append(('other', data[i:i+2])); i += 2; continue
+        if ch in b'[]{}/':
+            if ch == b'/':
+                j = i + 1
+                while j < n and data[j:j+1] not in b' \t\r\n/()\<>[]{}%': j += 1
+                tokens.append(('name', data[i:j])); i = j; continue
+            tokens.append(('other', ch)); i += 1; continue
+        if ch in b'0123456789.-+':
+            m = _BV_NUM.match(data, i)
+            if m:
+                tokens.append(('num', m.group())); i = m.end(); continue
+        m = _BV_OP.match(data, i)
+        if m:
+            tokens.append(('op', m.group())); i = m.end(); continue
+        tokens.append(('other', ch)); i += 1
+    return tokens
+
+
+def _bv_recolor(data: bytes, tgt: tuple) -> bytes:
+    """Replace matching black color operators with target CMYK in a content stream."""
+    tc, tm, ty, tk = [_bv_fmt(v) for v in tgt]
+    tokens = _bv_tokenize(data)
+    out = []
+    i = 0
+    while i < len(tokens):
+        tp, tv = tokens[i]
+        if tp == 'op' and tv in (b'k', b'K', b'rg', b'RG', b'g', b'G'):
+            need = 4 if tv in (b'k', b'K') else 3 if tv in (b'rg', b'RG') else 1
+            # collect last `need` num positions in out[]
+            num_pos, j = [], len(out) - 1
+            while j >= 0 and len(num_pos) < need:
+                if out[j][0] == 'num':   num_pos.insert(0, j)
+                elif out[j][0] != 'ws':  break
+                j -= 1
+            if len(num_pos) == need:
+                vals = [float(out[p][1]) for p in num_pos]
+                hit = (
+                    _bv_cmyk_matches(*vals) if tv in (b'k', b'K') else
+                    _bv_rgb_matches(*vals)  if tv in (b'rg', b'RG') else
+                    vals[0] <= 0.05
+                )
+                if hit:
+                    cmyk4 = [tc, tm, ty, tk]
+                    if tv in (b'k', b'K'):
+                        for s, p in enumerate(num_pos): out[p] = ('num', cmyk4[s])
+                        out.append(('op', tv))
+                    elif tv in (b'rg', b'RG'):
+                        for s, p in enumerate(num_pos): out[p] = ('num', cmyk4[s])
+                        out += [('ws', b' '), ('num', tk),
+                                ('ws', b' '), ('op', b'k' if tv == b'rg' else b'K')]
+                    elif tv in (b'g', b'G'):
+                        out[num_pos[0]] = ('num', tc)
+                        out += [('ws', b' '), ('num', tm),
+                                ('ws', b' '), ('num', ty),
+                                ('ws', b' '), ('num', tk),
+                                ('ws', b' '), ('op', b'k' if tv == b'g' else b'K')]
+                    i += 1; continue
+        out.append((tp, tv))
+        i += 1
+    return b''.join(v for _, v in out)
+
+
+def adjust_black_vectors(input_path: str, output_path: str,
+                         target: str = "60-50-50-100") -> None:
+    """
+    Convert vector black colors to a WS Display standard target.
+
+    target: "60-50-50-100"  →  CMYK 60/50/50/100  (WS Display standard)
+            "75-75-75-100"  →  CMYK 75/75/75/100
+            "100k" / "75x3" accepted as legacy aliases.
+
+    Only the main page content stream is modified (k, K, rg, RG, g, G operators).
+    Raster images are skipped. Form XObjects inside the page are also processed.
+    """
+    tgt = _PREFLIGHT_TARGETS.get(target, _PREFLIGHT_TARGETS["60-50-50-100"])
+    doc = fitz.open(input_path)
+    done = set()
+
+    for page in doc:
+        page.clean_contents()
+        ci = doc.xref_get_key(page.xref, "Contents")
+        if ci[0] == "xref":
+            c_xref = int(ci[1].split()[0])
+            if c_xref not in done:
+                raw = doc.xref_stream(c_xref)
+                if raw:
+                    new = _bv_recolor(raw, tgt)
+                    if new != raw:
+                        doc.update_stream(c_xref, new)
+                done.add(c_xref)
+        # Also process Form XObjects in page resources
+        try:
+            for item in page.get_xobjects():
+                xref = item[0]
+                if xref in done: continue
+                if doc.xref_get_key(xref, "Subtype")[1] == "/Form":
+                    raw = doc.xref_stream(xref)
+                    if raw:
+                        new = _bv_recolor(raw, tgt)
+                        if new != raw:
+                            doc.update_stream(xref, new)
+                done.add(xref)
+        except Exception:
+            pass
+
+    save_pdf(doc, output_path)
+    doc.close()
+    print(f"  adjust_black_vectors → {target}: {output_path}")
+
+
+# ---------------------------------------------------------------------------
+# SPOT COLOR REMAP  (ffeat: MapSpotColors)
+# ---------------------------------------------------------------------------
+
+import re as _re
+_WHITE_SPOT_PAT = _re.compile(r'(?i).*white.*')
+
+
+def remap_white_spot_colors(input_path: str, output_path: str) -> None:
+    """
+    Replicates: MapSpotColors "Remap spot color using the word 'white' to CMYK white"
+    Finds Separation colorspaces whose name matches (?i).*white.* on any page
+    and replaces their tint function with one that always outputs CMYK (0, 0, 0, 0).
+    Applies to vector and text objects.
+    """
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    writer.clone_reader_document_root(reader)
+
+    def _zero_tint_fn():
+        """Type 2 exponential function: tint→[0,0,0,0] for DeviceCMYK."""
+        return DictionaryObject({
+            NameObject("/FunctionType"): NumberObject(2),
+            NameObject("/Domain"):  ArrayObject([FloatObject(0.0), FloatObject(1.0)]),
+            NameObject("/C0"):      ArrayObject([FloatObject(0.0)] * 4),
+            NameObject("/C1"):      ArrayObject([FloatObject(0.0)] * 4),
+            NameObject("/N"):       NumberObject(1),
+        })
+
+    remapped = set()
+
+    for page in writer.pages:
+        res = page.get("/Resources")
+        if not res or "/ColorSpace" not in res:
+            continue
+        cs_dict = res["/ColorSpace"]
+        for key in list(cs_dict.keys()):
+            cs_obj = cs_dict[key]
+            # Resolve indirect refs
+            if hasattr(cs_obj, "get_object"):
+                cs_obj = cs_obj.get_object()
+            if not isinstance(cs_obj, ArrayObject) or len(cs_obj) < 2:
+                continue
+            if str(cs_obj[0]) != "/Separation":
+                continue
+            raw_name = cs_obj[1]
+            spot_name = str(raw_name).lstrip("/")
+            if not _WHITE_SPOT_PAT.match(spot_name):
+                continue
+            new_cs = ArrayObject([
+                NameObject("/Separation"),
+                raw_name,
+                NameObject("/DeviceCMYK"),
+                _zero_tint_fn(),
+            ])
+            cs_dict[NameObject(key)] = new_cs
+            remapped.add(spot_name)
+
+    with open(output_path, "wb") as f:
+        writer.write(f)
+
+    if remapped:
+        print(f"  remap_white_spot_colors: remapped {remapped} → CMYK 0,0,0,0")
+    else:
+        print(f"  remap_white_spot_colors: no white spot colors found")
+    print(f"  → {output_path}")
+
+
+# ---------------------------------------------------------------------------
+# LAB → CMYK CONVERSION  (ffeat: CCDestination / CCSettings)
+# ---------------------------------------------------------------------------
+
+def _lab_to_cmyk_approx(L: float, a: float, b: float):
+    """
+    CIE L*a*b* (D50 illuminant) → CMYK.
+    Approximation via XYZ → linear sRGB → CMYK (no ICC profile required).
+    L in [0,100], a/b in [-128,127].
+    Returns (c, m, y, k) each in [0.0, 1.0].
+    """
+    # Lab → XYZ  (D50 whitepoint: Xn=0.9642, Yn=1.0000, Zn=0.8251)
+    fy = (L + 16.0) / 116.0
+    fx = a / 500.0 + fy
+    fz = fy - b / 200.0
+
+    def _f_inv(t):
+        return t ** 3 if t > 0.20690 else (t - 16.0 / 116.0) / 7.787
+
+    X = 0.9642 * _f_inv(fx)
+    Y = 1.0000 * _f_inv(fy)
+    Z = 0.8251 * _f_inv(fz)
+
+    # XYZ (D50) → linear sRGB  (D50-adapted sRGB matrix)
+    r_lin =  3.1338561 * X - 1.6168667 * Y - 0.4906146 * Z
+    g_lin = -0.9787684 * X + 1.9161415 * Y + 0.0334540 * Z
+    b_lin =  0.0719453 * X - 0.2289914 * Y + 1.4052427 * Z
+
+    def _gamma(v):
+        v = max(0.0, min(1.0, v))
+        return 12.92 * v if v <= 0.0031308 else 1.055 * (v ** (1.0 / 2.4)) - 0.055
+
+    r, g, b_ = _gamma(r_lin), _gamma(g_lin), _gamma(b_lin)
+
+    # sRGB → CMYK
+    k = 1.0 - max(r, g, b_)
+    if k >= 1.0:
+        return 0.0, 0.0, 0.0, 1.0
+    inv = 1.0 / (1.0 - k)
+    c = max(0.0, min(1.0, (1.0 - r  - k) * inv))
+    m = max(0.0, min(1.0, (1.0 - g  - k) * inv))
+    y = max(0.0, min(1.0, (1.0 - b_ - k) * inv))
+    k = max(0.0, min(1.0, k))
+    return c, m, y, k
+
+
+def _lab_recolor(data: bytes, fill_labs: set, stroke_labs: set) -> bytes:
+    """
+    Rewrite a PDF content stream, converting Lab fill/stroke colors to CMYK.
+
+    fill_labs  / stroke_labs : sets of b'/Name' bytes for Lab colorspaces active
+                               on the current fill / stroke channel.
+
+    Handles:
+      /LabName cs  → /DeviceCMYK cs   (fill colorspace switch)
+      /LabName CS  → /DeviceCMYK CS   (stroke colorspace switch)
+      L a b scn/sc → C M Y K scn/sc  (fill color, 3→4 values)
+      L a b SCN/SC → C M Y K SCN/SC  (stroke color, 3→4 values)
+    """
+    tokens = _bv_tokenize(data)
+    out = list(tokens)
+
+    fill_is_lab   = False
+    stroke_is_lab = False
+
+    i = 0
+    while i < len(out):
+        tok_type, tok_raw = out[i]
+
+        if tok_type != 'op':
+            i += 1
+            continue
+
+        op = tok_raw.strip()
+
+        # ── Colorspace operators ──────────────────────────────────────────────
+        if op in (b'cs', b'CS'):
+            # Find the preceding name token
+            j = i - 1
+            while j >= 0 and out[j][0] == 'ws':
+                j -= 1
+            if j >= 0 and out[j][0] == 'name':
+                name_b = out[j][1].strip()
+                is_lab = name_b in (fill_labs | stroke_labs)
+                if op == b'cs':
+                    fill_is_lab = is_lab
+                else:
+                    stroke_is_lab = is_lab
+                if is_lab:
+                    out[j] = ('name', b'/DeviceCMYK')
+            i += 1
+            continue
+
+        # Reset CS tracking on direct colorspace ops
+        if op in (b'g', b'rg', b'k'):
+            fill_is_lab = False
+        elif op in (b'G', b'RG', b'K'):
+            stroke_is_lab = False
+
+        # ── Color value operators ─────────────────────────────────────────────
+        want_lab = (op in (b'scn', b'sc') and fill_is_lab) or \
+                   (op in (b'SCN', b'SC') and stroke_is_lab)
+
+        if want_lab:
+            # Scan back for exactly 3 preceding num tokens
+            num_pos = []
+            j = i - 1
+            while j >= 0 and len(num_pos) < 3:
+                if out[j][0] == 'num':
+                    num_pos.insert(0, j)
+                elif out[j][0] != 'ws':
+                    break
+                j -= 1
+
+            if len(num_pos) == 3:
+                try:
+                    L_val = float(out[num_pos[0]][1])
+                    a_val = float(out[num_pos[1]][1])
+                    b_val = float(out[num_pos[2]][1])
+                    c, m, y, k = _lab_to_cmyk_approx(L_val, a_val, b_val)
+                    out[num_pos[0]] = ('num', _bv_fmt(c))
+                    out[num_pos[1]] = ('num', _bv_fmt(m))
+                    out[num_pos[2]] = ('num', _bv_fmt(y))
+                    # Replace the op token with K-value + space + op
+                    out[i] = ('num', _bv_fmt(k))
+                    out.insert(i + 1, ('ws', b' '))
+                    out.insert(i + 2, ('op', op))
+                    i += 3
+                    continue
+                except (ValueError, IndexError):
+                    pass
+
+        i += 1
+
+    return b"".join(raw for _, raw in out)
+
+
+def convert_lab_to_cmyk(input_path: str, output_path: str) -> None:
+    """
+    Replicates: CCSettings/CCDestination "Convert LAB to CMYK"
+    Finds named Lab colorspaces in each page's resources, converts vector/text
+    Lab color operators in content streams to DeviceCMYK equivalents.
+    Lab images are also re-encoded to CMYK via PyMuPDF Pixmap conversion.
+    """
+    # ── Step 1: find Lab colorspace names per page (using pypdf) ─────────────
+    reader = PdfReader(input_path)
+    page_lab_names: list[set] = []   # one set of b'/Name' per page
+
+    for page in reader.pages:
+        labs: set = set()
+        res = page.get("/Resources")
+        if res:
+            cs_dict = res.get("/ColorSpace")
+            if cs_dict:
+                for key, cs_obj in cs_dict.items():
+                    if hasattr(cs_obj, "get_object"):
+                        cs_obj = cs_obj.get_object()
+                    if isinstance(cs_obj, ArrayObject) and len(cs_obj) >= 1:
+                        cs_type = str(cs_obj[0])
+                        if cs_type == "/Lab":
+                            labs.add(key.encode() if isinstance(key, str) else key)
+        page_lab_names.append(labs)
+
+    has_lab = any(page_lab_names)
+
+    # ── Step 2: rewrite content streams (using fitz) ──────────────────────────
+    doc = fitz.open(input_path)
+    converted_pages = 0
+
+    for page_idx, page in enumerate(doc):
+        labs = page_lab_names[page_idx]
+        if not labs:
+            continue
+
+        page.clean_contents()
+
+        # Main page content stream
+        contents_key = doc.xref_get_key(page.xref, "Contents")
+        if contents_key[0] != "null":
+            # May be single xref or array
+            val = contents_key[1]
+            if val.startswith("["):
+                # Array of streams — collect xrefs
+                import re as _re2
+                xrefs = [int(x) for x in _re2.findall(r'(\d+)\s+0\s+R', val)]
+            else:
+                xrefs = [int(val.split()[0])]
+
+            for c_xref in xrefs:
+                raw = doc.xref_stream(c_xref)
+                if raw:
+                    new = _lab_recolor(raw, labs, labs)
+                    if new != raw:
+                        doc.update_stream(c_xref, new)
+
+        # Form XObjects (best effort)
+        try:
+            for _name, _type, xref in page.get_xobjects():
+                raw = doc.xref_stream(xref)
+                if raw:
+                    new = _lab_recolor(raw, labs, labs)
+                    if new != raw:
+                        doc.update_stream(xref, new)
+        except Exception:
+            pass
+
+        converted_pages += 1
+
+    # ── Step 3: Lab images → CMYK via Pixmap ─────────────────────────────────
+    if has_lab:
+        cmyk_cs = fitz.Colorspace(fitz.CS_CMYK)
+        for page in doc:
+            for img_info in page.get_images(full=True):
+                xref = img_info[0]
+                try:
+                    pix = fitz.Pixmap(doc, xref)
+                    if pix.colorspace and pix.colorspace.name == "Lab":
+                        pix_cmyk = fitz.Pixmap(cmyk_cs, pix)
+                        doc.update_stream(xref, pix_cmyk.tobytes("png"))
+                        pix_cmyk = None
+                    pix = None
+                except Exception:
+                    pass
+
+    save_pdf(doc, output_path)
+    doc.close()
+
+    if has_lab:
+        print(f"  convert_lab_to_cmyk: converted {converted_pages} page(s) → {output_path}")
+    else:
+        print(f"  convert_lab_to_cmyk: no Lab colorspaces found, file copied")
+
+
+# ---------------------------------------------------------------------------
 # Recipe runner  (preflight → proof JPEG → finishing → cutpath)
 # ---------------------------------------------------------------------------
 
@@ -1284,12 +1819,22 @@ def run_recipe(input_path: str, recipe: dict,
 
     results: dict = {}
 
-    # ── 1. Preflight ──────────────────────────────────────────────────────────
-    tmp_pf = tempfile.mktemp(suffix=".pdf")
+    # ── 1. Preflight  (order matches Callas KFPX: white spots → Lab→CMYK → black adj) ──
+    tmp_pf   = tempfile.mktemp(suffix=".pdf")
     preflight = recipe.get("preflight") or ""
-    if preflight in ("100k", "75x3"):
-        print(f"  [preflight] {preflight} — black conversion not yet implemented; skipping.")
-    shutil.copy2(input_path, tmp_pf)
+    if preflight in _PREFLIGHT_TARGETS:
+        tmp_a = tempfile.mktemp(suffix=".pdf")
+        tmp_b = tempfile.mktemp(suffix=".pdf")
+        print(f"  [preflight] remapping white spot colors")
+        remap_white_spot_colors(input_path, tmp_a)
+        print(f"  [preflight] converting Lab → CMYK")
+        convert_lab_to_cmyk(tmp_a, tmp_b)
+        print(f"  [preflight] adjusting vector blacks → {preflight}")
+        adjust_black_vectors(tmp_b, tmp_pf, target=preflight)
+    else:
+        if preflight:
+            print(f"  [preflight] unknown target '{preflight}', skipping.")
+        shutil.copy2(input_path, tmp_pf)
 
     # ── 2. Original JPEG (preflighted, no overlay) ────────────────────────────
     tmp_orig_jpg = tempfile.mktemp(suffix=".jpg")

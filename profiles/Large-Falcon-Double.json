@@ -26,7 +26,8 @@
         "rotation": 90,
         "size": 32.0
       }
-    ]
+    ],
+    "cutpath": "Finishing_cutpaths/large-falcon-double-cp-1-28-26-no-notchesd.pdf"
   },
   "overlay": "L_FalconDouble.pdf",
   "cutpath": "L_FalconDouble-CP-O.pdf"

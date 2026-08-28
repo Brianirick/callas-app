@@ -19,7 +19,8 @@
         "rotation": 90,
         "size": 22.0
       }
-    ]
+    ],
+    "cutpath": "Finishing_cutpaths/M_FalconSingle-CP-v2-stroke.pdf"
   },
   "overlay": "M_FalconSingle.pdf",
   "cutpath": "M_FalconSingle-CP-.pdf"

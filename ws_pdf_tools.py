@@ -2003,13 +2003,14 @@ def run_recipe(input_path: str, recipe: dict,
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")
-    # ── 4b. Flag finishing cutpath — merge cutpath onto finished PDF ─────────────
-    # For flag_label products the cutpath PDF is used in two places:
-    #   a) proof view (step 5 below) and b) merged onto the finished/production PDF.
-    # Use finishing["cutpath"] if provided (when the two files differ), else fall
-    # back to the recipe-level cutpath.
+    # ── 4b. Flag finishing cutpath — stamp onto finished PDF ──────────────────────
+    # For flag_label products, a separate finishing-specific cutpath (thru-cut only,
+    # no white mask fill) can be stamped onto the finished/production PDF.
+    # This is intentionally separate from the recipe-level cutpath (which has a white
+    # mask fill for proof display and must NOT be applied to the finished artwork).
+    # Set finishing["cutpath"] to the filename to enable; omit to skip.
     if isinstance(finishing, dict) and finishing.get("type") == "flag_label" and cutpaths_dir:
-        _fin_cp_name = finishing.get("cutpath") or recipe.get("cutpath") or ""
+        _fin_cp_name = finishing.get("cutpath") or ""
         if _fin_cp_name:
             _fin_cp_path = Path(cutpaths_dir) / _fin_cp_name
             if _fin_cp_path.exists():

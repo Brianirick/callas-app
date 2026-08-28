@@ -782,6 +782,16 @@ elif page == "build":
     load_choice = st.selectbox("Load existing recipe", load_opts,
                                label_visibility="collapsed")
 
+    # Reset all fields when user selects "— start fresh —"
+    if load_choice == "— start fresh —" and st.session_state.get("rb_last_load") not in (None, "— start fresh —"):
+        st.session_state.rb_last_load = "— start fresh —"
+        for _k, _v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
+                       ("rb_finishing","— none —"), ("rb_finishing_dict", None),
+                       ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
+                       ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
+            st.session_state[_k] = _v
+        st.rerun()
+
     # Auto-load whenever the dropdown selection changes
     if load_choice != "— start fresh —" and st.session_state.get("rb_last_load") != load_choice:
         st.session_state.rb_last_load = load_choice
@@ -824,6 +834,12 @@ elif page == "build":
         st.text_input("Recipe Name", key="rb_name")
     with desc_col:
         st.text_input("Description", key="rb_desc")
+
+    # Warn if the typed name matches an existing recipe that isn't the one currently loaded
+    _typed_name = st.session_state.rb_name.strip()
+    _loaded     = st.session_state.get("rb_last_load", "")
+    if _typed_name and _typed_name in all_recipes and _typed_name != _loaded:
+        st.warning(f"⚠️ **{_typed_name}** already exists — saving will overwrite it.", icon="⚠️")
 
     st.markdown('<div style="margin-top:1rem;"></div>', unsafe_allow_html=True)
 

@@ -835,11 +835,14 @@ elif page == "build":
     with desc_col:
         st.text_input("Description", key="rb_desc")
 
-    # Warn if the typed name matches an existing recipe that isn't the one currently loaded
+    # Warn whenever the typed name matches an existing recipe
     _typed_name = st.session_state.rb_name.strip()
     _loaded     = st.session_state.get("rb_last_load", "")
-    if _typed_name and _typed_name in all_recipes and _typed_name != _loaded:
-        st.warning(f"⚠️ **{_typed_name}** already exists — saving will overwrite it.", icon="⚠️")
+    if _typed_name and _typed_name in all_recipes:
+        if _typed_name == _loaded:
+            st.info(f"ℹ️ Saving will update the existing **{_typed_name}** recipe.")
+        else:
+            st.warning(f"⚠️ **{_typed_name}** already exists — saving will overwrite it.", icon="⚠️")
 
     st.markdown('<div style="margin-top:1rem;"></div>', unsafe_allow_html=True)
 

@@ -903,7 +903,7 @@ elif page == "build":
                                 f'{"⬅" if _anc=="LowerLeft" else "➡"} {_anc}</div>',
                                 unsafe_allow_html=True
                             )
-                            _c1, _c2, _c3 = st.columns(3)
+                            _c1, _c2, _c3, _c4 = st.columns(4)
                             with _c1:
                                 _new_x = st.number_input(
                                     "X offset (pt)", value=float(_lbl.get("x_pt", 5)),
@@ -922,7 +922,15 @@ elif page == "build":
                                     min_value=6.0, max_value=72.0, step=1.0,
                                     key=f"rb_lbl_{_li}_sz"
                                 )
-                            _new_lbl = {**_lbl, "x_pt": _new_x, "y_pt": _new_y, "size": _new_sz}
+                            with _c4:
+                                _new_rot = st.number_input(
+                                    "Rotation (°)", value=int(_lbl.get("rotation", 90)),
+                                    min_value=0, max_value=270, step=90,
+                                    key=f"rb_lbl_{_li}_rot",
+                                    help="0 = normal left-to-right, 90 = vertical (for flag edges)"
+                                )
+                            _new_lbl = {**_lbl, "x_pt": _new_x, "y_pt": _new_y,
+                                        "size": _new_sz, "rotation": int(_new_rot)}
                             _new_labels.append(_new_lbl)
                             if _new_lbl != _lbl:
                                 _changed = True

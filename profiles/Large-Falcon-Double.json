@@ -15,14 +15,14 @@
       {
         "anchor": "LowerLeft",
         "x_pt": 5.0,
-        "y_pt": 2000.0,
+        "y_pt": 185.0,
         "rotation": 90,
         "size": 32.0
       },
       {
         "anchor": "LowerRight",
         "x_pt": -5.0,
-        "y_pt": 2000.0,
+        "y_pt": 185.0,
         "rotation": 90,
         "size": 32.0
       }

@@ -869,7 +869,32 @@ elif page == "build":
                 f'{finishing_profiles.get(st.session_state.rb_finishing,"")}.json</div>',
                 unsafe_allow_html=True
             )
-        elif st.session_state.get("rb_finishing_dict"):
+        else:
+            # Inline finishing type selector — lets user pick flag_label without duplicating a profile
+            _inline_types = ["— none —", "flag_label"]
+            _cur_inline = (st.session_state.rb_finishing_dict or {}).get("type", "— none —") \
+                          if st.session_state.get("rb_finishing_dict") else "— none —"
+            _inline_sel = st.selectbox(
+                "Inline type", _inline_types,
+                index=_inline_types.index(_cur_inline) if _cur_inline in _inline_types else 0,
+                key="rb_inline_ftype", label_visibility="collapsed"
+            )
+            if _inline_sel == "flag_label" and _cur_inline != "flag_label":
+                # Initialize a default flag_label dict
+                st.session_state.rb_finishing_dict = {
+                    "type": "flag_label",
+                    "placeholder": "ORDER #00000",
+                    "labels": [
+                        {"anchor": "LowerLeft",  "x_pt": 5.0,  "y_pt": 160.0, "rotation": 90, "size": 24.0},
+                        {"anchor": "LowerRight", "x_pt": -5.0, "y_pt": 160.0, "rotation": 90, "size": 24.0},
+                    ],
+                    "cutpath": ""
+                }
+                st.rerun()
+            elif _inline_sel == "— none —" and _cur_inline == "flag_label":
+                st.session_state.rb_finishing_dict = None
+                st.rerun()
+        if st.session_state.get("rb_finishing_dict"):
             _fd    = st.session_state.rb_finishing_dict
             _ftype = _fd.get("type","")
             _top   = _fd.get("top_inch", 0)

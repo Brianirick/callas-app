@@ -1969,24 +1969,33 @@ def run_recipe(input_path: str, recipe: dict,
     finishing    = recipe.get("finishing") or ""
     tmp_finished = tmp_pf
 
-    # ── 4a. For flag_label: stamp finishing cutpath BEFORE adding labels ───────
-    # The finishing cutpath has a white mask fill. Labels must go on top so they
-    # aren't covered. Stamp cutpath first, then apply_finishing adds labels over it.
-    if isinstance(finishing, dict) and finishing.get("type") == "flag_label" and cutpaths_dir:
-        _fin_cp_name = finishing.get("cutpath") or ""
+    # ── Resolve label config ───────────────────────────────────────────────────
+    # Labels can come from two places:
+    #   (a) flag_label finishing dict  — legacy, all-in-one
+    #   (b) top-level "labels" key     — works alongside ANY finishing type
+    # Both produce the same stamp; (b) takes precedence when both exist.
+    _lbl_cfg = None
+    if isinstance(finishing, dict) and finishing.get("type") == "flag_label":
+        _lbl_cfg = finishing          # has placeholder, labels[], cutpath
+    if recipe.get("labels"):
+        _lbl_cfg = recipe["labels"]   # overrides flag_label if both present
+
+    # ── 4a. Stamp finishing cutpath (flag shape mask) BEFORE labels ────────────
+    if _lbl_cfg and cutpaths_dir:
+        _fin_cp_name = _lbl_cfg.get("cutpath") or ""
         if _fin_cp_name:
             _fin_cp_path = Path(cutpaths_dir) / _fin_cp_name
             if _fin_cp_path.exists():
                 _step(f"✂️ Stamping finishing cutpath: {_fin_cp_name}…")
                 tmp_pf_with_cp = tempfile.mktemp(suffix=".pdf")
                 stamp_overlay(tmp_pf, tmp_pf_with_cp, str(_fin_cp_path), opacity=1.0)
-                tmp_pf = tmp_pf_with_cp   # labels will be drawn on top of cutpath
+                tmp_pf = tmp_pf_with_cp
             else:
                 _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")
 
     if finishing:
         if isinstance(finishing, dict):
-            # Native Python finishing (hem, thru-cut, etc.)
+            # Native Python finishing (hem, thru-cut, flag_label wrapper, etc.)
             ftype = finishing.get("type", "finishing")
             _step(f"🏷 Applying {ftype}…")
             tmp_fin = tempfile.mktemp(suffix=".pdf")
@@ -2002,26 +2011,23 @@ def run_recipe(input_path: str, recipe: dict,
             else:
                 print(f"  [finishing] profile not found: {pfile}")
 
-    # ── 4c. Flag labels — stamp as final overlay so they're drawn AFTER the cutpath ─
-    # wrap_contents() + insert_text leaves text UNDER the cutpath's white fill XObject.
-    # Creating a separate labels PDF and stamping it last guarantees it's appended
-    # to the end of the content stream (after fzFrm0/fzFrm1), so it paints on top.
-    if isinstance(finishing, dict) and finishing.get("type") == "flag_label":
+    # ── 4c. Stamp order labels as final overlay (on top of everything) ─────────
+    # Stamping last guarantees the labels form XObject is appended after the
+    # cutpath's white-fill XObject in the content stream, so text paints on top.
+    if _lbl_cfg and _lbl_cfg.get("labels"):
         _step("🏷 Inserting order labels…")
-        # Get page dimensions from tmp_finished
         _fdoc = fitz.open(tmp_finished)
         _lw, _lh = _fdoc[0].rect.width, _fdoc[0].rect.height
         _fdoc.close()
-        # Build a transparent labels-only PDF (no fill — just text)
         _lbldoc  = fitz.open()
         _lblpage = _lbldoc.new_page(width=_lw, height=_lh)
-        _ltext = finishing.get("placeholder", "ORDER #00000")
-        for _lbl in finishing.get("labels", []):
+        _ltext = _lbl_cfg.get("placeholder", "ORDER #00000")
+        for _lbl in _lbl_cfg.get("labels", []):
             _anchor = _lbl.get("anchor", "LowerLeft")
             _lx     = float(_lbl.get("x_pt", 5))
-            _ly     = float(_lbl.get("y_pt", 185))
+            _ly     = float(_lbl.get("y_pt", 160))
             _lrot   = int(_lbl.get("rotation", 90))
-            _lsize  = float(_lbl.get("size", 28))
+            _lsize  = float(_lbl.get("size", 24))
             if _anchor == "LowerLeft":
                 _lpt = fitz.Point(_lx + _lsize, _lh - _ly)
             else:  # LowerRight — x_pt negative means from right edge
@@ -2031,7 +2037,6 @@ def run_recipe(input_path: str, recipe: dict,
         _ltmp_lbl = tempfile.mktemp(suffix=".pdf")
         _lbldoc.save(_ltmp_lbl)
         _lbldoc.close()
-        # Stamp labels overlay LAST — appended after all existing content streams
         _ltmp = tempfile.mktemp(suffix=".pdf")
         stamp_overlay(tmp_finished, _ltmp, _ltmp_lbl, opacity=1.0)
         tmp_finished = _ltmp

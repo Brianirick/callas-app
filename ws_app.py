@@ -767,7 +767,8 @@ elif page == "build":
                  ("rb_finishing","— none —"), ("rb_finishing_dict", None),
                  ("rb_overlay","— none —"),
                  ("rb_cutpath","— none —"), ("rb_check_size", True),
-                 ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
+                 ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
+                 ("rb_labels", None)]:
         if k not in st.session_state:
             st.session_state[k] = v
 
@@ -788,7 +789,8 @@ elif page == "build":
         for _k, _v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                        ("rb_finishing","— none —"), ("rb_finishing_dict", None),
                        ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
-                       ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
+                       ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
+                       ("rb_labels", None)]:
             st.session_state[_k] = _v
         st.rerun()
 
@@ -824,6 +826,8 @@ elif page == "build":
         st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
         st.session_state.rb_height     = float(_sz.get("height_inch", 0.0))
         st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 0.1))
+        # Top-level labels (works alongside any finishing type)
+        st.session_state.rb_labels     = rdata.get("labels") or None
         st.rerun()
 
     st.divider()
@@ -991,6 +995,76 @@ elif page == "build":
             with _sz3:
                 st.number_input("Tolerance (in)", min_value=0.0, step=0.05, format="%.2f", key="rb_tol")
 
+    # ── Order Labels (independent of finishing type) ───────────────────────────
+    st.markdown('<div style="margin-top:0.75rem;"></div>', unsafe_allow_html=True)
+    _lbl_hdr, _lbl_rest = st.columns([1, 3])
+    with _lbl_hdr:
+        _lbl_on = st.checkbox("🏷  Order labels", key="rb_labels_on",
+                              value=bool(st.session_state.get("rb_labels")))
+    if _lbl_on:
+        if not st.session_state.get("rb_labels"):
+            st.session_state.rb_labels = {
+                "placeholder": "ORDER #00000",
+                "labels": [
+                    {"anchor": "LowerLeft",  "x_pt": 5.0,  "y_pt": 160.0, "rotation": 90, "size": 24.0},
+                    {"anchor": "LowerRight", "x_pt": -5.0, "y_pt": 160.0, "rotation": 90, "size": 24.0},
+                ],
+                "cutpath": ""
+            }
+        with _lbl_rest:
+            _lc = st.session_state.rb_labels
+            _lc_changed = False
+            _new_lc = dict(_lc)
+            _ph = st.text_input("Order label text", value=_lc.get("placeholder", "ORDER #00000"),
+                                key="rb_lbl_placeholder",
+                                help="Text stamped on each label (e.g. ORDER #12345)")
+            if _ph != _lc.get("placeholder", "ORDER #00000"):
+                _new_lc["placeholder"] = _ph; _lc_changed = True
+            _lcp = st.selectbox("Finishing cutpath (flag shape mask)",
+                                ["— none —"] + [f for f in cutpath_files if f != "— none —"],
+                                index=0 if not _lc.get("cutpath") else
+                                      next((i+1 for i,f in enumerate(
+                                          [x for x in cutpath_files if x != "— none —"])
+                                          if f == _lc.get("cutpath")), 0),
+                                key="rb_lbl_cutpath",
+                                help="Flag-shaped mask PDF stamped before labels (leave blank for non-flag products)")
+            _new_cp = _lcp if _lcp != "— none —" else ""
+            if _new_cp != _lc.get("cutpath", ""):
+                _new_lc["cutpath"] = _new_cp; _lc_changed = True
+            with st.expander("📍 Label positions", expanded=False):
+                _new_lbls = []
+                for _li, _lbl in enumerate(_lc.get("labels", [])):
+                    _anc = _lbl.get("anchor", f"Label {_li+1}")
+                    st.markdown(
+                        f'<div style="font-size:0.72rem;color:#7f9bb5;margin-bottom:4px;">'
+                        f'{"⬅" if _anc=="LowerLeft" else "➡"} {_anc}</div>',
+                        unsafe_allow_html=True)
+                    _lc1, _lc2, _lc3, _lc4 = st.columns(4)
+                    with _lc1:
+                        _nx = st.number_input("X offset (pt)", value=float(_lbl.get("x_pt", 5)),
+                                              step=1.0, key=f"rb_tl_{_li}_x")
+                    with _lc2:
+                        _ny = st.number_input("Y from bottom (pt)", value=float(_lbl.get("y_pt", 160)),
+                                              step=1.0, key=f"rb_tl_{_li}_y")
+                    with _lc3:
+                        _ns = st.number_input("Font size (pt)", value=float(_lbl.get("size", 24)),
+                                              min_value=6.0, max_value=72.0, step=1.0,
+                                              key=f"rb_tl_{_li}_sz")
+                    with _lc4:
+                        _nr = st.number_input("Rotation (°)", value=int(_lbl.get("rotation", 90)),
+                                              min_value=0, max_value=270, step=90,
+                                              key=f"rb_tl_{_li}_rot",
+                                              help="0=horizontal, 90=vertical")
+                    _nl = {**_lbl, "x_pt": _nx, "y_pt": _ny, "size": _ns, "rotation": int(_nr)}
+                    _new_lbls.append(_nl)
+                    if _nl != _lbl: _lc_changed = True
+                if _lc_changed: _new_lc["labels"] = _new_lbls
+            if _lc_changed:
+                st.session_state.rb_labels = _new_lc
+    else:
+        if st.session_state.get("rb_labels"):
+            st.session_state.rb_labels = None
+
     # ── Upload new overlay / cutpath ───────────────────────────────────────────
     with st.expander("📤  Upload New Overlay / Cutpath"):
         up_col1, up_col2 = st.columns(2)
@@ -1065,6 +1139,7 @@ elif page == "build":
                            else st.session_state.get("rb_finishing_dict")),
             "overlay":     st.session_state.rb_overlay if st.session_state.rb_overlay != "— none —" else None,
             "cutpath":     st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
+            "labels":      st.session_state.get("rb_labels") or None,
         }
         saved = save_profile_to_disk(recipe_to_save)
         st.session_state.rb_confirm_overwrite = None
@@ -1124,6 +1199,7 @@ elif page == "build":
                                   else st.session_state.get("rb_finishing_dict")),
                     "overlay":   st.session_state.rb_overlay  if st.session_state.rb_overlay  != "— none —" else None,
                     "cutpath":   st.session_state.rb_cutpath  if st.session_state.rb_cutpath  != "— none —" else None,
+                    "labels":    st.session_state.get("rb_labels") or None,
                 }
                 with st.spinner("Running recipe…"):
                     try:

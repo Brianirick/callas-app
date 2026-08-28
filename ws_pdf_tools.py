@@ -1316,7 +1316,7 @@ _BLACK_SOURCES_CMYK = [
     (0.80,   0.80,   0.80,   1.00),    # 80 80 80 100
     (0.50,   0.40,   0.40,   1.00),    # 50 40 40 100
     (0.749,  0.678,  0.671,  0.902),   # 74.9 67.8 67.1 90.2
-    # Note: 0,0,0,100 (pure K) is NOT converted — Callas scopes that entry to "None"
+    (0.00,   0.00,   0.00,   1.00),    # 0 0 0 100 — pure K
 ]
 _BLACK_SOURCES_RGB = [(0.0, 0.0, 0.0)]  # RGB 0 0 0
 _BLACK_MATCH_TOL   = 0.005              # ±0.5% per channel
@@ -1381,7 +1381,7 @@ def _bv_tokenize(data: bytes) -> list:
         if ch in b'[]{}/':
             if ch == b'/':
                 j = i + 1
-                while j < n and data[j:j+1] not in b' \t\r\n/()\<>[]{}%': j += 1
+                while j < n and data[j:j+1] not in b' \t\r\n/()<>[]{}%': j += 1
                 tokens.append(('name', data[i:j])); i = j; continue
             tokens.append(('other', ch)); i += 1; continue
         if ch in b'0123456789.-+':
@@ -1792,6 +1792,93 @@ def convert_lab_to_cmyk(input_path: str, output_path: str) -> None:
 # Recipe runner  (preflight → proof JPEG → finishing → cutpath)
 # ---------------------------------------------------------------------------
 
+def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
+    """
+    Apply finishing indicators to a PDF proof.
+
+    finishing dict types:
+      {"type": "hem_top_bottom",       "top_inch": 1.0,  "bottom_inch": 1.0}
+      {"type": "hem_top_bottom_black", "top_inch": 2.5,  "bottom_inch": 2.5}
+      {"type": "thru_cut_only"}
+
+    hem_top_bottom:
+      - Expands the page by top_inch/bottom_inch to show pole pocket/hem area
+      - Draws a dashed black fold line at the original TrimBox edge
+      - Draws a magenta thru-cut line at the outer edge
+
+    hem_top_bottom_black:
+      - Same as hem_top_bottom but fills the hem bands with a near-black rectangle
+        (used on narrow banners with a pre-printed black header/footer)
+
+    thru_cut_only:
+      - No enlargement; draws a black TrimBox stroke + magenta outer cut line
+    """
+    ftype    = finishing.get("type", "")
+    top_in   = finishing.get("top_inch", 0.0)
+    bot_in   = finishing.get("bottom_inch", 0.0)
+    TOP_PT   = top_in * 72.0
+    BOT_PT   = bot_in * 72.0
+
+    BLACK     = (0, 0, 0)
+    THRU_CUT  = (1, 0, 1)          # magenta = 0C 100M 0Y 0K
+    DARK_FILL = (0.05, 0.05, 0.05) # near-black hem fill
+
+    src = fitz.open(input_path)
+    dst = fitz.open()
+
+    for pno in range(len(src)):
+        src_page = src[pno]
+        w = src_page.rect.width
+        h = src_page.rect.height
+
+        if ftype in ("hem_top_bottom", "hem_top_bottom_black"):
+            new_h    = h + TOP_PT + BOT_PT
+            new_page = dst.new_page(width=w, height=new_h)
+
+            # Place original content in the middle zone
+            new_page.show_pdf_page(fitz.Rect(0, TOP_PT, w, TOP_PT + h), src, pno)
+
+            # Fill hem bands with dark rectangle (black finish variant)
+            if ftype == "hem_top_bottom_black":
+                if TOP_PT > 0:
+                    new_page.draw_rect(fitz.Rect(0, 0, w, TOP_PT),
+                                       color=None, fill=DARK_FILL, overlay=False)
+                if BOT_PT > 0:
+                    new_page.draw_rect(fitz.Rect(0, TOP_PT + h, w, new_h),
+                                       color=None, fill=DARK_FILL, overlay=False)
+
+            # Dashed fold line at top
+            if TOP_PT > 0:
+                new_page.draw_line(fitz.Point(0, TOP_PT), fitz.Point(w, TOP_PT),
+                                   color=BLACK, width=0.75, dashes="[6 4] 0")
+            # Dashed fold line at bottom
+            if BOT_PT > 0:
+                new_page.draw_line(fitz.Point(0, TOP_PT + h), fitz.Point(w, TOP_PT + h),
+                                   color=BLACK, width=0.75, dashes="[6 4] 0")
+
+            # Thru-cut line at outer edge
+            new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, new_h - 0.5),
+                               color=THRU_CUT, width=0.75)
+
+        elif ftype == "thru_cut_only":
+            new_page = dst.new_page(width=w, height=h)
+            new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
+            # Black stroke at TrimBox edge
+            new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, h - 0.5),
+                               color=BLACK, width=0.5)
+            # Magenta thru-cut at outer edge
+            new_page.draw_rect(fitz.Rect(0, 0, w, h),
+                               color=THRU_CUT, width=1.0)
+        else:
+            # Unknown type — pass through unchanged
+            new_page = dst.new_page(width=w, height=h)
+            new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
+
+    dst.save(output_path, deflate=True, garbage=4)
+    dst.close()
+    src.close()
+
+
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
@@ -1871,17 +1958,25 @@ def run_recipe(input_path: str, recipe: dict,
             print(f"  [overlay] file not found: {ov_path}")
 
     # ── 4. Finishing (runs on clean preflighted PDF — no overlay) ─────────────
-    finishing = recipe.get("finishing") or ""
+    finishing    = recipe.get("finishing") or ""
     tmp_finished = tmp_pf
-    if finishing and profiles_dir:
-        pfile = Path(profiles_dir) / f"{finishing}.json"
-        if pfile.exists():
-            profile_data = json.loads(pfile.read_text())
+    if finishing:
+        if isinstance(finishing, dict):
+            # Native Python finishing (hem, thru-cut, etc.)
+            ftype = finishing.get("type", "finishing")
+            _step(f"🏷 Applying {ftype}…")
             tmp_fin = tempfile.mktemp(suffix=".pdf")
-            run_profile(tmp_pf, tmp_fin, profile_data)
+            apply_finishing(tmp_pf, tmp_fin, finishing)
             tmp_finished = tmp_fin
-        else:
-            print(f"  [finishing] profile not found: {pfile}")
+        elif isinstance(finishing, str) and profiles_dir:
+            pfile = Path(profiles_dir) / f"{finishing}.json"
+            if pfile.exists():
+                profile_data = json.loads(pfile.read_text())
+                tmp_fin = tempfile.mktemp(suffix=".pdf")
+                run_profile(tmp_pf, tmp_fin, profile_data)
+                tmp_finished = tmp_fin
+            else:
+                print(f"  [finishing] profile not found: {pfile}")
     results["finished_pdf"]    = tmp_finished
     results["preflighted_pdf"] = tmp_pf
 

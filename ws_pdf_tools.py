@@ -1860,6 +1860,28 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
             new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, new_h - 0.5),
                                color=THRU_CUT, width=0.75)
 
+        elif ftype == "flag_label":
+            # Flag finishing: keep original page size, add rotated order label(s)
+            # labels: [{"anchor": "LowerLeft"|"LowerRight", "x_pt": N, "y_pt": N,
+            #            "rotation": 90, "size": 24}]
+            new_page = dst.new_page(width=w, height=h)
+            new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
+            text = finishing.get("placeholder", "ORDER #00000")
+            for lbl in finishing.get("labels", []):
+                anchor = lbl.get("anchor", "LowerLeft")
+                x_pt   = float(lbl.get("x_pt", 2))
+                y_pt   = float(lbl.get("y_pt", 185))
+                rot    = int(lbl.get("rotation", 90))
+                size   = float(lbl.get("size", 24))
+                # Convert Callas anchor + offset → PyMuPDF point
+                # Callas LowerLeft = bottom-left of page; y increases upward
+                # PyMuPDF: y increases downward; (0,0) is top-left
+                if anchor == "LowerLeft":
+                    pt = fitz.Point(x_pt, h - y_pt)
+                else:  # LowerRight
+                    pt = fitz.Point(w + x_pt, h - y_pt)  # x_pt is negative from right
+                new_page.insert_text(pt, text, fontsize=size, rotate=rot, color=BLACK)
+
         elif ftype == "thru_cut_only":
             new_page = dst.new_page(width=w, height=h)
             new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)

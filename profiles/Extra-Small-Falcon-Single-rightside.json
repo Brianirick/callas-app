@@ -8,7 +8,19 @@
     "height_inch": 68.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerRight",
+        "x_pt": -23.0,
+        "y_pt": 180.0,
+        "rotation": 90,
+        "size": 24.0
+      }
+    ]
+  },
   "overlay": "XS-falcon-single-O-right-side.pdf",
   "cutpath": "XS-falcon-single-CP-right-side.pdf"
 }

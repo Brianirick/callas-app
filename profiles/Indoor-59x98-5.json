@@ -8,7 +8,11 @@
     "height_inch": 98.5,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 1.0,
+    "bottom_inch": 1.0
+  },
   "overlay": null,
   "cutpath": null
 }

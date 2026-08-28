@@ -8,7 +8,11 @@
     "height_inch": 67.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 1.0,
+    "bottom_inch": 1.0
+  },
   "overlay": "GRH-27x67_Template-overlay.pdf",
   "cutpath": null
 }

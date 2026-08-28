@@ -8,7 +8,11 @@
     "height_inch": 84.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 4.5,
+    "bottom_inch": 4.5
+  },
   "overlay": "jmb_4x7.pdf",
   "cutpath": null
 }

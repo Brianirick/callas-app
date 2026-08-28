@@ -8,7 +8,9 @@
     "height_inch": 45.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "thru_cut_only"
+  },
   "overlay": "OC-10ftx42in_Circle-overlay-.pdf",
   "cutpath": "OC-Skybox-circle-10x42-CP.pdf"
 }

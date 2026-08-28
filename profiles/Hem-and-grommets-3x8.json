@@ -8,7 +8,9 @@
     "height_inch": 36.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom"
+  },
   "overlay": "Hem_and_Grommet-3x8-overlay-middle.pdf",
   "cutpath": null
 }

@@ -8,7 +8,9 @@
     "height_inch": 28.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "thru_cut_only"
+  },
   "overlay": "5ftx24in_triangle_ALL-.pdf",
   "cutpath": "180x28-CP.pdf"
 }

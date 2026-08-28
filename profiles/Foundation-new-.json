@@ -8,7 +8,9 @@
     "height_inch": 38.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom"
+  },
   "overlay": "Foundation_Template-overlay.pdf",
   "cutpath": null
 }

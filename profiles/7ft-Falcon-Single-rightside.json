@@ -8,7 +8,19 @@
     "height_inch": 68.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerRight",
+        "x_pt": -45.0,
+        "y_pt": 165.0,
+        "rotation": 90,
+        "size": 36.0
+      }
+    ]
+  },
   "overlay": "falcon-7ft-single-RIGHTSIDE-.pdf",
   "cutpath": "falcon-7ft-single-RIGHTSIDE-CP-.pdf"
 }

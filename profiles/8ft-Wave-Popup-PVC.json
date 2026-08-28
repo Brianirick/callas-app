@@ -8,7 +8,11 @@
     "height_inch": 88.96,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 72.0,
+    "bottom_inch": 72.0
+  },
   "overlay": "8ft_wave_overlay-.pdf",
   "cutpath": null
 }

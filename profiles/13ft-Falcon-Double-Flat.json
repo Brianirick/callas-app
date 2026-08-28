@@ -8,7 +8,26 @@
     "height_inch": 139.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerRight",
+        "x_pt": -160.0,
+        "y_pt": 185.0,
+        "rotation": 90,
+        "size": 36.0
+      },
+      {
+        "anchor": "LowerLeft",
+        "x_pt": 160.0,
+        "y_pt": 185.0,
+        "rotation": 90,
+        "size": 36.0
+      }
+    ]
+  },
   "overlay": "falcon-13ft-double-FLATBOTTOM_BF_-OVERLAY.pdf",
   "cutpath": "falcon-13ft-double-FLATBOTTOM_BF_CP_.pdf"
 }

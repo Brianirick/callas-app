@@ -8,7 +8,10 @@
     "height_inch": 84.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
   "overlay": "SS-60-84-.pdf",
   "cutpath": null
 }

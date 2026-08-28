@@ -8,7 +8,11 @@
     "height_inch": 96.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 4.5,
+    "bottom_inch": 4.5
+  },
   "overlay": "Slider_10x8-tb-only-F.pdf",
   "cutpath": null
 }

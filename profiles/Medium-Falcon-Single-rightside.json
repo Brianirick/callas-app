@@ -8,7 +8,19 @@
     "height_inch": 104.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerRight",
+        "x_pt": -7.0,
+        "y_pt": 180.0,
+        "rotation": 90,
+        "size": 24.0
+      }
+    ]
+  },
   "overlay": "M_FalconSingle-O-right-side.pdf",
   "cutpath": "M_FalconSingle-CP-right-side.pdf"
 }

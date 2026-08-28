@@ -1,3 +1,27 @@
-"Exported Library from QuickProof Server/All KFPX/" 
-"Exported Library from QuickProof Server/All KFPX.zip" 
+Exported Library from QuickProof Server/All KFPX/
+Exported Library from QuickProof Server/All KFPX.zip
 Exported Library from QuickProof Server/PDFs/duplicates/
+Exported Library from QuickProof Server/PDFs/missing/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Test & scratch files
+test file/
+*_finished*.pdf
+*-tst-*.pdf
+
+# Local tools & installers
+*.msix
+
+# Generated reports (large, regeneratable)
+missing_assets_report.txt
+
+# Local-only reference files
+WS_Recipe_Builder.xlsx
+preflight files/
+product list/
+Finishing profiles/
+These are the profiles we use in Enfocus Switch/

@@ -879,6 +879,57 @@ elif page == "build":
                 f'<div style="font-size:0.72rem; color:#4ade80; margin-top:0.3rem;">⚙️ {_label}</div>',
                 unsafe_allow_html=True
             )
+            if _ftype == "flag_label":
+                _ph_val = st.text_input(
+                    "Order label text",
+                    value=_fd.get("placeholder", "ORDER #00000"),
+                    key="rb_flag_placeholder",
+                    help="Placeholder text printed on the flag edge labels (e.g. ORDER #12345)"
+                )
+                _updated_fd = dict(_fd)
+                _changed = False
+                if _ph_val != _fd.get("placeholder", "ORDER #00000"):
+                    _updated_fd["placeholder"] = _ph_val
+                    _changed = True
+                # ── Per-label position editor ───────────────────────────────
+                _labels = list(_fd.get("labels", []))
+                if _labels:
+                    with st.expander("📍 Label positions", expanded=False):
+                        _new_labels = []
+                        for _li, _lbl in enumerate(_labels):
+                            _anc = _lbl.get("anchor", f"Label {_li+1}")
+                            st.markdown(
+                                f'<div style="font-size:0.72rem;color:#7f9bb5;margin-bottom:4px;">'
+                                f'{"⬅" if _anc=="LowerLeft" else "➡"} {_anc}</div>',
+                                unsafe_allow_html=True
+                            )
+                            _c1, _c2, _c3 = st.columns(3)
+                            with _c1:
+                                _new_x = st.number_input(
+                                    "X offset (pt)", value=float(_lbl.get("x_pt", 5)),
+                                    step=1.0, key=f"rb_lbl_{_li}_x",
+                                    help="Distance from edge in points (negative = from right)"
+                                )
+                            with _c2:
+                                _new_y = st.number_input(
+                                    "Y from bottom (pt)", value=float(_lbl.get("y_pt", 185)),
+                                    step=1.0, key=f"rb_lbl_{_li}_y",
+                                    help="Distance up from page bottom in points"
+                                )
+                            with _c3:
+                                _new_sz = st.number_input(
+                                    "Font size (pt)", value=float(_lbl.get("size", 28)),
+                                    min_value=6.0, max_value=72.0, step=1.0,
+                                    key=f"rb_lbl_{_li}_sz"
+                                )
+                            _new_lbl = {**_lbl, "x_pt": _new_x, "y_pt": _new_y, "size": _new_sz}
+                            _new_labels.append(_new_lbl)
+                            if _new_lbl != _lbl:
+                                _changed = True
+                        if _changed:
+                            _updated_fd["labels"] = _new_labels
+                if _changed:
+                    st.session_state.rb_finishing_dict = _updated_fd
 
     with c_ov:
         _stage_header("🖼", "Overlay", "Template overlay PDF")

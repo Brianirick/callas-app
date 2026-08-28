@@ -1861,30 +1861,12 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
                                color=THRU_CUT, width=0.75)
 
         elif ftype == "flag_label":
-            # Flag finishing: keep original page size, add rotated order label(s)
-            # labels: [{"anchor": "LowerLeft"|"LowerRight", "x_pt": N, "y_pt": N,
-            #            "rotation": 90, "size": 24}]
+            # Flag finishing: keep original page size.
+            # Labels are NOT added here — they are inserted directly onto tmp_finished
+            # in run_recipe() AFTER all other stamping, so they render on top of
+            # the finishing cutpath's white mask fill.
             new_page = dst.new_page(width=w, height=h)
             new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
-            text = finishing.get("placeholder", "ORDER #00000")
-            for lbl in finishing.get("labels", []):
-                anchor = lbl.get("anchor", "LowerLeft")
-                x_pt   = float(lbl.get("x_pt", 2))
-                y_pt   = float(lbl.get("y_pt", 185))
-                rot    = int(lbl.get("rotation", 90))
-                size   = float(lbl.get("size", 24))
-                # Convert Callas anchor + offset → PyMuPDF point.
-                # Callas LowerLeft/LowerRight y_pt = distance from bottom edge (y-up coords).
-                # PyMuPDF: (0,0) top-left, y increases downward.
-                # With rotate=90 in PyMuPDF, character ascenders extend LEFT of the baseline.
-                # For LowerLeft we must shift x RIGHT by ~font-size so chars land inside page.
-                # For LowerRight, x_pt is already negative (from right edge) and chars extend
-                # inward (leftward) naturally, so no adjustment needed.
-                if anchor == "LowerLeft":
-                    pt = fitz.Point(x_pt + size, h - y_pt)
-                else:  # LowerRight — x_pt is negative (e.g. -25 = 25pt from right)
-                    pt = fitz.Point(w + x_pt, h - y_pt)
-                new_page.insert_text(pt, text, fontsize=size, rotate=rot, color=BLACK)
 
         elif ftype == "thru_cut_only":
             new_page = dst.new_page(width=w, height=h)
@@ -1986,6 +1968,22 @@ def run_recipe(input_path: str, recipe: dict,
     # ── 4. Finishing (runs on clean preflighted PDF — no overlay) ─────────────
     finishing    = recipe.get("finishing") or ""
     tmp_finished = tmp_pf
+
+    # ── 4a. For flag_label: stamp finishing cutpath BEFORE adding labels ───────
+    # The finishing cutpath has a white mask fill. Labels must go on top so they
+    # aren't covered. Stamp cutpath first, then apply_finishing adds labels over it.
+    if isinstance(finishing, dict) and finishing.get("type") == "flag_label" and cutpaths_dir:
+        _fin_cp_name = finishing.get("cutpath") or ""
+        if _fin_cp_name:
+            _fin_cp_path = Path(cutpaths_dir) / _fin_cp_name
+            if _fin_cp_path.exists():
+                _step(f"✂️ Stamping finishing cutpath: {_fin_cp_name}…")
+                tmp_pf_with_cp = tempfile.mktemp(suffix=".pdf")
+                stamp_overlay(tmp_pf, tmp_pf_with_cp, str(_fin_cp_path), opacity=1.0)
+                tmp_pf = tmp_pf_with_cp   # labels will be drawn on top of cutpath
+            else:
+                _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")
+
     if finishing:
         if isinstance(finishing, dict):
             # Native Python finishing (hem, thru-cut, etc.)
@@ -2003,23 +2001,40 @@ def run_recipe(input_path: str, recipe: dict,
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")
-    # ── 4b. Flag finishing cutpath — stamp onto finished PDF ──────────────────────
-    # For flag_label products, a separate finishing-specific cutpath (thru-cut only,
-    # no white mask fill) can be stamped onto the finished/production PDF.
-    # This is intentionally separate from the recipe-level cutpath (which has a white
-    # mask fill for proof display and must NOT be applied to the finished artwork).
-    # Set finishing["cutpath"] to the filename to enable; omit to skip.
-    if isinstance(finishing, dict) and finishing.get("type") == "flag_label" and cutpaths_dir:
-        _fin_cp_name = finishing.get("cutpath") or ""
-        if _fin_cp_name:
-            _fin_cp_path = Path(cutpaths_dir) / _fin_cp_name
-            if _fin_cp_path.exists():
-                _step(f"✂️ Stamping finishing cutpath onto finished PDF: {_fin_cp_name}…")
-                tmp_fin_with_cp = tempfile.mktemp(suffix=".pdf")
-                stamp_overlay(tmp_finished, tmp_fin_with_cp, str(_fin_cp_path), opacity=1.0)
-                tmp_finished = tmp_fin_with_cp
-            else:
-                _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")
+
+    # ── 4c. Flag labels — stamp as final overlay so they're drawn AFTER the cutpath ─
+    # wrap_contents() + insert_text leaves text UNDER the cutpath's white fill XObject.
+    # Creating a separate labels PDF and stamping it last guarantees it's appended
+    # to the end of the content stream (after fzFrm0/fzFrm1), so it paints on top.
+    if isinstance(finishing, dict) and finishing.get("type") == "flag_label":
+        _step("🏷 Inserting order labels…")
+        # Get page dimensions from tmp_finished
+        _fdoc = fitz.open(tmp_finished)
+        _lw, _lh = _fdoc[0].rect.width, _fdoc[0].rect.height
+        _fdoc.close()
+        # Build a transparent labels-only PDF (no fill — just text)
+        _lbldoc  = fitz.open()
+        _lblpage = _lbldoc.new_page(width=_lw, height=_lh)
+        _ltext = finishing.get("placeholder", "ORDER #00000")
+        for _lbl in finishing.get("labels", []):
+            _anchor = _lbl.get("anchor", "LowerLeft")
+            _lx     = float(_lbl.get("x_pt", 5))
+            _ly     = float(_lbl.get("y_pt", 185))
+            _lrot   = int(_lbl.get("rotation", 90))
+            _lsize  = float(_lbl.get("size", 28))
+            if _anchor == "LowerLeft":
+                _lpt = fitz.Point(_lx + _lsize, _lh - _ly)
+            else:  # LowerRight — x_pt negative means from right edge
+                _lpt = fitz.Point(_lw + _lx, _lh - _ly)
+            _lblpage.insert_text(_lpt, _ltext, fontsize=_lsize, rotate=_lrot,
+                                 color=(0, 0, 0))
+        _ltmp_lbl = tempfile.mktemp(suffix=".pdf")
+        _lbldoc.save(_ltmp_lbl)
+        _lbldoc.close()
+        # Stamp labels overlay LAST — appended after all existing content streams
+        _ltmp = tempfile.mktemp(suffix=".pdf")
+        stamp_overlay(tmp_finished, _ltmp, _ltmp_lbl, opacity=1.0)
+        tmp_finished = _ltmp
 
     results["finished_pdf"]    = tmp_finished
     results["preflighted_pdf"] = tmp_pf

@@ -2003,6 +2003,23 @@ def run_recipe(input_path: str, recipe: dict,
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")
+    # ── 4b. Flag finishing cutpath — merge cutpath onto finished PDF ─────────────
+    # For flag_label products the cutpath PDF is used in two places:
+    #   a) proof view (step 5 below) and b) merged onto the finished/production PDF.
+    # Use finishing["cutpath"] if provided (when the two files differ), else fall
+    # back to the recipe-level cutpath.
+    if isinstance(finishing, dict) and finishing.get("type") == "flag_label" and cutpaths_dir:
+        _fin_cp_name = finishing.get("cutpath") or recipe.get("cutpath") or ""
+        if _fin_cp_name:
+            _fin_cp_path = Path(cutpaths_dir) / _fin_cp_name
+            if _fin_cp_path.exists():
+                _step(f"✂️ Stamping finishing cutpath onto finished PDF: {_fin_cp_name}…")
+                tmp_fin_with_cp = tempfile.mktemp(suffix=".pdf")
+                stamp_overlay(tmp_finished, tmp_fin_with_cp, str(_fin_cp_path), opacity=1.0)
+                tmp_finished = tmp_fin_with_cp
+            else:
+                _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")
+
     results["finished_pdf"]    = tmp_finished
     results["preflighted_pdf"] = tmp_pf
 

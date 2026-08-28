@@ -835,14 +835,6 @@ elif page == "build":
     with desc_col:
         st.text_input("Description", key="rb_desc")
 
-    # Warn whenever the typed name matches an existing recipe
-    _typed_name = st.session_state.rb_name.strip()
-    _loaded     = st.session_state.get("rb_last_load", "")
-    if _typed_name and _typed_name in all_recipes:
-        if _typed_name == _loaded:
-            st.info(f"ℹ️ Saving will update the existing **{_typed_name}** recipe.")
-        else:
-            st.warning(f"⚠️ **{_typed_name}** already exists — saving will overwrite it.", icon="⚠️")
 
     st.markdown('<div style="margin-top:1rem;"></div>', unsafe_allow_html=True)
 
@@ -965,30 +957,54 @@ elif page == "build":
     )
 
     # ── Save + Test ────────────────────────────────────────────────────────────
+    _save_name      = st.session_state.rb_name.strip()
+    _name_exists    = bool(_save_name and _save_name in all_recipes)
+    _confirm_active = st.session_state.get("rb_confirm_overwrite") == _save_name
+
+    # Reset confirmation if the name changed
+    if st.session_state.get("rb_confirm_overwrite") and st.session_state.get("rb_confirm_overwrite") != _save_name:
+        st.session_state.rb_confirm_overwrite = None
+
+    def _do_save():
+        recipe_to_save = {
+            "type":        "recipe",
+            "name":        _save_name,
+            "description": st.session_state.rb_desc.strip(),
+            "preflight":   st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
+            "check_size":  {
+                "width_inch":     st.session_state.rb_width,
+                "height_inch":    st.session_state.rb_height,
+                "tolerance_inch": st.session_state.rb_tol,
+            } if st.session_state.rb_check_size and st.session_state.rb_width and st.session_state.rb_height else None,
+            "finishing":   (finishing_profiles.get(st.session_state.rb_finishing)
+                           if st.session_state.rb_finishing != "— none —"
+                           else st.session_state.get("rb_finishing_dict")),
+            "overlay":     st.session_state.rb_overlay if st.session_state.rb_overlay != "— none —" else None,
+            "cutpath":     st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
+        }
+        saved = save_profile_to_disk(recipe_to_save)
+        st.session_state.rb_confirm_overwrite = None
+        st.session_state.rb_last_load = _save_name
+        st.success(f"Saved → {saved.name}")
+
     sv_col, cl_col = st.columns([3, 1])
     with sv_col:
-        if st.button("💾  Save Recipe", use_container_width=True, disabled=not stages_defined):
-            if not st.session_state.rb_name.strip():
-                st.error("Give the recipe a name first.")
-            else:
-                recipe_to_save = {
-                    "type":        "recipe",
-                    "name":        st.session_state.rb_name.strip(),
-                    "description": st.session_state.rb_desc.strip(),
-                    "preflight":   st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
-                    "check_size":  {
-                        "width_inch":     st.session_state.rb_width,
-                        "height_inch":    st.session_state.rb_height,
-                        "tolerance_inch": st.session_state.rb_tol,
-                    } if st.session_state.rb_check_size and st.session_state.rb_width and st.session_state.rb_height else None,
-                    "finishing":   (finishing_profiles.get(st.session_state.rb_finishing)
-                                   if st.session_state.rb_finishing != "— none —"
-                                   else st.session_state.get("rb_finishing_dict")),
-                    "overlay":     st.session_state.rb_overlay   if st.session_state.rb_overlay   != "— none —" else None,
-                    "cutpath":     st.session_state.rb_cutpath   if st.session_state.rb_cutpath   != "— none —" else None,
-                }
-                saved = save_profile_to_disk(recipe_to_save)
-                st.success(f"Saved → {saved.name}")
+        if not _save_name:
+            st.button("💾  Save Recipe", use_container_width=True, disabled=True)
+        elif _name_exists and not _confirm_active:
+            # First click — arm the confirmation
+            if st.button("💾  Save Recipe", use_container_width=True, disabled=not stages_defined):
+                st.session_state.rb_confirm_overwrite = _save_name
+                st.rerun()
+        elif _name_exists and _confirm_active:
+            # Confirmation armed — show overwrite button
+            st.warning(f"⚠️ **{_save_name}** already exists. Click below to confirm overwrite.")
+            if st.button("⚠️  Yes, Overwrite", use_container_width=True, type="primary"):
+                _do_save()
+        else:
+            # New name — save directly
+            if st.button("💾  Save Recipe", use_container_width=True, type="primary", disabled=not stages_defined):
+                _do_save()
     with cl_col:
         if st.button("🗑  Clear", use_container_width=True):
             for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),

@@ -1887,6 +1887,63 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
     src.close()
 
 
+def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
+    """
+    Generic imposition: crop panels from the source page and place them on a new output sheet.
+
+    finishing dict format:
+    {
+      "type": "impose",
+      "output_size_in": [width_in, height_in],   # output sheet size in inches
+      "panels": [
+        {
+          "name":    "center",
+          "src_in":  [x, y, w, h],   # crop rect in inches, from lower-left of source page
+          "dest_pt": [x0, y0, x1, y1],  # destination rect in pt, PyMuPDF coords (y=0 at top)
+          "rotate":  270              # 0, 90, 180, 270 (CCW degrees)
+        },
+        ...
+      ]
+    }
+
+    src_in uses PDF coordinate convention (y=0 at bottom, y increases upward).
+    dest_pt uses PyMuPDF convention (y=0 at top, y increases downward).
+    The clip is clamped to the actual source page bounds.
+    """
+    out_size   = finishing.get("output_size_in", [90, 106])
+    out_w_pt   = out_size[0] * 72
+    out_h_pt   = out_size[1] * 72
+    panels     = finishing.get("panels", [])
+
+    src      = fitz.open(input_path)
+    src_page = src[0]
+    src_w    = src_page.rect.width
+    src_h    = src_page.rect.height   # PyMuPDF y-down; PDF y-up origin at bottom
+
+    out      = fitz.open()
+    page     = out.new_page(width=out_w_pt, height=out_h_pt)
+
+    for panel in panels:
+        sx, sy, sw, sh = [v * 72 for v in panel["src_in"]]
+        # Convert from PDF lower-left convention to PyMuPDF (y-down, y0 at top)
+        clip_x0 = sx
+        clip_y0 = src_h - (sy + sh)   # top of panel in PyMuPDF
+        clip_x1 = sx + sw
+        clip_y1 = src_h - sy           # bottom of panel in PyMuPDF
+        # Clamp to page bounds
+        clip = fitz.Rect(
+            max(clip_x0, 0), max(clip_y0, 0),
+            min(clip_x1, src_w), min(clip_y1, src_h)
+        )
+        dest   = fitz.Rect(panel["dest_pt"])
+        rotate = int(panel.get("rotate", 0))
+        page.show_pdf_page(dest, src, 0, clip=clip, rotate=rotate)
+
+    out.save(output_path, garbage=4, deflate=True)
+    out.close()
+    src.close()
+
+
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
@@ -1995,11 +2052,15 @@ def run_recipe(input_path: str, recipe: dict,
 
     if finishing:
         if isinstance(finishing, dict):
-            # Native Python finishing (hem, thru-cut, flag_label wrapper, etc.)
             ftype = finishing.get("type", "finishing")
-            _step(f"🏷 Applying {ftype}…")
+            _step(f"🏁 Applying {ftype}…")
             tmp_fin = tempfile.mktemp(suffix=".pdf")
-            apply_finishing(tmp_pf, tmp_fin, finishing)
+            if ftype == "impose":
+                # Imposition: crop panels and reassemble onto a new output sheet
+                impose_panels(tmp_pf, tmp_fin, finishing)
+            else:
+                # Native Python finishing (hem, thru-cut, flag_label, etc.)
+                apply_finishing(tmp_pf, tmp_fin, finishing)
             tmp_finished = tmp_fin
         elif isinstance(finishing, str) and profiles_dir:
             pfile = Path(profiles_dir) / f"{finishing}.json"

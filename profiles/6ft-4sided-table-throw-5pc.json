@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-4sided-table-throw-5pc",
+  "description": "6ft 4-Sided Multi Stretch Table Throw — 5-piece",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 134.4,
+    "height_inch": 87.5,
+    "tolerance_inch": 0.5
+  },
+  "finishing": "6ft-4-MULTI-5pc",
+  "overlay": null,
+  "cutpath": null
+}

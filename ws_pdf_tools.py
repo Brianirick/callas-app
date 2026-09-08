@@ -1897,18 +1897,18 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
       "output_size_in": [width_in, height_in],   # output sheet size in inches
       "panels": [
         {
-          "name":    "center",
-          "src_in":  [x, y, w, h],   # crop rect in inches, from lower-left of source page
-          "dest_pt": [x0, y0, x1, y1],  # destination rect in pt, PyMuPDF coords (y=0 at top)
-          "rotate":  270              # 0, 90, 180, 270 (CCW degrees)
+          "name":   "center",
+          "src_in": [x, y, w, h],  # crop region in inches, from lower-left of source page (PDF convention)
+          "dst_in": [x, y, w, h],  # destination in inches, from lower-left of output sheet (PDF convention)
+          "rotate": 270            # 0, 90, 180, 270 (CCW degrees)
         },
         ...
       ]
     }
 
-    src_in uses PDF coordinate convention (y=0 at bottom, y increases upward).
-    dest_pt uses PyMuPDF convention (y=0 at top, y increases downward).
-    The clip is clamped to the actual source page bounds.
+    All coordinates use PDF lower-left convention (y=0 at bottom, y increases upward).
+    Clips are clamped to the actual source page bounds.
+    Legacy "dest_pt" key (PyMuPDF y-down coords) is still accepted for backward compatibility.
     """
     out_size   = finishing.get("output_size_in", [90, 106])
     out_w_pt   = out_size[0] * 72
@@ -1918,24 +1918,30 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     src      = fitz.open(input_path)
     src_page = src[0]
     src_w    = src_page.rect.width
-    src_h    = src_page.rect.height   # PyMuPDF y-down; PDF y-up origin at bottom
+    src_h    = src_page.rect.height   # PyMuPDF y-down height
 
     out      = fitz.open()
     page     = out.new_page(width=out_w_pt, height=out_h_pt)
 
     for panel in panels:
+        # ── Source clip ──────────────────────────────────────────────────────
         sx, sy, sw, sh = [v * 72 for v in panel["src_in"]]
-        # Convert from PDF lower-left convention to PyMuPDF (y-down, y0 at top)
-        clip_x0 = sx
-        clip_y0 = src_h - (sy + sh)   # top of panel in PyMuPDF
-        clip_x1 = sx + sw
-        clip_y1 = src_h - sy           # bottom of panel in PyMuPDF
-        # Clamp to page bounds
         clip = fitz.Rect(
-            max(clip_x0, 0), max(clip_y0, 0),
-            min(clip_x1, src_w), min(clip_y1, src_h)
+            max(sx, 0),
+            max(src_h - (sy + sh), 0),   # PDF y-up → PyMuPDF y-down
+            min(sx + sw, src_w),
+            min(src_h - sy, src_h)
         )
-        dest   = fitz.Rect(panel["dest_pt"])
+
+        # ── Destination rect ─────────────────────────────────────────────────
+        if "dst_in" in panel:
+            dx, dy, dw, dh = [v * 72 for v in panel["dst_in"]]
+            # PDF y-up → PyMuPDF y-down: y0_pm = out_h - (dy + dh), y1_pm = out_h - dy
+            dest = fitz.Rect(dx, out_h_pt - (dy + dh), dx + dw, out_h_pt - dy)
+        else:
+            # Legacy: dest_pt already in PyMuPDF coords
+            dest = fitz.Rect(panel["dest_pt"])
+
         rotate = int(panel.get("rotate", 0))
         page.show_pdf_page(dest, src, 0, clip=clip, rotate=rotate)
 
@@ -2067,7 +2073,11 @@ def run_recipe(input_path: str, recipe: dict,
             if pfile.exists():
                 profile_data = json.loads(pfile.read_text())
                 tmp_fin = tempfile.mktemp(suffix=".pdf")
-                run_profile(tmp_pf, tmp_fin, profile_data)
+                if profile_data.get("type") == "impose":
+                    _step(f"🏁 Applying impose: {finishing}…")
+                    impose_panels(tmp_pf, tmp_fin, profile_data)
+                else:
+                    run_profile(tmp_pf, tmp_fin, profile_data)
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")

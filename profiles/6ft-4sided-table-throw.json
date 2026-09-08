@@ -1,37 +1,14 @@
 {
   "type": "recipe",
   "name": "6ft-4sided-table-throw",
-  "description": "6ft 4-Sided Stretch Table Throw — impose 3 panels onto 90\"x106\" sheet",
+  "description": "6ft 4-Sided Multi Stretch Table Throw",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 134.4,
     "height_inch": 87.5,
     "tolerance_inch": 0.5
   },
-  "finishing": {
-    "type": "impose",
-    "output_size_in": [90, 106],
-    "panels": [
-      {
-        "name": "center",
-        "src_in": [31.5, 0, 71.5, 88],
-        "dest_pt": [90.625, 90, 6389.375, 5238],
-        "rotate": 270
-      },
-      {
-        "name": "left",
-        "src_in": [0, 27.75, 31.0, 31.25],
-        "dest_pt": [135, 5328, 2385, 7560],
-        "rotate": 90
-      },
-      {
-        "name": "right",
-        "src_in": [103.25, 27.75, 31.25, 31.25],
-        "dest_pt": [2511, 5316.08, 4761, 7561.08],
-        "rotate": 270
-      }
-    ]
-  },
+  "finishing": "6ft-4-MULTI-3pc",
   "overlay": null,
   "cutpath": null
 }

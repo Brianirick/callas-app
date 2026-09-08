@@ -8,7 +8,7 @@ Run with:
 """
 
 import streamlit as st
-import tempfile, os, sys, json, importlib
+import tempfile, os, sys, json, importlib, copy
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -768,7 +768,8 @@ elif page == "build":
                  ("rb_overlay","— none —"),
                  ("rb_cutpath","— none —"), ("rb_check_size", True),
                  ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
-                 ("rb_labels", None)]:
+                 ("rb_labels", None), ("rb_impose_draft", None),
+                 ("rb_impose_loaded_from", None)]:
         if k not in st.session_state:
             st.session_state[k] = v
 
@@ -790,7 +791,7 @@ elif page == "build":
                        ("rb_finishing","— none —"), ("rb_finishing_dict", None),
                        ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
                        ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
-                       ("rb_labels", None)]:
+                       ("rb_labels", None), ("rb_impose_draft", None), ("rb_impose_loaded_from", None)]:
             st.session_state[_k] = _v
         st.rerun()
 
@@ -868,11 +869,132 @@ elif page == "build":
         _stage_header("⚙️", "Finishing", "Python finishing profile")
         st.selectbox("Finishing", finishing_opts, key="rb_finishing", label_visibility="collapsed")
         if st.session_state.rb_finishing != "— none —":
+            _sel_fin_stem = finishing_profiles.get(st.session_state.rb_finishing, "")
             st.markdown(
                 f'<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.3rem;">'
-                f'{finishing_profiles.get(st.session_state.rb_finishing,"")}.json</div>',
+                f'{_sel_fin_stem}.json</div>',
                 unsafe_allow_html=True
             )
+            # ── Impose profile editor ─────────────────────────────────────────
+            _sel_fin_path = PROFILES_DIR / f"{_sel_fin_stem}.json"
+            if _sel_fin_path.exists():
+                _sel_fin_data = json.loads(_sel_fin_path.read_text(encoding="utf-8"))
+                if _sel_fin_data.get("type") == "impose":
+                    # Load into draft when switching profiles
+                    if st.session_state.get("rb_impose_loaded_from") != _sel_fin_stem:
+                        st.session_state.rb_impose_draft       = copy.deepcopy(_sel_fin_data)
+                        st.session_state.rb_impose_loaded_from = _sel_fin_stem
+                    _imp = st.session_state.rb_impose_draft or {}
+                    with st.expander("⚙️ Edit impose settings", expanded=False):
+                        # Output sheet size
+                        _osz = _imp.get("output_size_in", [90, 106])
+                        _oi1, _oi2 = st.columns(2)
+                        with _oi1:
+                            _out_w = st.number_input("Sheet width (in)", value=float(_osz[0]),
+                                                     min_value=1.0, step=0.5, key="imp_out_w")
+                        with _oi2:
+                            _out_h = st.number_input("Sheet height (in)", value=float(_osz[1]),
+                                                     min_value=1.0, step=0.5, key="imp_out_h")
+                        _imp["output_size_in"] = [_out_w, _out_h]
+
+                        # Per-panel editors
+                        _panels = list(_imp.get("panels", []))
+                        _new_panels = []
+                        for _pi, _pan in enumerate(_panels):
+                            _pname = _pan.get("name", f"Panel {_pi+1}")
+                            with st.expander(f"📦 {_pname}", expanded=True):
+                                _pn_col, _pr_col = st.columns([2, 1])
+                                with _pn_col:
+                                    _new_pname = st.text_input("Name", value=_pname,
+                                                               key=f"imp_p{_pi}_name")
+                                with _pr_col:
+                                    _rot_opts = [0, 90, 180, 270]
+                                    _rot_cur  = int(_pan.get("rotate", 0))
+                                    _new_rot  = st.selectbox(
+                                        "Rotation (°)", _rot_opts,
+                                        index=_rot_opts.index(_rot_cur) if _rot_cur in _rot_opts else 0,
+                                        key=f"imp_p{_pi}_rot",
+                                        help="CCW degrees. 270 = -90° (most common for throws)"
+                                    )
+                                st.markdown(
+                                    '<div style="font-size:0.72rem;color:#7f9bb5;margin-bottom:2px;">'
+                                    'Source crop — inches from lower-left of artwork</div>',
+                                    unsafe_allow_html=True
+                                )
+                                _src = _pan.get("src_in", [0, 0, 1, 1])
+                                _s1, _s2, _s3, _s4 = st.columns(4)
+                                with _s1:
+                                    _sx = st.number_input("X", value=float(_src[0]), step=0.25, format="%.3f", key=f"imp_p{_pi}_sx")
+                                with _s2:
+                                    _sy = st.number_input("Y", value=float(_src[1]), step=0.25, format="%.3f", key=f"imp_p{_pi}_sy")
+                                with _s3:
+                                    _sw = st.number_input("W", value=float(_src[2]), step=0.25, format="%.3f", key=f"imp_p{_pi}_sw")
+                                with _s4:
+                                    _sh = st.number_input("H", value=float(_src[3]), step=0.25, format="%.3f", key=f"imp_p{_pi}_sh")
+                                st.markdown(
+                                    '<div style="font-size:0.72rem;color:#7f9bb5;margin-bottom:2px;">'
+                                    'Destination — inches from lower-left of output sheet</div>',
+                                    unsafe_allow_html=True
+                                )
+                                _dst = _pan.get("dst_in", [0, 0, 1, 1])
+                                _d1, _d2, _d3, _d4 = st.columns(4)
+                                with _d1:
+                                    _dx = st.number_input("X", value=float(_dst[0]), step=0.25, format="%.3f", key=f"imp_p{_pi}_dx")
+                                with _d2:
+                                    _dy = st.number_input("Y", value=float(_dst[1]), step=0.25, format="%.3f", key=f"imp_p{_pi}_dy")
+                                with _d3:
+                                    _dw = st.number_input("W", value=float(_dst[2]), step=0.25, format="%.3f", key=f"imp_p{_pi}_dw")
+                                with _d4:
+                                    _dh = st.number_input("H", value=float(_dst[3]), step=0.25, format="%.3f", key=f"imp_p{_pi}_dh")
+                                _new_panels.append({
+                                    **_pan,
+                                    "name":   _new_pname,
+                                    "src_in": [_sx, _sy, _sw, _sh],
+                                    "dst_in": [_dx, _dy, _dw, _dh],
+                                    "rotate": int(_new_rot),
+                                })
+                        _imp["panels"] = _new_panels
+                        st.session_state.rb_impose_draft = _imp
+
+                        # Add / remove panels
+                        _add_col, _rem_col = st.columns(2)
+                        with _add_col:
+                            if st.button("➕ Add panel", key="imp_add_panel"):
+                                _imp["panels"].append({
+                                    "name": f"panel_{len(_new_panels)+1}",
+                                    "src_in": [0, 0, 10, 10],
+                                    "dst_in": [0, 0, 10, 10],
+                                    "rotate": 0
+                                })
+                                st.rerun()
+                        with _rem_col:
+                            if len(_new_panels) > 1 and st.button("➖ Remove last", key="imp_rem_panel"):
+                                _imp["panels"] = _imp["panels"][:-1]
+                                st.rerun()
+
+                        # Save as new finishing profile
+                        st.divider()
+                        _save_col1, _save_col2 = st.columns([3, 1])
+                        with _save_col1:
+                            _imp_save_name = st.text_input(
+                                "Save as finishing profile",
+                                value=_imp.get("name", _sel_fin_stem),
+                                key="imp_save_name",
+                                help="Enter a new name to duplicate, or same name to overwrite"
+                            )
+                        with _save_col2:
+                            st.markdown('<div style="margin-top:1.65rem;"></div>', unsafe_allow_html=True)
+                            if st.button("💾 Save", key="imp_save_btn"):
+                                _imp_to_save = copy.deepcopy(_imp)
+                                _imp_to_save["name"] = _imp_save_name
+                                _imp_to_save["type"] = "impose"
+                                _save_path = PROFILES_DIR / f"{_imp_save_name}.json"
+                                _save_path.write_text(
+                                    json.dumps(_imp_to_save, indent=2), encoding="utf-8"
+                                )
+                                st.success(f"Saved: {_imp_save_name}.json")
+                                st.session_state.rb_impose_loaded_from = None
+                                st.rerun()
         else:
             # Inline finishing type selector — lets user pick flag_label without duplicating a profile
             _inline_types = ["— none —", "flag_label"]

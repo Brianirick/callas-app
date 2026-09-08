@@ -1,0 +1,13 @@
+name: callas-app
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - poppler
+  - pip
+  - pip:
+    - streamlit
+    - pymupdf
+    - pypdf
+    - PyGithub

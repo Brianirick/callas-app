@@ -1,7 +1,7 @@
 {
   "type": "recipe",
-  "name": "6ft-4-fitted",
-  "description": "Auto-imported from QuickProof (Id=802)",
+  "name": "6ft-4sided-fitted-table-throw",
+  "description": "6ft 4-Sided Fitted Table Throw",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 131.25,

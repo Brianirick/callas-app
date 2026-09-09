@@ -1,7 +1,7 @@
 {
   "type": "recipe",
-  "name": "6ft-3sided-table-throw-5pc",
-  "description": "6ft 3-Sided Multi Stretch Table Throw — 5-piece",
+  "name": "6ft-3sided-multi-table-throw-5pc",
+  "description": "6ft 3-Sided Multi Stretch Table Throw \u2014 5-piece",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 135.25,

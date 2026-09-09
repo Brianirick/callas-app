@@ -403,6 +403,27 @@ if page == "run":
             if desc:
                 st.markdown(f'<div class="info-box">{desc}</div>', unsafe_allow_html=True)
 
+            # Profile details summary card
+            _cs  = profile_data.get("check_size")
+            _fin = profile_data.get("finishing")
+            _ov  = profile_data.get("overlay")
+            _cp  = profile_data.get("cutpath")
+            _pf  = profile_data.get("preflight")
+            _rows = []
+            if _pf:  _rows.append(("Preflight", _pf))
+            if _cs:  _rows.append(("Size check", f'{_cs.get("width_inch","")} × {_cs.get("height_inch","")} in (±{_cs.get("tolerance_inch","")})'))
+            if _fin: _rows.append(("Finishing", _fin))
+            if _ov:  _rows.append(("Overlay", _ov))
+            if _cp:  _rows.append(("Cut path", _cp))
+            if _rows:
+                _detail_html = "".join(
+                    f'<div style="display:flex;gap:8px;padding:2px 0;border-bottom:1px solid #1e2a3a;">'
+                    f'<span style="color:#7f9bb5;font-size:0.68rem;width:72px;flex-shrink:0;">{k}</span>'
+                    f'<span style="color:#cbd5e1;font-size:0.68rem;word-break:break-all;">{v}</span></div>'
+                    for k, v in _rows
+                )
+                st.markdown(f'<div style="background:#0f1a2e;border:1px solid #1e2a3a;border-radius:6px;padding:8px 10px;margin-bottom:8px;">{_detail_html}</div>', unsafe_allow_html=True)
+
             # Step summary
             steps = profile_data.get("steps", [])
             st.markdown(f'<div style="font-size:0.7rem; color:#7f9bb5; margin-bottom:0.3rem;">{len(steps)} step{"s" if len(steps)!=1 else ""}</div>', unsafe_allow_html=True)

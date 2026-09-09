@@ -898,11 +898,13 @@ elif page == "build":
                         _imp["output_size_in"] = [_out_w, _out_h]
 
                         # Per-panel editors
+                        _PANEL_DOTS = ["🔴", "🟢", "🔵", "🟠", "🟣", "🩵"]
                         _panels = list(_imp.get("panels", []))
                         _new_panels = []
                         for _pi, _pan in enumerate(_panels):
                             _pname = _pan.get("name", f"Panel {_pi+1}")
-                            with st.expander(f"📦 {_pname}", expanded=True):
+                            _dot   = _PANEL_DOTS[_pi % len(_PANEL_DOTS)]
+                            with st.expander(f"{_dot} {_pname}", expanded=True):
                                 _pn_col, _pr_col = st.columns([2, 1])
                                 with _pn_col:
                                     _new_pname = st.text_input("Name", value=_pname,

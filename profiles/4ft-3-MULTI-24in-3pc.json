@@ -1,0 +1,11 @@
+{
+  "name": "4ft-3-MULTI-24in-3pc",
+  "type": "impose",
+  "description": "4ft 3-Sided Multi Stretch Table Throw (24in depth) — 3-piece imposition onto 54\"x116\" sheet",
+  "output_size_in": [54, 116],
+  "panels": [
+    {"name": "center", "src_in": [31.75, 0,  48.5, 88],   "dst_in": [3,  32.75, 48.5, 83.5], "rotate": 0},
+    {"name": "left",   "src_in": [0,     28, 31.5, 26],   "dst_in": [1,  1,     26,   31.5],  "rotate": 90},
+    {"name": "right",  "src_in": [80,    28, 31.5, 26],   "dst_in": [27, 1,     26,   31.5],  "rotate": 270}
+  ]
+}

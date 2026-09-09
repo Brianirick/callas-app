@@ -1,0 +1,13 @@
+{
+  "name": "6ft-3-MULTI-5pc",
+  "type": "impose",
+  "description": "6ft 3-Sided Multi Stretch Table Throw — 5-piece imposition onto 146.5\"x65\" sheet",
+  "output_size_in": [146.5, 65],
+  "panels": [
+    {"name": "A-left",          "src_in": [0,      28.25, 31,    31.25], "dst_in": [77,   -2,    31,    31.25], "rotate": 0},
+    {"name": "B-bottom-center", "src_in": [31.5,   -0.5,  72,    28.75], "dst_in": [0.75,  1,    72,    28.75], "rotate": 0},
+    {"name": "C-mid-center",    "src_in": [31.5,   28.25, 71.85, 31.25], "dst_in": [74,   33.25, 71.85, 31.25], "rotate": 0},
+    {"name": "D-top-center",    "src_in": [31.5,   59.35, 72.5,  29.5],  "dst_in": [0.75, 36,    72.5,  29.5],  "rotate": 0},
+    {"name": "E-right",         "src_in": [104.25, 28.25, 31,    31.25], "dst_in": [112,  -2,    31,    31.25], "rotate": 0}
+  ]
+}

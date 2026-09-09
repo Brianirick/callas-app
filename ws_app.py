@@ -229,12 +229,13 @@ st.markdown("""
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def load_all_profiles():
-    """Return dict of {display_name: (path, profile_dict)} from profiles/ folder."""
+    """Return dict of {display_name: (path, profile_dict)} for recipe profiles only."""
     profiles = {}
     for p in sorted(PROFILES_DIR.glob("*.json")):
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
-            profiles[data.get("name", p.stem)] = (p, data)
+            if data.get("type") == "recipe":
+                profiles[data.get("name", p.stem)] = (p, data)
         except Exception:
             pass
     return profiles

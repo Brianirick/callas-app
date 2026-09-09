@@ -48,6 +48,76 @@ def save_pdf(doc: fitz.Document, out_path: str, deflate: bool = True):
     print(f"  Saved: {out_path}")
 
 
+def preview_impose_crops(input_path: str, panels: list, output_path: str,
+                         max_px: int = 1600) -> str:
+    """
+    Render the source PDF with each panel's src_in region outlined in a
+    distinct colour and labelled.  Saves a JPEG to output_path and returns it.
+
+    Colours cycle through 6 values; labels are placed at the top-left corner
+    of each crop rectangle.
+
+    Parameters
+    ----------
+    input_path : path to source artwork PDF
+    panels     : list of panel dicts (same format as impose_panels)
+    output_path: where to write the annotated JPEG
+    max_px     : cap the long edge at this many pixels (keeps file small)
+    """
+    COLORS = [
+        (1.0, 0.0, 0.0),   # red
+        (0.0, 0.7, 0.0),   # green
+        (0.0, 0.4, 1.0),   # blue
+        (1.0, 0.55, 0.0),  # orange
+        (0.7, 0.0, 0.9),   # purple
+        (0.0, 0.75, 0.75), # cyan
+    ]
+
+    doc  = fitz.open(input_path)
+    page = doc[0]
+    src_w = page.rect.width   # points
+    src_h = page.rect.height
+
+    # Compute scale so long edge ≤ max_px
+    long_edge = max(src_w, src_h)
+    scale = min(1.0, max_px / long_edge)
+
+    # Draw annotations on a fresh Shape layer
+    shape = page.new_shape()
+    for i, panel in enumerate(panels):
+        color  = COLORS[i % len(COLORS)]
+        sx, sy, sw, sh = [v * 72 for v in panel.get("src_in", [0, 0, 10, 10])]
+
+        # PDF y-up → PyMuPDF y-down
+        y0 = max(src_h - (sy + sh), 0)
+        y1 = min(src_h - sy, src_h)
+        x0 = max(sx, 0)
+        x1 = min(sx + sw, src_w)
+
+        rect = fitz.Rect(x0, y0, x1, y1)
+        shape.draw_rect(rect)
+        shape.finish(color=color, fill=None, width=max(2, 4 / scale))
+
+        # Label at top-left of crop region (with a small offset)
+        label = panel.get("name", f"p{i}")
+        font_size = max(8, int(14 / scale))
+        shape.insert_text(
+            fitz.Point(x0 + 4, y0 + font_size + 2),
+            label,
+            fontsize=font_size,
+            color=color,
+        )
+
+    shape.commit()
+
+    mat = fitz.Matrix(scale, scale)
+    pix = page.get_pixmap(matrix=mat, alpha=False)
+    pix.save(output_path)
+    pix = None
+    doc.close()
+    return output_path
+
+
 # ---------------------------------------------------------------------------
 # PAGE GEOMETRY  (ffeat: SetMediaBoxTo00, SetPageBoxEx, SetTrimBox)
 # ---------------------------------------------------------------------------

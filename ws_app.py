@@ -956,6 +956,36 @@ elif page == "build":
                         _imp["panels"] = _new_panels
                         st.session_state.rb_impose_draft = _imp
 
+                        # ── Source crop preview ──────────────────────────────
+                        st.divider()
+                        st.markdown(
+                            '<div style="font-size:0.8rem;color:#7f9bb5;margin-bottom:4px;">'
+                            '👁 Preview source crops</div>',
+                            unsafe_allow_html=True
+                        )
+                        _prev_up = st.file_uploader(
+                            "Upload source artwork PDF to see crop regions",
+                            type=["pdf"], key="imp_preview_pdf",
+                            label_visibility="collapsed"
+                        )
+                        if _prev_up:
+                            import tempfile, io
+                            _prev_tmp = tempfile.mktemp(suffix=".pdf")
+                            with open(_prev_tmp, "wb") as _pf:
+                                _pf.write(_prev_up.read())
+                            _prev_jpg = tempfile.mktemp(suffix=".jpg")
+                            try:
+                                ws.preview_impose_crops(
+                                    _prev_tmp,
+                                    st.session_state.rb_impose_draft.get("panels", []),
+                                    _prev_jpg
+                                )
+                                st.image(_prev_jpg,
+                                         caption="Source artwork — crop regions per panel",
+                                         use_container_width=True)
+                            except Exception as _pe:
+                                st.warning(f"Preview failed: {_pe}")
+
                         # Add / remove panels
                         _add_col, _rem_col = st.columns(2)
                         with _add_col:

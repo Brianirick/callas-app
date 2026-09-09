@@ -1267,25 +1267,42 @@ def merge_cutpath(input_path: str, output_path: str, cutpath_pdf_path: str):
 # JPEG export
 # ---------------------------------------------------------------------------
 
-def export_jpeg(input_path: str, output_path: str, dpi: int = 150):
+def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
+                max_pixels: int = 8000):
     """
     Render the first page of a PDF to a JPEG at the given DPI.
     For multi-page PDFs, renders every page and saves as <stem>_p1.jpg, etc.
     Returns list of output paths written.
+
+    max_pixels caps the longest edge in pixels to avoid OOM on large-format
+    artwork (e.g. 135" wide at 150 DPI = 20,325 px = ~800 MB pixmap).
+    The effective DPI is reduced to keep within the cap while respecting dpi
+    as an upper bound.
     """
     doc    = fitz.open(input_path)
-    mat    = fitz.Matrix(dpi / 72, dpi / 72)
     paths  = []
     stem   = Path(output_path).stem
     folder = Path(output_path).parent
     ext    = Path(output_path).suffix or ".jpg"
 
     for i, page in enumerate(doc):
+        # Compute effective DPI — cap long edge at max_pixels
+        pw = page.rect.width   # points
+        ph = page.rect.height
+        long_edge_in = max(pw, ph) / 72.0
+        if long_edge_in > 0:
+            cap_dpi = int(max_pixels / long_edge_in)
+            effective_dpi = min(dpi, cap_dpi)
+        else:
+            effective_dpi = dpi
+
+        mat  = fitz.Matrix(effective_dpi / 72, effective_dpi / 72)
         pix  = page.get_pixmap(matrix=mat, alpha=False)
         dest = str(folder / f"{stem}_p{i+1}{ext}") if len(doc) > 1 else output_path
         pix.save(dest)
+        pix = None   # release pixmap memory promptly
         paths.append(dest)
-        print(f"  export_jpeg p{i+1} → {dest}")
+        print(f"  export_jpeg p{i+1} → {dest} ({effective_dpi} dpi)")
 
     doc.close()
     return paths

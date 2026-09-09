@@ -1,0 +1,11 @@
+{
+  "name": "4ft-4-FITTED-3pc",
+  "type": "impose",
+  "description": "4ft 4-Sided Fitted Table Throw 24in — 3-piece imposition onto 84.5\"x79\" sheet",
+  "output_size_in": [84.5, 79],
+  "panels": [
+    {"name": "left",   "src_in": [0,  29, 29,   24.5436], "dst_in": [4,      0.5, 24,    29],  "rotate": 0},
+    {"name": "right",  "src_in": [77, 29, 30,   24.5],    "dst_in": [34.875, 0.5, 24.18, 29],  "rotate": 0},
+    {"name": "center", "src_in": [29, 0,  48,   88.5],    "dst_in": [0.5,    0.5, 83,    108], "rotate": 270}
+  ]
+}

@@ -260,15 +260,20 @@ def _s3():
     """Return a boto3 S3 client using Streamlit secrets or default credential chain."""
     try:
         cfg = st.secrets.get("aws", {})
+        print(f"[S3] secrets aws keys: {list(cfg.keys()) if cfg else 'none'}")
         if cfg.get("access_key_id"):
-            return boto3.client(
+            client = boto3.client(
                 "s3",
                 aws_access_key_id=cfg["access_key_id"],
                 aws_secret_access_key=cfg["secret_access_key"],
                 region_name=cfg.get("region", "us-east-1"),
             )
-        return boto3.client("s3")  # falls back to ~/.aws/credentials locally
-    except Exception:
+            print("[S3] client created OK")
+            return client
+        print("[S3] no access_key_id found, falling back to default credentials")
+        return boto3.client("s3")
+    except Exception as e:
+        print(f"[S3] client creation failed: {e}")
         return None
 
 
@@ -304,6 +309,7 @@ def fetch_pdf_from_s3(filename: str, kind: str) -> Path | None:
     prefix = S3_OVERLAY_PREFIX if kind == "overlay" else S3_CUTPATH_PREFIX
     client = _s3()
     if not client:
+        print(f"[S3 fetch] no client — skipping {filename}")
         return None
     try:
         client.download_file(S3_BUCKET, prefix + filename, str(local_path))

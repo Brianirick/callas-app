@@ -1779,6 +1779,78 @@ def _lab_recolor(data: bytes, fill_labs: set, stroke_labs: set) -> bytes:
     return b"".join(raw for _, raw in out)
 
 
+# ---------------------------------------------------------------------------
+# TEMPLATE SPOT COLOR → CMYK CONVERSION
+# ---------------------------------------------------------------------------
+
+# Exact spot color names (as they appear in WS Display template PDFs) mapped
+# to target CMYK values in 0-100 scale.
+# PDF encodes spaces as #20 in name tokens — we handle that automatically.
+TEMPLATE_COLOR_CMYK: dict = {
+    "Yellow Template Layer":       (4,  0,  93, 0),
+    "Blue Template Layer":         (67, 1,  0,  0),
+    "Red Template Layer":          (0,  99, 97, 0),
+    "Black Template Layer":        (70, 67, 64, 74),
+    "Valance Blue Template Layer": (79, 23, 18, 0),
+}
+
+
+def convert_template_colors_to_cmyk(input_path: str, output_path: str) -> None:
+    """
+    Converts WS Display template spot colors to DeviceCMYK.
+
+    Scans ALL xref objects directly (via fitz) so it catches Separation
+    colorspaces regardless of whether they live on a page's /Resources,
+    an inherited parent node, or a Form XObject — which pypdf page-walks miss.
+
+    The spot color NAME is preserved; only the alternate colorspace and
+    tint function are replaced (DeviceRGB → DeviceCMYK with target values).
+    """
+    # Build lookup keyed by PDF-encoded name (spaces → #20)
+    encoded_map = {
+        name.replace(" ", "#20"): (c, m, y, k)
+        for name, (c, m, y, k) in TEMPLATE_COLOR_CMYK.items()
+    }
+
+    doc = fitz.open(input_path)
+    converted = {}
+
+    for xref in range(1, doc.xref_length()):
+        try:
+            obj_str = doc.xref_object(xref, compressed=False)
+        except Exception:
+            continue
+
+        if "/Separation" not in obj_str:
+            continue
+
+        for enc_name, (c, m, y, k) in encoded_map.items():
+            if f"/{enc_name}" not in obj_str:
+                continue
+            # Replace the whole Separation array with a DeviceCMYK version
+            c0 = c / 100.0;  m0 = m / 100.0;  y0 = y / 100.0;  k0 = k / 100.0
+            new_obj = (
+                f"[ /Separation /{enc_name} /DeviceCMYK\n"
+                f"  << /FunctionType 2 /Domain [ 0 1 ]\n"
+                f"     /C0 [ 0 0 0 0 ]\n"
+                f"     /C1 [ {c0:.5f} {m0:.5f} {y0:.5f} {k0:.5f} ]\n"
+                f"     /N 1 >> ]"
+            )
+            doc.update_object(xref, new_obj)
+            converted[enc_name.replace("#20", " ")] = (c, m, y, k)
+            break
+
+    save_pdf(doc, output_path)
+    doc.close()
+
+    if converted:
+        for name, (c, m, y, k) in converted.items():
+            print(f"  convert_template_colors: '{name}' → CMYK {c}/{m}/{y}/{k}")
+    else:
+        print("  convert_template_colors: no template spot colors found")
+    print(f"  → {output_path}")
+
+
 def convert_lab_to_cmyk(input_path: str, output_path: str) -> None:
     """
     Replicates: CCSettings/CCDestination "Convert LAB to CMYK"
@@ -1976,65 +2048,127 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
 
 def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     """
-    Generic imposition: crop panels from the source page and place them on a new output sheet.
+    Spot-color-safe imposition via pypdf (no fitz rendering pipeline).
+
+    Uses PDF content-stream operators (q/Q, re W n, cm) to clip and transform
+    each panel directly, so Separation colorspaces (Template Blue, Cut Contour,
+    etc.) pass through unchanged — no rasterisation, no resource stripping.
 
     finishing dict format:
     {
       "type": "impose",
-      "output_size_in": [width_in, height_in],   # output sheet size in inches
+      "output_size_in": [width_in, height_in],
       "panels": [
         {
           "name":   "center",
-          "src_in": [x, y, w, h],  # crop region in inches, from lower-left of source page (PDF convention)
-          "dst_in": [x, y, w, h],  # destination in inches, from lower-left of output sheet (PDF convention)
-          "rotate": 270            # 0, 90, 180, 270 (CCW degrees)
+          "src_in": [x, y, w, h],  # crop region in inches, PDF lower-left origin
+          "dst_in": [x, y, w, h],  # destination in inches, PDF lower-left origin
+          "rotate": 270            # 0 | 90 (CCW) | 180 | 270 (CW)
         },
         ...
       ]
     }
-
-    All coordinates use PDF lower-left convention (y=0 at bottom, y increases upward).
-    Clips are clamped to the actual source page bounds.
-    Legacy "dest_pt" key (PyMuPDF y-down coords) is still accepted for backward compatibility.
+    All coordinates use PDF convention: y=0 at bottom, y increases upward.
     """
-    out_size   = finishing.get("output_size_in", [90, 106])
-    out_w_pt   = out_size[0] * 72
-    out_h_pt   = out_size[1] * 72
-    panels     = finishing.get("panels", [])
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import (
+        ArrayObject, DecodedStreamObject, NameObject, RectangleObject,
+    )
 
-    src      = fitz.open(input_path)
-    src_page = src[0]
-    src_w    = src_page.rect.width
-    src_h    = src_page.rect.height   # PyMuPDF y-down height
+    out_size = finishing.get("output_size_in", [90, 106])
+    out_w_pt = out_size[0] * 72.0
+    out_h_pt = out_size[1] * 72.0
+    panels   = finishing.get("panels", [])
 
-    out      = fitz.open()
-    page     = out.new_page(width=out_w_pt, height=out_h_pt)
+    reader = PdfReader(input_path)
+    src_page = reader.pages[0]
 
+    # ── Concatenate all content-stream bytes from the source page ─────────────
+    def _content_bytes(page) -> bytes:
+        if "/Contents" not in page:
+            return b""
+        obj = page["/Contents"]
+        if hasattr(obj, "get_object"):
+            obj = obj.get_object()
+        if isinstance(obj, ArrayObject):
+            chunks = []
+            for ref in obj:
+                s = ref.get_object() if hasattr(ref, "get_object") else ref
+                if hasattr(s, "get_data"):
+                    chunks.append(s.get_data())
+            return b" ".join(chunks)
+        return obj.get_data() if hasattr(obj, "get_data") else b""
+
+    # ── Copy source page into writer so all resources (spot colours, fonts,
+    #    XObjects) are embedded and referenced from the same document.
+    #    We then repurpose that page as the output page — resources stay intact.
+    writer = PdfWriter()
+    writer.append(reader, pages=[0])            # page 0 → writer page 0
+    out_page = writer.pages[0]
+    src_bytes = _content_bytes(out_page)        # grab raw content BEFORE clearing
+
+    # Resize to output sheet
+    out_page.mediabox = RectangleObject([0, 0, out_w_pt, out_h_pt])
+    out_page.cropbox  = RectangleObject([0, 0, out_w_pt, out_h_pt])
+    for box in ("/TrimBox", "/BleedBox", "/ArtBox"):
+        if box in out_page:
+            del out_page[NameObject(box)]
+
+    # ── Build one clipped+transformed copy of the source per panel ────────────
+    # PDF matrix [a b c d e f]: x' = a·x + c·y + e,  y' = b·x + d·y + f
+    #
+    # Derivation (all in PDF y-up coords, values in points):
+    #   rotate=0:   scale(dw/sw, dh/sh), translate crop-origin to dst-origin
+    #   rotate=270: 90° CW — source w/h swap; x'=y·(dw/sh), y'=-x·(dh/sw)
+    #   rotate=90:  90° CCW — x'=-y·(dw/sh), y'=x·(dh/sw)
+    #   rotate=180: flip both axes
+    parts = []
     for panel in panels:
-        # ── Source clip ──────────────────────────────────────────────────────
-        sx, sy, sw, sh = [v * 72 for v in panel["src_in"]]
-        clip = fitz.Rect(
-            max(sx, 0),
-            max(src_h - (sy + sh), 0),   # PDF y-up → PyMuPDF y-down
-            min(sx + sw, src_w),
-            min(src_h - sy, src_h)
-        )
-
-        # ── Destination rect ─────────────────────────────────────────────────
-        if "dst_in" in panel:
-            dx, dy, dw, dh = [v * 72 for v in panel["dst_in"]]
-            # PDF y-up → PyMuPDF y-down: y0_pm = out_h - (dy + dh), y1_pm = out_h - dy
-            dest = fitz.Rect(dx, out_h_pt - (dy + dh), dx + dw, out_h_pt - dy)
-        else:
-            # Legacy: dest_pt already in PyMuPDF coords
-            dest = fitz.Rect(panel["dest_pt"])
-
+        sx, sy, sw, sh = [v * 72.0 for v in panel["src_in"]]
+        dx, dy, dw, dh = [v * 72.0 for v in panel["dst_in"]]
         rotate = int(panel.get("rotate", 0))
-        page.show_pdf_page(dest, src, 0, clip=clip, rotate=rotate)
 
-    out.save(output_path, garbage=4, deflate=True)
-    out.close()
-    src.close()
+        if rotate == 0:
+            ss, ts = dw / sw, dh / sh
+            a, b, c, d = ss,   0.0, 0.0, ts
+            e, f       = dx - sx * ss,        dy - sy * ts
+
+        elif rotate == 270:       # 90° CW  (most common for fitted throws)
+            ss, ts = dw / sh, dh / sw
+            a, b, c, d = 0.0, -ts, ss, 0.0
+            e, f       = dx - sy * ss,         dy + (sx + sw) * ts
+
+        elif rotate == 90:        # 90° CCW
+            ss, ts = dw / sh, dh / sw
+            a, b, c, d = 0.0,  ts, -ss, 0.0
+            e, f       = dx + (sy + sh) * ss,  dy - sx * ts
+
+        elif rotate == 180:
+            ss, ts = dw / sw, dh / sh
+            a, b, c, d = -ss, 0.0, 0.0, -ts
+            e, f       = dx + (sx + sw) * ss,  dy + (sy + sh) * ts
+
+        else:                     # unsupported rotation — pass through as-is
+            ss, ts = dw / sw, dh / sh
+            a, b, c, d = ss,   0.0, 0.0, ts
+            e, f       = dx - sx * ss,         dy - sy * ts
+
+        header = (
+            f"q\n"
+            f"{dx:.4f} {dy:.4f} {dw:.4f} {dh:.4f} re W n\n"
+            f"{a:.6f} {b:.6f} {c:.6f} {d:.6f} {e:.4f} {f:.4f} cm\n"
+        ).encode()
+        parts.append(header + src_bytes + b"\nQ\n")
+
+    # ── Replace page /Contents with the imposed stream ────────────────────────
+    new_cs = DecodedStreamObject()
+    new_cs.set_data(b"".join(parts))
+    out_page[NameObject("/Contents")] = writer._add_object(new_cs)
+
+    with open(output_path, "wb") as fh:
+        writer.write(fh)
+
+    print(f"  impose_panels (pypdf, spot-color-safe) → {output_path}")
 
 
 def run_recipe(input_path: str, recipe: dict,
@@ -2074,12 +2208,15 @@ def run_recipe(input_path: str, recipe: dict,
     if preflight in _PREFLIGHT_TARGETS:
         tmp_a = tempfile.mktemp(suffix=".pdf")
         tmp_b = tempfile.mktemp(suffix=".pdf")
+        tmp_c = tempfile.mktemp(suffix=".pdf")
         _step("🎨 Remapping white spot colors…")
         remap_white_spot_colors(input_path, tmp_a)
         _step("🔬 Converting Lab → CMYK…")
         convert_lab_to_cmyk(tmp_a, tmp_b)
         _step(f"⚫ Adjusting vector blacks → {preflight}…")
-        adjust_black_vectors(tmp_b, tmp_pf, target=preflight)
+        adjust_black_vectors(tmp_b, tmp_c, target=preflight)
+        _step("🎨 Converting template spot colors → CMYK…")
+        convert_template_colors_to_cmyk(tmp_c, tmp_pf)
     else:
         if preflight:
             _step(f"⚠️ Unknown preflight target '{preflight}', skipping.")

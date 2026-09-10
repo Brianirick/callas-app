@@ -544,9 +544,17 @@ if page == "run":
                                 _ov = profile_data.get("overlay") or ""
                                 _cp = profile_data.get("cutpath") or ""
                                 if _ov:
-                                    fetch_pdf_from_s3(_ov, "overlay")
+                                    _ov_local = fetch_pdf_from_s3(_ov, "overlay")
+                                    if _ov_local:
+                                        st.write(f"✅ Overlay fetched: {_ov}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch overlay from S3: {_ov}")
                                 if _cp:
-                                    fetch_pdf_from_s3(_cp, "cutpath")
+                                    _cp_local = fetch_pdf_from_s3(_cp, "cutpath")
+                                    if _cp_local:
+                                        st.write(f"✅ Cutpath fetched: {_cp}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch cutpath from S3: {_cp}")
                                 result = ws.run_recipe(input_path, profile_data,
                                                        profiles_dir=str(PROFILES_DIR),
                                                        overlays_dir=str(OVERLAYS_DIR),

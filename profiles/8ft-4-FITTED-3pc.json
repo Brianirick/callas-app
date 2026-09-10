@@ -1,11 +1,59 @@
 {
   "name": "8ft-4-FITTED-3pc",
   "type": "impose",
-  "description": "8ft 4-Sided Fitted Table Throw — 3-piece imposition onto 88.5\"x129\" sheet",
-  "output_size_in": [88.5, 129],
+  "description": "8ft 4-Sided Fitted Table Throw \u2014 3-piece imposition onto 88.5\"x129\" sheet",
+  "output_size_in": [
+    88.5,
+    129
+  ],
   "panels": [
-    {"name": "left",   "src_in": [0,     29, 29.5, 30], "dst_in": [0.5,  0.55, 29, 29],   "rotate": 0},
-    {"name": "right",  "src_in": [125.5, 29, 29.5, 30], "dst_in": [32,   0.5,  29, 29],   "rotate": 0},
-    {"name": "center", "src_in": [29,    0,  97,   88], "dst_in": [0.25, 0.25, 88, 158],  "rotate": 270}
+    {
+      "name": "left",
+      "src_in": [
+        0,
+        29,
+        29.5,
+        30
+      ],
+      "dst_in": [
+        0.5,
+        0.55,
+        29,
+        29
+      ],
+      "rotate": 0
+    },
+    {
+      "name": "right",
+      "src_in": [
+        125.5,
+        29,
+        29.5,
+        30
+      ],
+      "dst_in": [
+        32,
+        0.5,
+        29,
+        29
+      ],
+      "rotate": 0
+    },
+    {
+      "name": "center",
+      "src_in": [
+        29,
+        0,
+        97,
+        88
+      ],
+      "dst_in": [
+        0.25,
+        0.25,
+        88,
+        128.5
+      ],
+      "rotate": 270
+    }
   ]
 }

@@ -6,6 +6,6 @@
   "panels": [
     {"name": "left",   "src_in": [0,  29, 29,    24.5],   "dst_in": [3,    0.5, 24, 29],  "rotate": 0},
     {"name": "right",  "src_in": [77, 29, 29,    24.5],   "dst_in": [33.5, 0.5, 24, 29],  "rotate": 0},
-    {"name": "center", "src_in": [29, 0,  48,    59.776], "dst_in": [0.5,  0.5, 60, 108], "rotate": 270}
+    {"name": "center", "src_in": [29, 0,  48,    59.776], "dst_in": [0.5,  0.5, 60, 78],  "rotate": 270}
   ]
 }

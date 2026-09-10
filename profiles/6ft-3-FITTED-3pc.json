@@ -1,11 +1,59 @@
 {
   "name": "6ft-3-FITTED-3pc",
   "type": "impose",
-  "description": "6ft 3-Sided Fitted Table Throw — 3-piece imposition onto 68\"x105\" sheet",
-  "output_size_in": [68, 105],
+  "description": "6ft 3-Sided Fitted Table Throw \u2014 3-piece imposition onto 68\"x105\" sheet",
+  "output_size_in": [
+    68,
+    105
+  ],
   "panels": [
-    {"name": "left",   "src_in": [0,      29.5, 29.5, 30],   "dst_in": [1,  1, 29,   29],    "rotate": 0},
-    {"name": "right",  "src_in": [101.75, 29,   30,   30],   "dst_in": [32, 1, 29,   28.85], "rotate": 0},
-    {"name": "center", "src_in": [29,     0,    73,   65],   "dst_in": [2,  1, 62,   133],   "rotate": 270}
+    {
+      "name": "left",
+      "src_in": [
+        0,
+        29.5,
+        29.5,
+        30
+      ],
+      "dst_in": [
+        1,
+        1,
+        29,
+        29
+      ],
+      "rotate": 0
+    },
+    {
+      "name": "right",
+      "src_in": [
+        101.75,
+        29,
+        30,
+        30
+      ],
+      "dst_in": [
+        32,
+        1,
+        29,
+        28.85
+      ],
+      "rotate": 0
+    },
+    {
+      "name": "center",
+      "src_in": [
+        29,
+        0,
+        73,
+        65
+      ],
+      "dst_in": [
+        2,
+        1,
+        62,
+        103.0
+      ],
+      "rotate": 270
+    }
   ]
 }

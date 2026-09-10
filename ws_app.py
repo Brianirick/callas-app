@@ -425,6 +425,20 @@ with st.sidebar:
     ws.POPPLER_BIN = poppler_path
 
     st.divider()
+    # S3 connection status
+    _s3_client = _s3()
+    if _s3_client:
+        st.success("S3 ✅ connected")
+    else:
+        st.error("S3 ❌ no client — check secrets")
+        # Show what keys are present for diagnosis
+        try:
+            _aws_cfg = st.secrets.get("aws", {})
+            st.caption(f"aws keys: {list(_aws_cfg.keys()) if _aws_cfg else 'none'}")
+        except Exception as _e:
+            st.caption(f"secrets error: {_e}")
+
+    st.divider()
     st.markdown("**Asset Directories**")
     ov_count  = len(list_s3_pdfs("overlay"))
     cp_count  = len(list_s3_pdfs("cutpath"))

@@ -400,7 +400,7 @@ def preflight_report(input_path: str) -> dict:
         if label == "Cut Contour":
             warnings.append(f"Cut contour spot color found: '{name}'")
         elif label and label.startswith("Template"):
-            issues.append(f"Template spot color found: '{name}' ({label}) — should be removed or converted")
+            warnings.append(f"Template element found: '{name}' — this area will print. Remove template elements before uploading if unintended.")
         elif label == "Unknown Spot":
             warnings.append(f"Unknown spot color: '{name}'")
 

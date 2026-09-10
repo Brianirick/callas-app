@@ -2,3 +2,4 @@ streamlit
 pymupdf
 pypdf
 PyGithub
+boto3

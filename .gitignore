@@ -19,6 +19,9 @@ test file/
 # Generated reports (large, regeneratable)
 missing_assets_report.txt
 
+# Streamlit secrets (never commit real credentials)
+.streamlit/secrets.toml
+
 # Local-only reference files
 WS_Recipe_Builder.xlsx
 preflight files/

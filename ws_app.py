@@ -10,6 +10,7 @@ Run with:
 import streamlit as st
 import tempfile, os, sys, json, importlib, copy
 from pathlib import Path
+import boto3
 
 sys.path.insert(0, str(Path(__file__).parent))
 import ws_pdf_tools as ws
@@ -19,9 +20,15 @@ BASE_DIR      = Path(__file__).parent
 PROFILES_DIR  = BASE_DIR / "profiles"
 PROFILES_DIR.mkdir(exist_ok=True)
 
-_QP_EXPORT    = BASE_DIR / "Exported Library from QuickProof Server" / "PDFs"
-OVERLAYS_DIR  = _QP_EXPORT / "Overlay"
-CUTPATHS_DIR  = _QP_EXPORT / "Cutpath"
+# S3 asset storage
+S3_BUCKET         = "quickproof-database-2"
+S3_OVERLAY_PREFIX = "Overlays-PDF/"
+S3_CUTPATH_PREFIX = "Cutpaths-PDF/"
+
+# Local temp cache for downloaded PDFs
+_PDF_CACHE = Path(tempfile.gettempdir()) / "ws_pdf_cache"
+OVERLAYS_DIR = _PDF_CACHE / "overlays"
+CUTPATHS_DIR = _PDF_CACHE / "cutpaths"
 
 GITHUB_REPO   = "Brianirick/callas-app"
 
@@ -248,6 +255,76 @@ def list_pdfs(directory: Path) -> list[str]:
     return sorted(p.name for p in directory.glob("*.pdf"))
 
 
+@st.cache_resource
+def _s3():
+    """Return a boto3 S3 client using Streamlit secrets or default credential chain."""
+    try:
+        cfg = st.secrets.get("aws", {})
+        if cfg.get("access_key_id"):
+            return boto3.client(
+                "s3",
+                aws_access_key_id=cfg["access_key_id"],
+                aws_secret_access_key=cfg["secret_access_key"],
+                region_name=cfg.get("region", "us-east-1"),
+            )
+        return boto3.client("s3")  # falls back to ~/.aws/credentials locally
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=300)
+def list_s3_pdfs(kind: str) -> list[str]:
+    """List PDF filenames from S3 (kind = 'overlay' or 'cutpath')."""
+    prefix = S3_OVERLAY_PREFIX if kind == "overlay" else S3_CUTPATH_PREFIX
+    client = _s3()
+    if not client:
+        return []
+    try:
+        paginator = client.get_paginator("list_objects_v2")
+        names = []
+        for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                name = obj["Key"][len(prefix):]
+                if name.lower().endswith(".pdf") and name:
+                    names.append(name)
+        return sorted(names)
+    except Exception:
+        return []
+
+
+def fetch_pdf_from_s3(filename: str, kind: str) -> Path | None:
+    """Download a single PDF from S3 to the local temp cache. Returns local path or None."""
+    if not filename:
+        return None
+    local_dir = OVERLAYS_DIR if kind == "overlay" else CUTPATHS_DIR
+    local_dir.mkdir(parents=True, exist_ok=True)
+    local_path = local_dir / filename
+    if local_path.exists():
+        return local_path
+    prefix = S3_OVERLAY_PREFIX if kind == "overlay" else S3_CUTPATH_PREFIX
+    client = _s3()
+    if not client:
+        return None
+    try:
+        client.download_file(S3_BUCKET, prefix + filename, str(local_path))
+        return local_path
+    except Exception:
+        return None
+
+
+def upload_pdf_to_s3(filename: str, data: bytes, kind: str) -> bool:
+    """Upload a PDF to S3. Returns True on success."""
+    prefix = S3_OVERLAY_PREFIX if kind == "overlay" else S3_CUTPATH_PREFIX
+    client = _s3()
+    if not client:
+        return False
+    try:
+        client.put_object(Bucket=S3_BUCKET, Key=prefix + filename, Body=data)
+        return True
+    except Exception:
+        return False
+
+
 def save_profile_to_disk(profile: dict):
     safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in profile["name"])
     safe_name = safe_name.strip().replace(" ", "_").lower()
@@ -342,8 +419,8 @@ with st.sidebar:
 
     st.divider()
     st.markdown("**Asset Directories**")
-    ov_count  = len(list_pdfs(OVERLAYS_DIR))
-    cp_count  = len(list_pdfs(CUTPATHS_DIR))
+    ov_count  = len(list_s3_pdfs("overlay"))
+    cp_count  = len(list_s3_pdfs("cutpath"))
     pf_count  = len(list(PROFILES_DIR.glob("*.json")))
     st.markdown(f"""
     <div style="font-size:0.78rem; color:#7f9bb5; line-height:2;">
@@ -353,9 +430,9 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     if ov_count == 0:
-        st.caption(f"⚠ Overlay folder not found:\n{OVERLAYS_DIR}")
+        st.caption("⚠ No overlays found in S3 (quickproof-database-2/Overlays-PDF/)")
     if cp_count == 0:
-        st.caption(f"⚠ Cutpath folder not found:\n{CUTPATHS_DIR}")
+        st.caption("⚠ No cutpaths found in S3 (quickproof-database-2/Cutpaths-PDF/)")
 
 
 # ── Navigation buttons ─────────────────────────────────────────────────────────
@@ -463,6 +540,13 @@ if page == "run":
                         try:
                             stem = Path(uploaded.name).stem
                             if is_recipe:
+                                # Pre-fetch overlay/cutpath from S3 into temp cache
+                                _ov = profile_data.get("overlay") or ""
+                                _cp = profile_data.get("cutpath") or ""
+                                if _ov:
+                                    fetch_pdf_from_s3(_ov, "overlay")
+                                if _cp:
+                                    fetch_pdf_from_s3(_cp, "cutpath")
                                 result = ws.run_recipe(input_path, profile_data,
                                                        profiles_dir=str(PROFILES_DIR),
                                                        overlays_dir=str(OVERLAYS_DIR),
@@ -780,8 +864,8 @@ elif page == "build":
         if (data := json.loads(p.read_text(encoding="utf-8")))
         and data.get("type") != "recipe"   # don't nest recipes
     }
-    overlay_files  = ["— none —"] + list_pdfs(OVERLAYS_DIR)
-    cutpath_files  = ["— none —"] + list_pdfs(CUTPATHS_DIR)
+    overlay_files  = ["— none —"] + list_s3_pdfs("overlay")
+    cutpath_files  = ["— none —"] + list_s3_pdfs("cutpath")
     finishing_opts = ["— none —"] + list(finishing_profiles.keys())
 
     # ── Session state ──────────────────────────────────────────────────────────
@@ -1147,14 +1231,9 @@ elif page == "build":
     with c_ov:
         _stage_header("🖼", "Overlay", "Template overlay PDF")
         st.selectbox("Overlay", overlay_files, key="rb_overlay", label_visibility="collapsed")
-        if not OVERLAYS_DIR.exists():
-            st.caption("⚠ Overlay folder missing")
-
     with c_cp:
         _stage_header("✂️", "Cutpath", "Die cut path PDF")
         st.selectbox("Cutpath", cutpath_files, key="rb_cutpath", label_visibility="collapsed")
-        if not CUTPATHS_DIR.exists():
-            st.caption("⚠ Cutpath folder missing")
 
     # ── Page size check ────────────────────────────────────────────────────────
     st.markdown('<div style="margin-top:0.75rem;"></div>', unsafe_allow_html=True)
@@ -1249,24 +1328,29 @@ elif page == "build":
             ov_upload = st.file_uploader("Upload overlay", type=["pdf"],
                                          key="ov_uploader", label_visibility="collapsed")
             if ov_upload and st.button("Save Overlay", key="save_ov"):
-                OVERLAYS_DIR.mkdir(parents=True, exist_ok=True)
-                dest = OVERLAYS_DIR / ov_upload.name
-                dest.write_bytes(ov_upload.read())
-                _github_upload(f"Exported Library from QuickProof Server/PDFs/Overlay/{ov_upload.name}",
-                               dest.read_bytes(), f"Upload overlay: {ov_upload.name}")
-                st.success(f"Saved {ov_upload.name}")
+                data = ov_upload.read()
+                if upload_pdf_to_s3(ov_upload.name, data, "overlay"):
+                    # Also write to local cache so it's immediately usable
+                    OVERLAYS_DIR.mkdir(parents=True, exist_ok=True)
+                    (OVERLAYS_DIR / ov_upload.name).write_bytes(data)
+                    list_s3_pdfs.clear()
+                    st.success(f"Uploaded {ov_upload.name} to S3")
+                else:
+                    st.error("S3 upload failed — check AWS credentials in secrets")
                 st.rerun()
         with up_col2:
             st.caption("Cutpath PDF")
             cp_upload = st.file_uploader("Upload cutpath", type=["pdf"],
                                          key="cp_uploader", label_visibility="collapsed")
             if cp_upload and st.button("Save Cutpath", key="save_cp"):
-                CUTPATHS_DIR.mkdir(parents=True, exist_ok=True)
-                dest = CUTPATHS_DIR / cp_upload.name
-                dest.write_bytes(cp_upload.read())
-                _github_upload(f"Exported Library from QuickProof Server/PDFs/Cutpath/{cp_upload.name}",
-                               dest.read_bytes(), f"Upload cutpath: {cp_upload.name}")
-                st.success(f"Saved {cp_upload.name}")
+                data = cp_upload.read()
+                if upload_pdf_to_s3(cp_upload.name, data, "cutpath"):
+                    CUTPATHS_DIR.mkdir(parents=True, exist_ok=True)
+                    (CUTPATHS_DIR / cp_upload.name).write_bytes(data)
+                    list_s3_pdfs.clear()
+                    st.success(f"Uploaded {cp_upload.name} to S3")
+                else:
+                    st.error("S3 upload failed — check AWS credentials in secrets")
                 st.rerun()
 
     # ── Recipe preview ─────────────────────────────────────────────────────────
@@ -1379,6 +1463,13 @@ elif page == "build":
                 }
                 with st.spinner("Running recipe…"):
                     try:
+                        # Pre-fetch overlay/cutpath from S3 into temp cache
+                        _ov = test_recipe.get("overlay") or ""
+                        _cp = test_recipe.get("cutpath") or ""
+                        if _ov:
+                            fetch_pdf_from_s3(_ov, "overlay")
+                        if _cp:
+                            fetch_pdf_from_s3(_cp, "cutpath")
                         result = ws.run_recipe(t_in, test_recipe,
                                                profiles_dir=str(PROFILES_DIR),
                                                overlays_dir=str(OVERLAYS_DIR),

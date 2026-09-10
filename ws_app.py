@@ -308,7 +308,8 @@ def fetch_pdf_from_s3(filename: str, kind: str) -> Path | None:
     try:
         client.download_file(S3_BUCKET, prefix + filename, str(local_path))
         return local_path
-    except Exception:
+    except Exception as e:
+        print(f"[S3 fetch error] {prefix + filename}: {e}")
         return None
 
 

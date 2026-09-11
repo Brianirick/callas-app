@@ -21,7 +21,7 @@
         24,
         29
       ],
-      "rotate": 90
+      "rotate": 270
     },
     {
       "name": "right",
@@ -37,7 +37,7 @@
         24,
         29
       ],
-      "rotate": 90
+      "rotate": 270
     },
     {
       "name": "center",

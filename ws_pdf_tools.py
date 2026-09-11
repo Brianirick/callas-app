@@ -1840,6 +1840,43 @@ def convert_template_colors_to_cmyk(input_path: str, output_path: str) -> None:
             converted[enc_name.replace("#20", " ")] = (c, m, y, k)
             break
 
+    # ── Patch content streams: insert '1 scn' after '/CSx cs' where tint is
+    #    not explicitly set.  Per spec the initial tint after 'cs' is 1.0, but
+    #    Chrome/PDFium resets to 0 (white) — so we make the tint explicit.
+    if converted:
+        import re as _re_scn
+        _scn_pat = _re_scn.compile(
+            rb'(/CS\d+\s+cs)(?![ \t\r\n]+[\d.]+[ \t\r\n]+scn)'
+        )
+        for _pg in doc:
+            _ck = doc.xref_get_key(_pg.xref, "Contents")
+            if _ck[0] == "null":
+                continue
+            _val = _ck[1]
+            if _val.startswith("["):
+                _cxrefs = [int(x) for x in _re_scn.findall(r'(\d+)\s+0\s+R', _val)]
+            else:
+                _cxrefs = [int(_val.split()[0])]
+            for _cx in _cxrefs:
+                try:
+                    _raw = doc.xref_stream(_cx)
+                    if _raw:
+                        _patched = _scn_pat.sub(rb'\1\n1 scn', _raw)
+                        if _patched != _raw:
+                            doc.update_stream(_cx, _patched)
+                except Exception:
+                    pass
+            # Also patch any Form XObjects on this page
+            try:
+                for _n, _t, _xr in _pg.get_xobjects():
+                    _raw = doc.xref_stream(_xr)
+                    if _raw:
+                        _patched = _scn_pat.sub(rb'\1\n1 scn', _raw)
+                        if _patched != _raw:
+                            doc.update_stream(_xr, _patched)
+            except Exception:
+                pass
+
     save_pdf(doc, output_path)
     doc.close()
 
@@ -2122,8 +2159,16 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     #   rotate=270: 90° CW — source w/h swap; x'=y·(dw/sh), y'=-x·(dh/sw)
     #   rotate=90:  90° CCW — x'=-y·(dw/sh), y'=x·(dh/sw)
     #   rotate=180: flip both axes
+    #
+    # Draw order: largest destination area first (bottom), smaller panels on top.
+    # This ensures endcap panels paint over the center panel where they overlap.
+    panels_ordered = sorted(
+        panels,
+        key=lambda p: p["dst_in"][2] * p["dst_in"][3],
+        reverse=True,   # largest area first → drawn first → underneath
+    )
     parts = []
-    for panel in panels:
+    for panel in panels_ordered:
         sx, sy, sw, sh = [v * 72.0 for v in panel["src_in"]]
         dx, dy, dw, dh = [v * 72.0 for v in panel["dst_in"]]
         rotate = int(panel.get("rotate", 0))

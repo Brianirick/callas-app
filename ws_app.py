@@ -576,6 +576,13 @@ if page == "run":
                                         st.write(f"✅ Cutpath fetched: {_cp}")
                                     else:
                                         st.write(f"⚠️ Could not fetch cutpath from S3: {_cp}")
+                                _icp = profile_data.get("impose_cutpath") or ""
+                                if _icp:
+                                    _icp_local = fetch_pdf_from_s3(_icp, "cutpath")
+                                    if _icp_local:
+                                        st.write(f"✅ Impose cutpath fetched: {_icp}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch impose cutpath from S3: {_icp}")
                                 result = ws.run_recipe(input_path, profile_data,
                                                        profiles_dir=str(PROFILES_DIR),
                                                        overlays_dir=str(OVERLAYS_DIR),
@@ -901,7 +908,8 @@ elif page == "build":
     for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
                  ("rb_finishing","— none —"), ("rb_finishing_dict", None),
                  ("rb_overlay","— none —"),
-                 ("rb_cutpath","— none —"), ("rb_check_size", True),
+                 ("rb_cutpath","— none —"), ("rb_impose_cutpath","— none —"),
+                 ("rb_check_size", True),
                  ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
                  ("rb_labels", None), ("rb_impose_draft", None),
                  ("rb_impose_loaded_from", None)]:
@@ -957,6 +965,8 @@ elif page == "build":
         cp_map  = {f.lower(): f for f in cutpath_files}
         st.session_state.rb_overlay = ov_map.get(_ov_raw.lower(), "— none —")
         st.session_state.rb_cutpath = cp_map.get(_cp_raw.lower(), "— none —")
+        _icp_raw = rdata.get("impose_cutpath") or ""
+        st.session_state.rb_impose_cutpath = cp_map.get(_icp_raw.lower(), "— none —")
         _sz = rdata.get("check_size") or {}
         st.session_state.rb_check_size = bool(_sz)
         st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
@@ -1162,6 +1172,16 @@ elif page == "build":
                                 st.success(f"Saved: {_imp_save_name}.json")
                                 st.session_state.rb_impose_loaded_from = None
                                 st.rerun()
+            # Impose cutpath selector — shown whenever an impose finishing is selected
+            st.markdown(
+                '<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.5rem;">✂️ Impose Cutpath</div>',
+                unsafe_allow_html=True
+            )
+            st.selectbox(
+                "Impose Cutpath", cutpath_files, key="rb_impose_cutpath",
+                label_visibility="collapsed",
+                help="Full-sheet cutpath PDF positioned for the imposed layout. Stamped on top of the artwork after imposition."
+            )
         else:
             # Inline finishing type selector — lets user pick flag_label without duplicating a profile
             _inline_types = ["— none —", "flag_label"]
@@ -1393,6 +1413,7 @@ elif page == "build":
             st.session_state.rb_finishing  if st.session_state.rb_finishing  != "— none —" else None,
             st.session_state.rb_overlay    if st.session_state.rb_overlay    != "— none —" else None,
             st.session_state.rb_cutpath    if st.session_state.rb_cutpath    != "— none —" else None,
+            st.session_state.rb_impose_cutpath if st.session_state.rb_impose_cutpath != "— none —" else None,
         ] if s
     ]
     st.markdown(
@@ -1427,8 +1448,9 @@ elif page == "build":
                            if st.session_state.rb_finishing != "— none —"
                            else st.session_state.get("rb_finishing_dict")),
             "overlay":     st.session_state.rb_overlay if st.session_state.rb_overlay != "— none —" else None,
-            "cutpath":     st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
-            "labels":      st.session_state.get("rb_labels") or None,
+            "cutpath":        st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
+            "impose_cutpath": st.session_state.rb_impose_cutpath if st.session_state.rb_impose_cutpath != "— none —" else None,
+            "labels":         st.session_state.get("rb_labels") or None,
         }
         saved = save_profile_to_disk(recipe_to_save)
         st.session_state.rb_confirm_overwrite = None
@@ -1455,7 +1477,7 @@ elif page == "build":
                 _do_save()
     with cl_col:
         if st.button("🗑  Clear", use_container_width=True):
-            for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"),
+            for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"), ("rb_impose_cutpath","— none —"),
                          ("rb_finishing","— none —"), ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
                          ("rb_check_size", True), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1)]:
                 st.session_state[k] = v

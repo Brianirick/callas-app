@@ -2362,6 +2362,22 @@ def run_recipe(input_path: str, recipe: dict,
             else:
                 print(f"  [finishing] profile not found: {pfile}")
 
+    # ── 4b. Impose cutpath (stamp on top of imposed artwork — last finishing step)
+    # The cutpath PDF is a full-sheet file sized to the imposed output sheet with
+    # thru-cut / die-cut paths already positioned.  The RIP extracts these paths
+    # and sends them to the cutter.  Stamped AFTER impose so it sits on top of
+    # the artwork; BEFORE labels so labels print on top of the cutpath marks.
+    impose_cp_name = recipe.get("impose_cutpath") or ""
+    if impose_cp_name and cutpaths_dir:
+        impose_cp_path = Path(cutpaths_dir) / impose_cp_name
+        if impose_cp_path.exists():
+            _step(f"✂️ Stamping impose cutpath: {impose_cp_name}…")
+            tmp_imp_cp = tempfile.mktemp(suffix=".pdf")
+            stamp_overlay(tmp_finished, tmp_imp_cp, str(impose_cp_path), opacity=1.0)
+            tmp_finished = tmp_imp_cp
+        else:
+            _step(f"⚠️ Impose cutpath not found: {impose_cp_name}")
+
     # ── 4c. Stamp order labels as final overlay (on top of everything) ─────────
     # Stamping last guarantees the labels form XObject is appended after the
     # cutpath's white-fill XObject in the content stream, so text paints on top.

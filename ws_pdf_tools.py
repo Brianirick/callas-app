@@ -1843,7 +1843,9 @@ def convert_template_colors_to_cmyk(input_path: str, output_path: str) -> None:
     # ── Patch content streams: insert '1 scn' after '/CSx cs' where tint is
     #    not explicitly set.  Per spec the initial tint after 'cs' is 1.0, but
     #    Chrome/PDFium resets to 0 (white) — so we make the tint explicit.
-    if converted:
+    # Run unconditionally: color names in this file may differ from our lookup
+    # table, but the scn fix is safe on any Separation-based content stream.
+    if True:
         import re as _re_scn
         _scn_pat = _re_scn.compile(
             rb'(/CS\d+\s+cs)(?![ \t\r\n]+[\d.]+[ \t\r\n]+scn)'
@@ -2160,15 +2162,11 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     #   rotate=90:  90° CCW — x'=-y·(dw/sh), y'=x·(dh/sw)
     #   rotate=180: flip both axes
     #
-    # Draw order: largest destination area first (bottom), smaller panels on top.
-    # This ensures endcap panels paint over the center panel where they overlap.
-    panels_ordered = sorted(
-        panels,
-        key=lambda p: p["dst_in"][2] * p["dst_in"][3],
-        reverse=True,   # largest area first → drawn first → underneath
-    )
+    # Draw order: profile list order — endcaps first, center last (on top).
+    # For fitted throws, the center panel sits on top; endcaps show through
+    # in the areas where the center panel's rotated crop has no content.
     parts = []
-    for panel in panels_ordered:
+    for panel in panels:
         sx, sy, sw, sh = [v * 72.0 for v in panel["src_in"]]
         dx, dy, dw, dh = [v * 72.0 for v in panel["dst_in"]]
         rotate = int(panel.get("rotate", 0))

@@ -2146,6 +2146,19 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     out_page = writer.pages[0]
     src_bytes = _content_bytes(out_page)        # grab raw content BEFORE clearing
 
+    # ── Patch Separation colorspace tint: insert '1 scn' after '/CSx cs' where
+    #    no explicit tint is set.  Chrome/PDFium defaults tint=0 (invisible) but
+    #    the PDF spec says the initial value is 1.0 — this makes it explicit so
+    #    template spot colors (Yellow/Blue/Red Template Layer etc.) render at full
+    #    tint in all viewers.  Safe to run on every impose — no-op if no /CSx cs.
+    import re as _re_imp
+    _imp_scn_pat = _re_imp.compile(
+        rb'(/CS\d+\s+cs)(?!\s*[\d.]+\s+scn)'
+    )
+    _patched = _imp_scn_pat.sub(rb'\1 1 scn', src_bytes)
+    if _patched != src_bytes:
+        src_bytes = _patched
+
     # Resize to output sheet
     out_page.mediabox = RectangleObject([0, 0, out_w_pt, out_h_pt])
     out_page.cropbox  = RectangleObject([0, 0, out_w_pt, out_h_pt])

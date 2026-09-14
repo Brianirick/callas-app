@@ -1471,7 +1471,7 @@ elif page == "build":
         st.session_state.rb_last_load = _save_name
         st.success(f"Saved → {saved.name}")
 
-    sv_col, cl_col = st.columns([3, 1])
+    sv_col, dl_col, cl_col = st.columns([3, 1, 1])
     with sv_col:
         if not _save_name:
             st.button("💾  Save Recipe", use_container_width=True, disabled=True)
@@ -1489,6 +1489,27 @@ elif page == "build":
             # New name — save directly
             if st.button("💾  Save Recipe", use_container_width=True, type="primary", disabled=not stages_defined):
                 _do_save()
+    with dl_col:
+        _dl_recipe = {
+            "type":        "recipe",
+            "name":        _save_name,
+            "description": st.session_state.get("rb_desc", "").strip(),
+            "preflight":   st.session_state.rb_preflight if st.session_state.rb_preflight != "— skip —" else None,
+            "finishing":   finishing_profiles.get(st.session_state.rb_finishing) if st.session_state.rb_finishing != "— none —" else None,
+            "overlay":     st.session_state.rb_overlay if st.session_state.rb_overlay != "— none —" else None,
+            "cutpath":     st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
+            "impose_cutpath": st.session_state.rb_impose_cutpath if st.session_state.rb_impose_cutpath != "— none —" else None,
+        }
+        st.download_button(
+            "⬇️ JSON",
+            data=json.dumps(_dl_recipe, indent=2),
+            file_name=f"{_save_name or 'recipe'}.json",
+            mime="application/json",
+            key="recipe_dl_btn",
+            help="Download recipe as JSON — put it in profiles/ and push to GitHub to make it permanent",
+            use_container_width=True,
+            disabled=not _save_name,
+        )
     with cl_col:
         if st.button("🗑  Clear", use_container_width=True):
             for k, v in [("rb_name","New Recipe"), ("rb_desc",""), ("rb_preflight","60-50-50-100"), ("rb_impose_cutpath","— none —"),

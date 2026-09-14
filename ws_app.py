@@ -1151,7 +1151,7 @@ elif page == "build":
 
                         # Save as new finishing profile
                         st.divider()
-                        _save_col1, _save_col2 = st.columns([3, 1])
+                        _save_col1, _save_col2, _save_col3 = st.columns([3, 1, 1])
                         with _save_col1:
                             _imp_save_name = st.text_input(
                                 "Save as finishing profile",
@@ -1172,6 +1172,20 @@ elif page == "build":
                                 st.success(f"Saved: {_imp_save_name}.json")
                                 st.session_state.rb_impose_loaded_from = None
                                 st.rerun()
+                        with _save_col3:
+                            st.markdown('<div style="margin-top:1.65rem;"></div>', unsafe_allow_html=True)
+                            _dl_imp = copy.deepcopy(_imp)
+                            _dl_imp["name"] = _imp_save_name
+                            _dl_imp["type"] = "impose"
+                            st.download_button(
+                                "⬇️ JSON",
+                                data=json.dumps(_dl_imp, indent=2),
+                                file_name=f"{_imp_save_name}.json",
+                                mime="application/json",
+                                key="imp_dl_btn",
+                                help="Download this profile as JSON — commit it to GitHub to make it permanent",
+                                use_container_width=True,
+                            )
             # Impose cutpath selector — shown whenever an impose finishing is selected
             st.markdown(
                 '<div style="font-size:0.72rem; color:#7f9bb5; margin-top:0.5rem;">✂️ Impose Cutpath</div>',

@@ -10,5 +10,6 @@
   },
   "finishing": "8ft-3-FITTED-3pc",
   "overlay": "8ft-3sided-FittedTablethrow_.pdf",
-  "cutpath": "8ft-3sided-FittedTablethrow_158x68H---.pdf"
+  "cutpath": "8ft-3sided-FittedTablethrow_158x68H---.pdf",
+  "impose_cutpath": "8ft-3sided-FittedTablethrow_IMPOSE_CP.pdf"
 }

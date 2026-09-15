@@ -4,21 +4,21 @@
   "description": "4ft 3-Sided Fitted Table Throw 30in \u2014 3-piece imposition onto 67.73\"x80\" sheet",
   "output_size_in": [
     67.73,
-    80
+    80.0
   ],
   "panels": [
     {
       "name": "left",
       "src_in": [
-        0,
-        29,
-        29,
+        0.0,
+        29.0,
+        29.0,
         30.5
       ],
       "dst_in": [
-        0,
+        1.0,
         0.5,
-        29,
+        29.0,
         30.5
       ],
       "rotate": 0
@@ -26,15 +26,15 @@
     {
       "name": "right",
       "src_in": [
-        77,
-        29,
-        29,
+        77.0,
+        29.0,
+        29.0,
         30.5
       ],
       "dst_in": [
-        32.5,
+        33.5,
         0.5,
-        29,
+        29.0,
         30.5
       ],
       "rotate": 0
@@ -42,16 +42,16 @@
     {
       "name": "center",
       "src_in": [
-        29,
-        0,
-        48,
+        29.0,
+        0.0,
+        48.0,
         65.743
       ],
       "dst_in": [
         0.5,
         31.5,
         65.743,
-        48
+        48.0
       ],
       "rotate": 270
     }

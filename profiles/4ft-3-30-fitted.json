@@ -10,5 +10,6 @@
   },
   "finishing": "4ft-3-30-FITTED-3pc",
   "overlay": "4ft-3sided-FittedTablethrow_30inch.pdf",
-  "cutpath": "4ft-3sided-FittedTablethrow_30inch---.pdf"
+  "cutpath": "4ft-3sided-FittedTablethrow_30inch---.pdf",
+  "impose_cutpath": "4ft-3sided-FittedTablethrow_30inch_IMPOSE_CP.pdf"
 }

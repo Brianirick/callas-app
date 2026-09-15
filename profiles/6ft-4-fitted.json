@@ -10,5 +10,6 @@
   },
   "finishing": "6ft-4-FITTED-3pc",
   "overlay": "6ft-4-sided-FittedTablethrow-V2-overlay.pdf",
-  "cutpath": "6ft_4-sided-FittedTablethrow_134x90H--CP.pdf"
+  "cutpath": "6ft_4-sided-FittedTablethrow_134x90H--CP.pdf",
+  "impose_cutpath": "6ft-4sided-FittedTablethrow_IMPOSE_CP.pdf"
 }

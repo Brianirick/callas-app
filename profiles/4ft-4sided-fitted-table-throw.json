@@ -1,0 +1,10 @@
+{
+  "type": "recipe",
+  "name": "4ft-4sided-fitted-table-throw",
+  "description": "4ft 4-Sided Fitted Table Throw 24in",
+  "preflight": "60-50-50-100",
+  "finishing": "4ft-4-FITTED-3pc",
+  "overlay": null,
+  "cutpath": null,
+  "impose_cutpath": "4ft-4sided-FittedTablethrow_IMPOSE_CP_.pdf"
+}

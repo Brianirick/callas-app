@@ -10,5 +10,6 @@
   },
   "finishing": "4ft-4-MULTI-30in-3pc",
   "overlay": null,
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "4ft-4sided-MultiStretchTablethrow_30in_IMPOSE_CP.pdf"
 }

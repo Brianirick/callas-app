@@ -10,5 +10,6 @@
   },
   "finishing": "6ft-4-MULTI-3pc",
   "overlay": null,
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "6ft-4sided-MultiStretchTablethrow_IMPOSE_CP.pdf"
 }

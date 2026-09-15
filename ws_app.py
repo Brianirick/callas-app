@@ -547,12 +547,7 @@ if page == "run":
                     tmp.write(uploaded.read())
                     input_path = tmp.name
 
-                try:
-                    page_info_expander(input_path)
-                except Exception as _pie:
-                    import traceback as _tb2
-                    print("page_info_expander error:", _tb2.format_exc())
-                    st.warning(f"Page info unavailable: {_pie}")
+                page_info_expander(input_path)
                 st.divider()
 
                 is_recipe = profile_data.get("type") == "recipe"
@@ -607,7 +602,7 @@ if page == "run":
                             import traceback as _tb
                             print(_tb.format_exc())
                             _status.update(label="❌ Error", state="error")
-                            st.error(f"Error: {e}\n\n```\n{_tb.format_exc()}\n```")
+                            st.error(f"Error: {e}")
 
                 # Always render results if they exist for this file+profile combo
                 if st.session_state.get("run_result"):

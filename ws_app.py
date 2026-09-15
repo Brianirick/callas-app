@@ -914,7 +914,7 @@ elif page == "build":
                  ("rb_check_size", True),
                  ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
                  ("rb_labels", None), ("rb_impose_draft", None),
-                 ("rb_impose_loaded_from", None)]:
+                 ("rb_impose_loaded_from", None), ("rb_file_stem", "")]:
         if k not in st.session_state:
             st.session_state[k] = v
 
@@ -936,14 +936,17 @@ elif page == "build":
                        ("rb_finishing","— none —"), ("rb_finishing_dict", None),
                        ("rb_overlay","— none —"), ("rb_cutpath","— none —"),
                        ("rb_check_size", False), ("rb_width", 0.0), ("rb_height", 0.0), ("rb_tol", 0.1),
-                       ("rb_labels", None), ("rb_impose_draft", None), ("rb_impose_loaded_from", None)]:
+                       ("rb_labels", None), ("rb_impose_draft", None), ("rb_impose_loaded_from", None),
+                       ("rb_file_stem", "")]:
             st.session_state[_k] = _v
         st.rerun()
 
     # Auto-load whenever the dropdown selection changes
     if load_choice != "— start fresh —" and st.session_state.get("rb_last_load") != load_choice:
         st.session_state.rb_last_load = load_choice
-        _, rdata = all_recipes[load_choice]
+        _rpath, rdata = all_recipes[load_choice]
+        st.session_state.rb_file_stem = _rpath.stem
+        _ = _rpath
         st.session_state.rb_name       = rdata.get("name", "")
         st.session_state.rb_desc       = rdata.get("description", "")
         # normalise legacy keys
@@ -1502,10 +1505,11 @@ elif page == "build":
             "cutpath":     st.session_state.rb_cutpath if st.session_state.rb_cutpath != "— none —" else None,
             "impose_cutpath": st.session_state.rb_impose_cutpath if st.session_state.rb_impose_cutpath != "— none —" else None,
         }
+        _dl_stem = st.session_state.get("rb_file_stem") or _save_name or "recipe"
         st.download_button(
             "⬇️ JSON",
             data=json.dumps(_dl_recipe, indent=2),
-            file_name=f"{_save_name or 'recipe'}.json",
+            file_name=f"{_dl_stem}.json",
             mime="application/json",
             key="recipe_dl_btn",
             help="Download recipe as JSON — put it in profiles/ and push to GitHub to make it permanent",

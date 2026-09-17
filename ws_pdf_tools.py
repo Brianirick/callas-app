@@ -6,7 +6,7 @@ preflight, and Switch profiles.
 
 Dependencies:
     pip install pymupdf pypdf
-    Poppler: C:\Tools\Poppler\Release-26.02.0-0\poppler-26.02.0\Library\bin\pdftocairo.exe
+    Poppler: C:/Tools/Poppler/Release-26.02.0-0/poppler-26.02.0/Library/bin/pdftocairo.exe
 
 Usage:
     import ws_pdf_tools as ws

@@ -1,0 +1,32 @@
+{
+  "name": "EZ-ARW-4pc",
+  "type": "impose",
+  "description": "EZ Arrow — 4-piece imposition onto 74.5\"x84.84\" sheet",
+  "output_size_in": [74.5, 84.84],
+  "panels": [
+    {
+      "name": "bottom-strip",
+      "src_in": [0, 0, 58, 18],
+      "dst_in": [0.5, 0.5, 58, 18],
+      "rotate": 0
+    },
+    {
+      "name": "arrow-9-lower",
+      "src_in": [0, 17.666, 47.338, 29.065],
+      "dst_in": [0.5, 19.0, 29.065, 47.338],
+      "rotate": 90
+    },
+    {
+      "name": "arrow-8-upper",
+      "src_in": [0, 46.782, 47.338, 29.065],
+      "dst_in": [30.065, 19.0, 29.065, 47.338],
+      "rotate": 90
+    },
+    {
+      "name": "top-strip",
+      "src_in": [0, 76.532, 73.5, 17.5],
+      "dst_in": [0.5, 66.838, 73.5, 17.5],
+      "rotate": 0
+    }
+  ]
+}

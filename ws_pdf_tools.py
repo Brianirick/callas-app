@@ -335,62 +335,38 @@ def correct_page_geometry(input_path: str, output_path: str):
 def scale_pages(input_path: str, output_path: str, scale_percent: float = 200.0):
     """
     Replicates: ScalePagesEx — FitFromOutsideProp, percent unit.
-    Scales page content AND all geometry boxes proportionally.
+
+    Sets the PDF UserUnit on each page so the physical dimensions grow
+    proportionally without changing any coordinates. This keeps page box
+    values within the PDF spec's 14400-pt (200") limit and matches what
+    Callas does, so Acrobat opens the result at full size correctly.
 
     Used for artwork submitted at a reduced size due to Illustrator's 200" doc limit:
       scale_percent=200   → 2× (artwork at 1/2 size)
       scale_percent=400   → 4× (artwork at 1/4 size)
       scale_percent=1000  → 10× (artwork at 1/10 size)
 
-    The cutpath/finishing overlay applied at the smaller size is also scaled up
-    correctly because all page boxes scale together.
     Best run LAST in a finishing pipeline (after preflight, overlay, cutpath).
     """
     factor = float(scale_percent) / 100.0
     doc = fitz.open(input_path)
 
     for page in doc:
-        mb = page.mediabox   # PDF coords, y=0 at bottom
+        # Multiply any existing UserUnit by the new factor (default UserUnit = 1.0)
+        existing = doc.xref_get_key(page.xref, "UserUnit")
+        try:
+            current_uu = float(existing[1]) if existing[0] not in ("null", "invalid", "") else 1.0
+        except (ValueError, TypeError):
+            current_uu = 1.0
 
-        # Scale MediaBox
-        new_mb = fitz.Rect(
-            mb.x0 * factor, mb.y0 * factor,
-            mb.x1 * factor, mb.y1 * factor,
-        )
-        page.set_mediabox(new_mb)
-
-        # Scale all other page boxes proportionally
-        for attr in ("trimbox", "cropbox", "bleedbox", "artbox"):
-            try:
-                box = getattr(page, attr)
-                if box and not box.is_empty and box != mb:
-                    getattr(page, f"set_{attr}")(
-                        fitz.Rect(
-                            box.x0 * factor, box.y0 * factor,
-                            box.x1 * factor, box.y1 * factor,
-                        )
-                    )
-            except Exception:
-                pass
-
-        # Prepend a scale CTM to the content stream
-        page.clean_contents()
-        ci = doc.xref_get_key(page.xref, "Contents")
-        if ci[0] != "xref":
-            continue
-        c_xref = int(ci[1].split()[0])
-        existing = doc.xref_stream(c_xref)
-        if not existing:
-            continue
-
-        # "q {sx} 0 0 {sy} 0 0 cm" scales content from origin (0,0)
-        # FitFromOutsideProp = proportional, same factor on both axes
-        mat_cmd = f"q {factor:.6f} 0 0 {factor:.6f} 0 0 cm\n".encode()
-        doc.update_stream(c_xref, mat_cmd + existing + b"\nQ\n")
+        new_uu = current_uu * factor
+        doc.xref_set_key(page.xref, "UserUnit", str(new_uu))
+        # No coordinate or content-stream changes needed — UserUnit scales
+        # the entire coordinate space uniformly.
 
     save_pdf(doc, output_path)
     doc.close()
-    print(f"  scale_pages → {scale_percent}% ({factor:.1f}×): {output_path}")
+    print(f"  scale_pages → {scale_percent}% ({factor:.1f}×) via UserUnit={new_uu}: {output_path}")
 
 
 # ---------------------------------------------------------------------------

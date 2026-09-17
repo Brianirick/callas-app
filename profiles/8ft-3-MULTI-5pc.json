@@ -4,10 +4,10 @@
   "description": "8ft 3-Sided Multi Stretch Table Throw — 5-piece imposition onto 193\"x66.5\" sheet",
   "output_size_in": [193, 66.5],
   "panels": [
-    {"name": "A-left",          "src_in": [0,     28.25, 31,     31.25],  "dst_in": [97.75,   34.375, 31,     31.25],  "rotate": 0},
-    {"name": "B-bottom-center", "src_in": [31.5,  0,     95.5,   28.35],  "dst_in": [0.75,    37.325, 95.5,   28.35],  "rotate": 0},
-    {"name": "C-mid-center",    "src_in": [31.5,  28.35, 95.5,   31.0],   "dst_in": [96.75,   2.0,    95.5,   31.0],   "rotate": 0},
-    {"name": "D-top-center",    "src_in": [31.5,  59.35, 95.5,   28.25],  "dst_in": [0.75,    2.875,  95.5,   28.25],  "rotate": 0},
-    {"name": "E-right",         "src_in": [127,   28.25, 31.207, 31.25],  "dst_in": [157.647, 34.375, 31.207, 31.25],  "rotate": 0}
+    {"name": "A-left",          "src_in": [0,     28.25, 31,     31.25],  "dst_in": [97.75,   0.875,  31,     31.25],  "rotate": 0},
+    {"name": "B-bottom-center", "src_in": [31.5,  0,     95.5,   28.35],  "dst_in": [0.75,    0.825,  95.5,   28.35],  "rotate": 0},
+    {"name": "C-mid-center",    "src_in": [31.5,  28.35, 95.5,   31.0],   "dst_in": [96.75,   33.5,   95.5,   31.0],   "rotate": 0},
+    {"name": "D-top-center",    "src_in": [31.5,  59.35, 95.5,   28.25],  "dst_in": [0.75,    35.375, 95.5,   28.25],  "rotate": 0},
+    {"name": "E-right",         "src_in": [127,   28.25, 31.207, 31.25],  "dst_in": [157.647, 0.875,  31.207, 31.25],  "rotate": 0}
   ]
 }

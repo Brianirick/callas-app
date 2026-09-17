@@ -332,6 +332,67 @@ def correct_page_geometry(input_path: str, output_path: str):
     doc.close()
 
 
+def scale_pages(input_path: str, output_path: str, scale_percent: float = 200.0):
+    """
+    Replicates: ScalePagesEx — FitFromOutsideProp, percent unit.
+    Scales page content AND all geometry boxes proportionally.
+
+    Used for artwork submitted at a reduced size due to Illustrator's 200" doc limit:
+      scale_percent=200   → 2× (artwork at 1/2 size)
+      scale_percent=400   → 4× (artwork at 1/4 size)
+      scale_percent=1000  → 10× (artwork at 1/10 size)
+
+    The cutpath/finishing overlay applied at the smaller size is also scaled up
+    correctly because all page boxes scale together.
+    Best run LAST in a finishing pipeline (after preflight, overlay, cutpath).
+    """
+    factor = float(scale_percent) / 100.0
+    doc = fitz.open(input_path)
+
+    for page in doc:
+        mb = page.mediabox   # PDF coords, y=0 at bottom
+
+        # Scale MediaBox
+        new_mb = fitz.Rect(
+            mb.x0 * factor, mb.y0 * factor,
+            mb.x1 * factor, mb.y1 * factor,
+        )
+        page.set_mediabox(new_mb)
+
+        # Scale all other page boxes proportionally
+        for attr in ("trimbox", "cropbox", "bleedbox", "artbox"):
+            try:
+                box = getattr(page, attr)
+                if box and not box.is_empty and box != mb:
+                    getattr(page, f"set_{attr}")(
+                        fitz.Rect(
+                            box.x0 * factor, box.y0 * factor,
+                            box.x1 * factor, box.y1 * factor,
+                        )
+                    )
+            except Exception:
+                pass
+
+        # Prepend a scale CTM to the content stream
+        page.clean_contents()
+        ci = doc.xref_get_key(page.xref, "Contents")
+        if ci[0] != "xref":
+            continue
+        c_xref = int(ci[1].split()[0])
+        existing = doc.xref_stream(c_xref)
+        if not existing:
+            continue
+
+        # "q {sx} 0 0 {sy} 0 0 cm" scales content from origin (0,0)
+        # FitFromOutsideProp = proportional, same factor on both axes
+        mat_cmd = f"q {factor:.6f} 0 0 {factor:.6f} 0 0 cm\n".encode()
+        doc.update_stream(c_xref, mat_cmd + existing + b"\nQ\n")
+
+    save_pdf(doc, output_path)
+    doc.close()
+    print(f"  scale_pages → {scale_percent:.0f}% ({factor:.1f}×): {output_path}")
+
+
 # ---------------------------------------------------------------------------
 # PREFLIGHT — SPOT COLOR DETECTION  (used in WS_PREFLIGHT profiles)
 # ---------------------------------------------------------------------------
@@ -942,6 +1003,31 @@ AVAILABLE_OPS = {
         "description": "Clamps all page boxes to MediaBox boundaries.",
         "params": [],
     },
+    "scale_pages": {
+        "label": "Scale Pages",
+        "category": "Page Geometry",
+        "ffeat": "ScalePagesEx",
+        "description": (
+            "Scales page content and all geometry boxes proportionally "
+            "(replicates ScalePagesEx — FitFromOutsideProp). "
+            "Use as the LAST step for artwork submitted at reduced size due to "
+            "Illustrator's 200\" max document dimension."
+        ),
+        "params": [
+            {
+                "name": "scale_percent",
+                "type": "select",
+                "label": "Scale Factor",
+                "options": ["200", "400", "1000"],
+                "option_labels": [
+                    "200% — 2× (artwork at 1/2 size)",
+                    "400% — 4× (artwork at 1/4 size)",
+                    "1000% — 10× (artwork at 1/10 size)",
+                ],
+                "default": "200",
+            },
+        ],
+    },
     "set_bleedbox_from_cropbox": {
         "label": "Set BleedBox = CropBox",
         "category": "Page Geometry",
@@ -1200,6 +1286,7 @@ def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
         "create_identical_pages":   create_identical_pages,
         "remove_bleed":             remove_bleed,
         "correct_page_geometry":    correct_page_geometry,
+        "scale_pages":              scale_pages,
         "outline_fonts":            outline_fonts,
         "remove_private_data":      remove_private_data,
         "enlarge_page":             enlarge_page,

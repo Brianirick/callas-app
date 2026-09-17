@@ -9,7 +9,7 @@
     "tolerance_inch": 0.5
   },
   "finishing": "4ft-4-MULTI-30in-3pc",
-  "overlay": null,
-  "cutpath": null,
+  "overlay": "4ft_4-sided_Stretch_Table_Throw_30in.pdf",
+  "cutpath": "4ft_4-sided_Stretch_Table_Throw_30in-CP--.pdf",
   "impose_cutpath": "4ft-4sided-MultiStretchTablethrow_30in_IMPOSE_CP.pdf"
 }

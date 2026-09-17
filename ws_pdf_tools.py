@@ -390,7 +390,7 @@ def scale_pages(input_path: str, output_path: str, scale_percent: float = 200.0)
 
     save_pdf(doc, output_path)
     doc.close()
-    print(f"  scale_pages → {scale_percent:.0f}% ({factor:.1f}×): {output_path}")
+    print(f"  scale_pages → {scale_percent}% ({factor:.1f}×): {output_path}")
 
 
 # ---------------------------------------------------------------------------

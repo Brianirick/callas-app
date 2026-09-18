@@ -726,12 +726,19 @@ def add_thrucut_spot(input_path: str, output_path: str,
 
     reader = PdfReader(input_path)
     writer = PdfWriter()
+    # append() walks and copies ALL indirect objects (fonts, XObjects, streams)
+    # into the writer.  add_page() alone only copies the page dict shell and
+    # leaves dangling references to reader objects that don't appear in output.
+    writer.append(reader)
 
     res_key = "/CSThrCut"
 
-    for page in reader.pages:
+    def _resolve(obj):
+        return obj.get_object() if isinstance(obj, _IO) else obj
+
+    for page_idx, wp in enumerate(writer.pages):
         # ── BleedBox coords (pypdf: bottom-left origin, y↑) ───────────────────
-        bleed = page.bleedbox if "/BleedBox" in page else page.mediabox
+        bleed = wp.bleedbox if "/BleedBox" in wp else wp.mediabox
         x0 = float(bleed.left)
         y0 = float(bleed.bottom)
         x1 = float(bleed.right)
@@ -769,16 +776,7 @@ def add_thrucut_spot(input_path: str, output_path: str,
         new_stm = _DSO()
         new_stm.set_data(content_bytes)
 
-        # ── Clone page into writer so we own the objects ───────────────────────
-        writer.add_page(page)
-        wp = writer.pages[-1]
-
         # ── Inject colorspace into page Resources ──────────────────────────────
-        # Resolve Resources — may be an indirect ref pointing into the reader;
-        # we need the live object from the writer's copy.
-        def _resolve(obj):
-            return obj.get_object() if isinstance(obj, _IO) else obj
-
         if "/Resources" not in wp:
             wp[_NO("/Resources")] = _DO()
         res_obj = _resolve(wp["/Resources"])

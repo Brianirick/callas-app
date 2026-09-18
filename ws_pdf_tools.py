@@ -1439,15 +1439,21 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
     folder = Path(output_path).parent
     ext    = Path(output_path).suffix or ".jpg"
 
-    # Strip any CropBox that sits outside MediaBox — prevents "CropBox not in
-    # MediaBox" when page.rect is accessed during pixmap rendering.
-    for _i in range(len(doc)):
-        doc.xref_set_key(doc.page_xref(_i), "CropBox", "null")
+    for i in range(len(doc)):
+        # Get page dimensions via MediaBox xref to bypass CropBox validation.
+        # Some fitz-saved PDFs have a CropBox outside the MediaBox which causes
+        # "CropBox not in MediaBox" when page.rect is accessed.
+        _xref = doc.page_xref(i)
+        _mb   = doc.xref_get_key(_xref, "MediaBox")
+        try:
+            _pts = [float(x) for x in _mb[1].strip("[] ").split()]
+            pw, ph = _pts[2] - _pts[0], _pts[3] - _pts[1]
+            _clip  = fitz.Rect(_pts[0], _pts[1], _pts[2], _pts[3])
+        except Exception:
+            page = doc[i]
+            pw, ph = page.rect.width, page.rect.height
+            _clip  = None
 
-    for i, page in enumerate(doc):
-        # Compute effective DPI — cap long edge at max_pixels
-        pw = page.rect.width   # points
-        ph = page.rect.height
         long_edge_in = max(pw, ph) / 72.0
         if long_edge_in > 0:
             cap_dpi = int(max_pixels / long_edge_in)
@@ -1456,7 +1462,8 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
             effective_dpi = dpi
 
         mat  = fitz.Matrix(effective_dpi / 72, effective_dpi / 72)
-        pix  = page.get_pixmap(matrix=mat, alpha=False)
+        page = doc[i]
+        pix  = page.get_pixmap(matrix=mat, alpha=False, clip=_clip)
         dest = str(folder / f"{stem}_p{i+1}{ext}") if len(doc) > 1 else output_path
         pix.save(dest)
         pix = None   # release pixmap memory promptly

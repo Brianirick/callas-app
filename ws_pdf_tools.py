@@ -1449,7 +1449,8 @@ def stamp_overlay(input_path: str, output_path: str,
     _strip_cropbox_xrefs(doc)
 
     try:
-        doc.save(output_path, garbage=4, deflate=True)
+        # garbage=0: skip aggressive restructuring that can reintroduce CropBox
+        doc.save(output_path, garbage=0, deflate=True)
     except Exception as _dse:
         raise RuntimeError(f"DIAG-ARTSAVE: {_dse}")
     print(f"  stamp_overlay → {output_path}")
@@ -1480,7 +1481,31 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
     The effective DPI is reduced to keep within the cap while respecting dpi
     as an upper bound.
     """
-    doc    = fitz.open(input_path)
+    import tempfile as _ej_tmp, os as _ej_os
+
+    # Strip any CropBox from the input before rendering — some PDFs (e.g.
+    # stamp_overlay output) can carry a CropBox outside their MediaBox, which
+    # causes PyMuPDF to raise "CropBox not in MediaBox" on page.rect access.
+    # We strip via raw xref iteration (no page objects created), save with
+    # minimal options so fitz doesn't validate during write, then reopen so
+    # the internal page-rect cache is rebuilt from the clean data.
+    _ej_raw = fitz.open(input_path)
+    _ej_stripped = False
+    for _ej_xref in range(1, _ej_raw.xref_length()):
+        try:
+            if _ej_raw.xref_get_key(_ej_xref, "CropBox")[0] not in ("null", "none", ""):
+                _ej_raw.xref_set_key(_ej_xref, "CropBox", "null")
+                _ej_stripped = True
+        except Exception:
+            pass
+    if _ej_stripped:
+        _ej_clean = _ej_os.path.join(_ej_tmp.mkdtemp(), "ej_clean.pdf")
+        _ej_raw.save(_ej_clean, garbage=0, deflate=False, clean=False)
+        _ej_raw.close()
+        doc = fitz.open(_ej_clean)
+    else:
+        doc = _ej_raw
+
     paths  = []
     stem   = Path(output_path).stem
     folder = Path(output_path).parent

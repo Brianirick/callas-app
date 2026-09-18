@@ -1539,7 +1539,13 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
                 print(f"  export_jpeg p{i+1} → {dest} (pdftocairo {_safe_dpi}dpi)")
             return paths
 
-    # ── fitz fallback (no pdftocairo available) ─────────────────────────────
+    # ── fitz fallback (pdftocairo unavailable or produced no output) ────────
+    # Canary: if we reach here, pdftocairo path failed. Surface the reason.
+    if _pdftocairo:
+        raise RuntimeError(
+            f"DIAG-EJ-FITZ: pdftocairo found but produced no usable output. "
+            f"tmp={_ej_os.listdir(_tmp)!r}"
+        )
     # Strip CropBox via xrefs, save with minimal options (no content cleaning),
     # reopen so the page-rect cache is rebuilt from the clean data.
     _raw = fitz.open(input_path)

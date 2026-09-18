@@ -1472,61 +1472,82 @@ def merge_cutpath(input_path: str, output_path: str, cutpath_pdf_path: str):
 def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
                 max_pixels: int = 8000):
     """
-    Render the first page of a PDF to a JPEG at the given DPI.
-    For multi-page PDFs, renders every page and saves as <stem>_p1.jpg, etc.
-    Returns list of output paths written.
+    Render PDF pages to JPEG.  Tries pdftocairo first (bypasses fitz's
+    CropBox-within-MediaBox validation entirely), then falls back to fitz
+    with a CropBox-strip+save+reopen cycle for clean files.
 
     max_pixels caps the longest edge in pixels to avoid OOM on large-format
-    artwork (e.g. 135" wide at 150 DPI = 20,325 px = ~800 MB pixmap).
-    The effective DPI is reduced to keep within the cap while respecting dpi
-    as an upper bound.
+    artwork.  pdftocairo honours this via -scale-to; fitz path computes
+    effective DPI from page dimensions.
     """
+    import shutil as _ej_sh, subprocess as _ej_sp
     import tempfile as _ej_tmp, os as _ej_os
-
-    # Strip any CropBox from the input before rendering — some PDFs (e.g.
-    # stamp_overlay output) can carry a CropBox outside their MediaBox, which
-    # causes PyMuPDF to raise "CropBox not in MediaBox" on page.rect access.
-    # We strip via raw xref iteration (no page objects created), save with
-    # minimal options so fitz doesn't validate during write, then reopen so
-    # the internal page-rect cache is rebuilt from the clean data.
-    _ej_raw = fitz.open(input_path)
-    _ej_stripped = False
-    for _ej_xref in range(1, _ej_raw.xref_length()):
-        try:
-            if _ej_raw.xref_get_key(_ej_xref, "CropBox")[0] not in ("null", "none", ""):
-                _ej_raw.xref_set_key(_ej_xref, "CropBox", "null")
-                _ej_stripped = True
-        except Exception:
-            pass
-    if _ej_stripped:
-        _ej_clean = _ej_os.path.join(_ej_tmp.mkdtemp(), "ej_clean.pdf")
-        _ej_raw.save(_ej_clean, garbage=0, deflate=False, clean=False)
-        _ej_raw.close()
-        doc = fitz.open(_ej_clean)
-    else:
-        doc = _ej_raw
 
     paths  = []
     stem   = Path(output_path).stem
     folder = Path(output_path).parent
     ext    = Path(output_path).suffix or ".jpg"
 
-    for i, page in enumerate(doc):
-        # Compute effective DPI — cap long edge at max_pixels
-        pw = page.rect.width   # points
-        ph = page.rect.height
-        long_edge_in = max(pw, ph) / 72.0
-        if long_edge_in > 0:
-            cap_dpi = int(max_pixels / long_edge_in)
-            effective_dpi = min(dpi, cap_dpi)
-        else:
-            effective_dpi = dpi
+    # ── pdftocairo path (preferred) ─────────────────────────────────────────
+    _pdftocairo = _ej_sh.which("pdftocairo")
+    if _pdftocairo:
+        _tmp   = _ej_tmp.mkdtemp()
+        _ostem = _ej_os.path.join(_tmp, "pg")
 
+        # Single-page attempt
+        _ej_sp.run(
+            [_pdftocairo, "-jpeg", "-scale-to", str(max_pixels),
+             "-singlefile", input_path, _ostem],
+            capture_output=True
+        )
+        _single = _ostem + ".jpg"
+        if _ej_os.path.exists(_single):
+            _ej_sh.copy2(_single, output_path)
+            print(f"  export_jpeg → {output_path} (pdftocairo)")
+            return [output_path]
+
+        # Multi-page attempt
+        _ej_sp.run(
+            [_pdftocairo, "-jpeg", "-scale-to", str(max_pixels),
+             input_path, _ostem],
+            capture_output=True
+        )
+        _found = sorted(
+            _ej_os.path.join(_tmp, f) for f in _ej_os.listdir(_tmp)
+            if f.startswith("pg") and f.lower().endswith(".jpg")
+        )
+        if _found:
+            for i, _p in enumerate(_found):
+                dest = str(folder / f"{stem}_p{i+1}{ext}") if len(_found) > 1 else output_path
+                _ej_sh.copy2(_p, dest)
+                paths.append(dest)
+                print(f"  export_jpeg p{i+1} → {dest} (pdftocairo)")
+            return paths
+
+    # ── fitz fallback (no pdftocairo) ───────────────────────────────────────
+    # Strip CropBox via xrefs, save with minimal options (no content cleaning),
+    # reopen so the page-rect cache is rebuilt from the clean data.
+    _raw = fitz.open(input_path)
+    for _xref in range(1, _raw.xref_length()):
+        try:
+            if _raw.xref_get_key(_xref, "CropBox")[0] not in ("null", "none", ""):
+                _raw.xref_set_key(_xref, "CropBox", "null")
+        except Exception:
+            pass
+    _cpath = _ej_os.path.join(_ej_tmp.mkdtemp(), "ej_clean.pdf")
+    _raw.save(_cpath, garbage=0, deflate=False, clean=False)
+    _raw.close()
+    doc = fitz.open(_cpath)
+
+    for i, page in enumerate(doc):
+        pw, ph = page.rect.width, page.rect.height
+        long_edge_in = max(pw, ph) / 72.0
+        effective_dpi = min(dpi, int(max_pixels / long_edge_in)) if long_edge_in > 0 else dpi
         mat  = fitz.Matrix(effective_dpi / 72, effective_dpi / 72)
         pix  = page.get_pixmap(matrix=mat, alpha=False)
         dest = str(folder / f"{stem}_p{i+1}{ext}") if len(doc) > 1 else output_path
         pix.save(dest)
-        pix = None   # release pixmap memory promptly
+        pix = None
         paths.append(dest)
         print(f"  export_jpeg p{i+1} → {dest} ({effective_dpi} dpi)")
 

@@ -1343,21 +1343,30 @@ def stamp_overlay(input_path: str, output_path: str,
     Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
     """
     import tempfile as _tmpmod
-    from pypdf import PdfReader as _PdfReader, PdfWriter as _PdfWriter
 
     doc = fitz.open(input_path)
 
-    # Normalize overlay page boxes using pypdf (which resolves inherited boxes
-    # correctly). Setting cropbox = mediabox on every page ensures PyMuPDF
-    # never raises "CropBox not in MediaBox" when stamping.
-    _ov_reader = _PdfReader(overlay_pdf_path)
-    _ov_writer = _PdfWriter()
-    for _pg in _ov_reader.pages:
-        _pg.cropbox = _pg.mediabox
-        _ov_writer.add_page(_pg)
+    # Normalize overlay: remove /CropBox from all page xrefs AND from the
+    # /Pages (parent) dict so inherited CropBoxes are also cleared.
+    # We use page_xref() and xref_get_key/set_key to avoid ever creating
+    # Page objects (which trigger the "CropBox not in MediaBox" check).
+    _ov_raw = fitz.open(overlay_pdf_path)
+    # Remove from individual pages
+    for _i in range(len(_ov_raw)):
+        _xref = _ov_raw.page_xref(_i)
+        _ov_raw.xref_set_key(_xref, "CropBox", "null")
+    # Remove from /Pages dict (inherited CropBox)
+    try:
+        _cat = _ov_raw.pdf_catalog()
+        _pages_info = _ov_raw.xref_get_key(_cat, "Pages")
+        if _pages_info[0] == "xref":
+            _pages_xref = int(_pages_info[1].split()[0])
+            _ov_raw.xref_set_key(_pages_xref, "CropBox", "null")
+    except Exception:
+        pass
     _tmp_ov = _tmpmod.mktemp(suffix=".pdf")
-    with open(_tmp_ov, "wb") as _f:
-        _ov_writer.write(_f)
+    _ov_raw.save(_tmp_ov)
+    _ov_raw.close()
     over = fitz.open(_tmp_ov)
 
     for i, page in enumerate(doc):

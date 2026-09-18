@@ -775,27 +775,45 @@ def add_thrucut_spot(input_path: str, output_path: str,
         ).encode("latin-1")
         new_stm = _DSO()
         new_stm.set_data(content_bytes)
+        # CRITICAL: stream objects must be indirect in PDF (never direct/inline).
+        # Register the new stream in the writer's xref table first, then use
+        # the returned IndirectObject reference everywhere — never the raw object.
+        stm_ref = writer._add_object(new_stm)
 
         # ── Inject colorspace into page Resources ──────────────────────────────
+        # After writer.append(), /Resources is an IndirectObject in the writer.
+        # Resolve it to modify in-place; do NOT reassign wp["/Resources"] unless
+        # it is genuinely absent.
         if "/Resources" not in wp:
-            wp[_NO("/Resources")] = _DO()
-        res_obj = _resolve(wp["/Resources"])
-
-        if "/ColorSpace" not in res_obj:
-            res_obj[_NO("/ColorSpace")] = _DO()
-        cs_dict = _resolve(res_obj["/ColorSpace"])
-
-        cs_dict[_NO(res_key)] = cs_array
+            new_res = _DO()
+            new_res[_NO("/ColorSpace")] = _DO({_NO(res_key): cs_array})
+            wp[_NO("/Resources")] = new_res
+        else:
+            res_raw = wp["/Resources"]
+            res_obj = res_raw.get_object() if isinstance(res_raw, _IO) else res_raw
+            if "/ColorSpace" not in res_obj:
+                res_obj[_NO("/ColorSpace")] = _DO()
+            cs_raw = res_obj["/ColorSpace"]
+            cs_dict = cs_raw.get_object() if isinstance(cs_raw, _IO) else cs_raw
+            cs_dict[_NO(res_key)] = cs_array
 
         # ── Append content stream to Contents ─────────────────────────────────
+        # DON'T resolve the existing Contents — keep the IndirectObject reference
+        # so it stays as an xref pointer in the array, not an inline stream.
         if "/Contents" not in wp:
-            wp[_NO("/Contents")] = new_stm
+            wp[_NO("/Contents")] = stm_ref
         else:
-            existing = _resolve(wp["/Contents"])
-            if isinstance(existing, _AO):
-                existing.append(new_stm)
+            existing_raw = wp["/Contents"]  # IndirectObject or ArrayObject — not resolved
+            if isinstance(existing_raw, _IO):
+                # Single indirect stream ref → wrap in array with new ref
+                wp[_NO("/Contents")] = _AO([existing_raw, stm_ref])
+            elif isinstance(existing_raw, _AO):
+                # Already an array → append new indirect ref
+                existing_raw.append(stm_ref)
             else:
-                wp[_NO("/Contents")] = _AO([existing, new_stm])
+                # Direct stream object (shouldn't happen after append) → register it
+                existing_ref = writer._add_object(existing_raw)
+                wp[_NO("/Contents")] = _AO([existing_ref, stm_ref])
 
     with open(output_path, "wb") as fh:
         writer.write(fh)

@@ -1347,46 +1347,52 @@ def stamp_overlay(input_path: str, output_path: str,
     import shutil as _sh
     import os as _os
 
-    def _strip_cropbox(d):
-        """Remove CropBox from every page dict AND the /Pages parent dict.
+    def _strip_cropbox_xrefs(d):
+        """Remove CropBox by iterating raw xrefs — never calls page_xref() or
+        creates Page objects, so PyMuPDF's CropBox-within-MediaBox validation
+        is never triggered during the strip itself."""
+        for _xref in range(1, d.xref_length()):
+            try:
+                if d.xref_get_key(_xref, "CropBox")[0] not in ("null", "none", ""):
+                    d.xref_set_key(_xref, "CropBox", "null")
+            except Exception:
+                pass
 
-        Must be called BEFORE any page objects are created (page.rect triggers
-        PyMuPDF's CropBox-within-MediaBox validation).  page_xref() and
-        xref_set_key() operate at the xref level and never create Page objects.
-        """
-        # Per-page dicts
-        for _pi in range(len(d)):
-            d.xref_set_key(d.page_xref(_pi), "CropBox", "null")
-        # /Pages dict — handles inherited CropBox
-        try:
-            _cat = d.pdf_catalog()
-            _pg_ref = d.xref_get_key(_cat, "Pages")
-            if _pg_ref[0] == "xref":
-                _pg_xref = int(_pg_ref[1].split()[0])
-                d.xref_set_key(_pg_xref, "CropBox", "null")
-        except Exception:
-            pass
+    def _open_no_cropbox(path):
+        """Open a PDF, strip all CropBox entries via raw xrefs, then
+        save+reopen so fitz's internal page-rect cache is rebuilt from the
+        clean data (xref edits alone don't flush the cache)."""
+        _d = fitz.open(path)
+        _strip_cropbox_xrefs(_d)
+        _clean = _os.path.join(_tmpmod.mkdtemp(), "clean.pdf")
+        _d.save(_clean)
+        _d.close()
+        return fitz.open(_clean)
 
-    # ── Open artwork and strip any bad CropBox BEFORE touching pages ─────
+    # ── Open artwork (export_jpeg confirms it has no bad CropBox, but strip
+    #    anyway to guard against any inherited /Pages CropBox) ───────────────
     doc = fitz.open(input_path)
-    _strip_cropbox(doc)
+    _strip_cropbox_xrefs(doc)
 
-    # ── Normalize overlay via pdftocairo, then strip its CropBox too ─────
+    # ── Overlay: pdftocairo first (fresh re-render), then open clean ────────
     _pdftocairo = _sh.which("pdftocairo")
+    _ov_src = overlay_pdf_path
     if _pdftocairo:
         _tmp_dir  = _tmpmod.mkdtemp()
         _tmp_stem = _os.path.join(_tmp_dir, "overlay")
         _expected = _tmp_stem + ".pdf"
         _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
                 capture_output=True)
-        if not _os.path.exists(_expected):
-            _candidates = sorted(_os.listdir(_tmp_dir))
-            _expected = _os.path.join(_tmp_dir, _candidates[0]) if _candidates else None
-        over = fitz.open(_expected) if _expected and _os.path.exists(_expected) \
-               else fitz.open(overlay_pdf_path)
-    else:
-        over = fitz.open(overlay_pdf_path)
-    _strip_cropbox(over)
+        if _os.path.exists(_expected):
+            _ov_src = _expected
+        else:
+            _cands = [f for f in sorted(_os.listdir(_tmp_dir))
+                      if f.lower().endswith(".pdf")]
+            if _cands:
+                _ov_src = _os.path.join(_tmp_dir, _cands[0])
+
+    # Strip CropBox + save + reopen to flush fitz's page-rect cache
+    over = _open_no_cropbox(_ov_src)
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
@@ -1426,11 +1432,8 @@ def stamp_overlay(input_path: str, output_path: str,
             lines.insert(last_q + 1, b"/GSov gs")
             doc.update_stream(c_xref, b"\n".join(lines))
 
-    # Strip CropBox from all artwork pages before saving to ensure the output
-    # PDF has no invalid CropBox that would cause "CropBox not in MediaBox"
-    # errors in downstream callers (e.g. export_jpeg).
-    for _i in range(len(doc)):
-        doc.xref_set_key(doc.page_xref(_i), "CropBox", "null")
+    # Strip CropBox from the output before saving so export_jpeg can open it cleanly
+    _strip_cropbox_xrefs(doc)
 
     doc.save(output_path, garbage=4, deflate=True)
     print(f"  stamp_overlay → {output_path}")

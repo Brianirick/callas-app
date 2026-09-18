@@ -1347,11 +1347,10 @@ def stamp_overlay(input_path: str, output_path: str,
     import shutil as _sh
     import os as _os
 
+    # ── Open artwork ────────────────────────────────────────────────────────
     doc = fitz.open(input_path)
 
-    # Normalize overlay through pdftocairo -pdf (if available) to produce a
-    # clean PDF with no CropBox-outside-MediaBox issues. Falls back to direct
-    # open if pdftocairo is not found (e.g. local Windows dev environment).
+    # ── Normalize overlay via pdftocairo ─────────────────────────────────
     _pdftocairo = _sh.which("pdftocairo")
     if _pdftocairo:
         _tmp_dir  = _tmpmod.mkdtemp()
@@ -1359,40 +1358,39 @@ def stamp_overlay(input_path: str, output_path: str,
         _expected = _tmp_stem + ".pdf"
         _pc_result = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
                              capture_output=True)
-        print(f"  DEBUG pdftocairo rc={_pc_result.returncode} "
-              f"stderr={_pc_result.stderr.decode()[:200]!r} "
-              f"dir={_os.listdir(_tmp_dir)}")
-        # pdftocairo names output <stem>.pdf (or <stem>-1.pdf for multi-page)
         if not _os.path.exists(_expected):
             _candidates = sorted(_os.listdir(_tmp_dir))
             _expected = _os.path.join(_tmp_dir, _candidates[0]) if _candidates else None
-        if _expected and _os.path.exists(_expected):
-            print(f"  DEBUG: opening normalized overlay: {_expected}")
-            over = fitz.open(_expected)
-        else:
-            print(f"  DEBUG: pdftocairo produced no output, using original")
-            over = fitz.open(overlay_pdf_path)
+        over = fitz.open(_expected) if _expected and _os.path.exists(_expected) \
+               else fitz.open(overlay_pdf_path)
     else:
-        print("  DEBUG: pdftocairo not found, using original overlay")
         over = fitz.open(overlay_pdf_path)
 
-    # Test if overlay page access works
+    # ── Diagnostic: check which object causes the CropBox error ──────────
     try:
-        _test_rect = over[0].rect
-        print(f"  DEBUG: overlay[0].rect = {_test_rect}")
-    except Exception as _e:
-        print(f"  DEBUG: overlay[0].rect FAILED: {_e}")
+        _ov_rect = over[0].rect
+    except Exception as _ov_err:
+        raise RuntimeError(f"DIAG-OVERLAY: CropBox error accessing overlay page: {_ov_err}") from _ov_err
+
+    try:
+        _art_rect = doc[0].rect
+    except Exception as _art_err:
+        raise RuntimeError(f"DIAG-ARTWORK: CropBox error accessing artwork page: {_art_err}") from _art_err
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
-        print(f"  DEBUG: artwork page {i} rect={page.rect}, calling show_pdf_page...")
 
         # Embed overlay page as a Form XObject; appended to content stream
-        page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
-        print(f"  DEBUG: show_pdf_page done")
+        try:
+            page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+        except Exception as _sp_err:
+            raise RuntimeError(f"DIAG-SHOWPDF page {i}: {_sp_err}") from _sp_err
 
         # Merge any content stream array into a single stream
-        page.clean_contents()
+        try:
+            page.clean_contents()
+        except Exception as _cc_err:
+            raise RuntimeError(f"DIAG-CLEANCONTENTS page {i}: {_cc_err}") from _cc_err
 
         contents_info = doc.xref_get_key(page.xref, "Contents")
         if contents_info[0] != "xref":

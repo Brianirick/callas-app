@@ -1343,31 +1343,30 @@ def stamp_overlay(input_path: str, output_path: str,
     Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
     """
     import tempfile as _tmpmod
+    import subprocess as _sp
+    import shutil as _sh
+    import os as _os
 
     doc = fitz.open(input_path)
 
-    # Normalize overlay: remove /CropBox from all page xrefs AND from the
-    # /Pages (parent) dict so inherited CropBoxes are also cleared.
-    # We use page_xref() and xref_get_key/set_key to avoid ever creating
-    # Page objects (which trigger the "CropBox not in MediaBox" check).
-    _ov_raw = fitz.open(overlay_pdf_path)
-    # Remove from individual pages
-    for _i in range(len(_ov_raw)):
-        _xref = _ov_raw.page_xref(_i)
-        _ov_raw.xref_set_key(_xref, "CropBox", "null")
-    # Remove from /Pages dict (inherited CropBox)
-    try:
-        _cat = _ov_raw.pdf_catalog()
-        _pages_info = _ov_raw.xref_get_key(_cat, "Pages")
-        if _pages_info[0] == "xref":
-            _pages_xref = int(_pages_info[1].split()[0])
-            _ov_raw.xref_set_key(_pages_xref, "CropBox", "null")
-    except Exception:
-        pass
-    _tmp_ov = _tmpmod.mktemp(suffix=".pdf")
-    _ov_raw.save(_tmp_ov)
-    _ov_raw.close()
-    over = fitz.open(_tmp_ov)
+    # Normalize overlay through pdftocairo -pdf (if available) to produce a
+    # clean PDF with no CropBox-outside-MediaBox issues. Falls back to direct
+    # open if pdftocairo is not found (e.g. local Windows dev environment).
+    _pdftocairo = _sh.which("pdftocairo")
+    if _pdftocairo:
+        _tmp_dir  = _tmpmod.mkdtemp()
+        _tmp_stem = _os.path.join(_tmp_dir, "overlay")
+        _expected = _tmp_stem + ".pdf"
+        _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
+                capture_output=True)
+        # pdftocairo names output <stem>.pdf (or <stem>-1.pdf for multi-page)
+        if not _os.path.exists(_expected):
+            _candidates = sorted(_os.listdir(_tmp_dir))
+            _expected = _os.path.join(_tmp_dir, _candidates[0]) if _candidates else None
+        over = fitz.open(_expected) if _expected and _os.path.exists(_expected) \
+               else fitz.open(overlay_pdf_path)
+    else:
+        over = fitz.open(overlay_pdf_path)
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)

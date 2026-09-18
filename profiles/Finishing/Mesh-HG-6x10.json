@@ -4,11 +4,11 @@
   "description": "Mesh Hem & Grommet 6ft x 10ft banner",
   "preflight": "75-75-75-100",
   "check_size": {
-    "width_inch": 72.0,
-    "height_inch": 120.0,
+    "width_inch": 120.0,
+    "height_inch": 72.0,
     "tolerance_inch": 0.5
   },
   "finishing": "HG-Mesh-bleed",
-  "overlay": null,
+  "overlay": "FENCEMESH-6x10_overlay.pdf",
   "cutpath": null
 }

@@ -1,7 +1,7 @@
 {
   "type": "finishing",
   "name": "HG-Scrim-bleed",
-  "description": "Scrim H&G finishing: outline fonts, 1\" bleed all sides, trim stroke",
+  "description": "Scrim H&G finishing: outline fonts, 1\" bleed all sides, trim fold stroke, thrucut spot",
   "steps": [
     {
       "op": "set_mediabox_to_origin"
@@ -15,7 +15,8 @@
         "top_inch": 1.0,
         "bottom_inch": 1.0,
         "left_inch": 1.0,
-        "right_inch": 1.0
+        "right_inch": 1.0,
+        "update_trimbox": false
       }
     },
     {
@@ -23,6 +24,9 @@
     },
     {
       "op": "add_trimbox_stroke"
+    },
+    {
+      "op": "add_thrucut_spot"
     }
   ]
 }

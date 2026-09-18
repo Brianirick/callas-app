@@ -9,6 +9,6 @@
     "tolerance_inch": 0.5
   },
   "finishing": "HG-Scrim-bleed",
-  "overlay": null,
+  "overlay": "Scrim-7x7_Template-overlay.pdf",
   "cutpath": null
 }

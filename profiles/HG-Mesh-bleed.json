@@ -1,7 +1,7 @@
 {
   "type": "finishing",
   "name": "HG-Mesh-bleed",
-  "description": "Mesh H&G finishing (full size): remap black, outline fonts, 1\" bleed, trim stroke",
+  "description": "Mesh H&G finishing (full size): remap black, outline fonts, 1\" bleed, trim fold stroke, thrucut spot",
   "steps": [
     {
       "op": "set_mediabox_to_origin"
@@ -18,7 +18,8 @@
         "top_inch": 1.0,
         "bottom_inch": 1.0,
         "left_inch": 1.0,
-        "right_inch": 1.0
+        "right_inch": 1.0,
+        "update_trimbox": false
       }
     },
     {
@@ -26,6 +27,9 @@
     },
     {
       "op": "add_trimbox_stroke"
+    },
+    {
+      "op": "add_thrucut_spot"
     }
   ]
 }

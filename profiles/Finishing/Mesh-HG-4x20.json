@@ -4,11 +4,11 @@
   "description": "Mesh Hem & Grommet 4ft x 20ft banner \u2014 half-size art",
   "preflight": "75-75-75-100",
   "check_size": {
-    "width_inch": 24.0,
-    "height_inch": 120.0,
+    "width_inch": 120.0,
+    "height_inch": 24.0,
     "tolerance_inch": 0.5
   },
   "finishing": "HG-Mesh-halfsize",
-  "overlay": null,
+  "overlay": "FENCEMESH-4x20_overlay.pdf",
   "cutpath": null
 }

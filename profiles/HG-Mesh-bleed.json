@@ -39,7 +39,7 @@
         "inset_in": 0.52,
         "y_inset_in": 0.5,
         "corner_offset_in": 4.0,
-        "grommet_size_pt": 60,
+        "grommet_size_pt": 10,
         "triple_corners": true
       }
     }

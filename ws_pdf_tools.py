@@ -1365,7 +1365,10 @@ def stamp_overlay(input_path: str, output_path: str,
         _d = fitz.open(path)
         _strip_cropbox_xrefs(_d)
         _clean = _os.path.join(_tmpmod.mkdtemp(), "clean.pdf")
-        _d.save(_clean)
+        try:
+            _d.save(_clean, garbage=0, deflate=False, clean=False)
+        except Exception as _se:
+            raise RuntimeError(f"DIAG-OV-SAVE: {_se}")
         _d.close()
         return fitz.open(_clean)
 
@@ -1381,8 +1384,8 @@ def stamp_overlay(input_path: str, output_path: str,
         _tmp_dir  = _tmpmod.mkdtemp()
         _tmp_stem = _os.path.join(_tmp_dir, "overlay")
         _expected = _tmp_stem + ".pdf"
-        _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
-                capture_output=True)
+        _pc = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
+                      capture_output=True)
         if _os.path.exists(_expected):
             _ov_src = _expected
         else:
@@ -1390,6 +1393,12 @@ def stamp_overlay(input_path: str, output_path: str,
                       if f.lower().endswith(".pdf")]
             if _cands:
                 _ov_src = _os.path.join(_tmp_dir, _cands[0])
+            else:
+                raise RuntimeError(
+                    f"DIAG-PDFTOCAIRO: rc={_pc.returncode} "
+                    f"stderr={_pc.stderr[:300]!r} "
+                    f"dir={_os.listdir(_tmp_dir)!r}"
+                )
 
     # Strip CropBox + save + reopen to flush fitz's page-rect cache
     over = _open_no_cropbox(_ov_src)
@@ -1398,7 +1407,10 @@ def stamp_overlay(input_path: str, output_path: str,
         ov_idx = min(i, len(over) - 1)
 
         # Embed overlay page as a Form XObject; appended to content stream
-        page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+        try:
+            page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+        except Exception as _spe:
+            raise RuntimeError(f"DIAG-SHOWPAGE p{i}: {_spe}")
 
         # Merge any content stream array into a single stream
         page.clean_contents()

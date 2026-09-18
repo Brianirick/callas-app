@@ -713,118 +713,94 @@ def add_thrucut_spot(input_path: str, output_path: str,
     Injects a spot color stroke rectangle at the BleedBox boundary so RIPs
     and cutters recognise it as a through-cut path.
     ffeat: OutlinePBox
+
+    Implemented with pypdf to avoid PyMuPDF's get_new_xref/update_object
+    limitations ("object is no PDF dict") that occur when creating new
+    indirect objects in certain PDF structures.
     """
-    import shutil as _tc_sh, subprocess as _tc_sp, tempfile as _tc_tmp, os as _tc_os
-    # Pre-clean with pdftocairo: pypdf and fitz(garbage=4) can produce
-    # compressed ObjStm / xref streams that fitz's xref_get_key /
-    # xref_set_key cannot reach, raising "object is no PDF dict".
-    _tc_in = input_path
-    _tc_pc = _tc_sh.which("pdftocairo")
-    if _tc_pc:
-        _tc_dir   = _tc_tmp.mkdtemp()
-        _tc_clean = _tc_os.path.join(_tc_dir, "tc_clean.pdf")
-        _tc_r = _tc_sp.run([_tc_pc, "-pdf", input_path, _tc_clean],
-                           capture_output=True)
-        if _tc_r.returncode == 0 and _tc_os.path.exists(_tc_clean):
-            _tc_in = _tc_clean
+    from pypdf.generic import (
+        ArrayObject as _AO, DictionaryObject as _DO, NameObject as _NO,
+        FloatObject as _FO, NumberObject as _NumO, DecodedStreamObject as _DSO,
+        IndirectObject as _IO,
+    )
 
-    doc = fitz.open(_tc_in)
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
 
-    for page_idx in range(len(doc)):
-        page = doc[page_idx]
-        bleed = page.bleedbox
-        if bleed is None or bleed.is_empty:
-            bleed = page.mediabox
+    res_key = "/CSThrCut"
 
-        page_h = page.rect.height
+    for page in reader.pages:
+        # ── BleedBox coords (pypdf: bottom-left origin, y↑) ───────────────────
+        bleed = page.bleedbox if "/BleedBox" in page else page.mediabox
+        x0 = float(bleed.left)
+        y0 = float(bleed.bottom)
+        x1 = float(bleed.right)
+        y1 = float(bleed.top)
 
-        # PDF coordinate space (bottom-left origin, y flipped from PyMuPDF)
-        x0   = bleed.x0
-        y_lo = page_h - bleed.y1   # PDF y at visual bottom
-        x1   = bleed.x1
-        y_hi = page_h - bleed.y0   # PDF y at visual top
+        # ── Tint function: Type 2, maps [0..1] → CMYK [0,0,0,t] ──────────────
+        fn = _DO({
+            _NO("/FunctionType"): _NumO(2),
+            _NO("/Domain"):  _AO([_FO(0.0), _FO(1.0)]),
+            _NO("/C0"):      _AO([_FO(0.0)] * 4),
+            _NO("/C1"):      _AO([_FO(0.0), _FO(0.0), _FO(0.0), _FO(1.0)]),
+            _NO("/N"):       _FO(1.0),
+        })
+        # Separation colorspace array (inline function — avoids extra indirect)
+        cs_array = _AO([
+            _NO("/Separation"),
+            _NO("/thru-cut"),
+            _NO("/DeviceCMYK"),
+            fn,
+        ])
 
-        spot_name = "thru-cut"
-        res_key   = "CSThrCut"     # name used inside the Resources dict
-
-        # ── 1. Build PDF objects: tint function + Separation colorspace ────────
-        fn_xref = doc.get_new_xref()
-        doc.update_object(fn_xref,
-            "<</FunctionType 2/Domain[0.0 1.0]"
-            "/C0[0.0 0.0 0.0 0.0]/C1[0.0 0.0 0.0 1.0]/N 1.0>>")
-
-        cs_xref = doc.get_new_xref()
-        doc.update_object(cs_xref,
-            f"[/Separation /thru-cut /DeviceCMYK {fn_xref} 0 R]")
-
-        # ── 2. Add colorspace to page Resources ───────────────────────────────
-        page_xref = page.xref
-
-        # Resolve Resources (may be indirect ref or inline dict)
-        # xref_get_key returns (type, value) tuple
-        res_type, res_val = doc.xref_get_key(page_xref, "Resources")
-        if res_type in ("null", "none", "") or not res_val:
-            res_xref = doc.get_new_xref()
-            doc.update_object(res_xref, "<<>>")
-            doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
-        elif res_type == "xref":
-            res_xref = int(res_val.split()[0])
-        else:
-            # Inline dict — materialise as indirect object
-            res_xref = doc.get_new_xref()
-            inline = res_val if res_val.startswith("<<") else "<<>>"
-            doc.update_object(res_xref, inline)
-            doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
-
-        # Resolve / create the ColorSpace sub-dict
-        cs_type, cs_dict_val = doc.xref_get_key(res_xref, "ColorSpace")
-        if cs_type in ("null", "none", "") or not cs_dict_val:
-            cs_dict_xref = doc.get_new_xref()
-            doc.update_object(cs_dict_xref, "<<>>")
-            doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
-        elif cs_type == "xref":
-            cs_dict_xref = int(cs_dict_val.split()[0])
-        else:
-            cs_dict_xref = doc.get_new_xref()
-            inline2 = cs_dict_val if cs_dict_val.startswith("<<") else "<<>>"
-            doc.update_object(cs_dict_xref, inline2)
-            doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
-
-        doc.xref_set_key(cs_dict_xref, res_key, f"{cs_xref} 0 R")
-
-        # ── 3. Content stream — stroke rect with spot color ───────────────────
-        content = (
+        # ── Content stream ─────────────────────────────────────────────────────
+        content_bytes = (
             f"q\n"
-            f"/{res_key} CS\n"             # stroking colorspace = Separation
-            f"1.0 SCN\n"                   # tint = 1.0 (full ink)
-            f"{stroke_width_pt} w\n"       # line width
-            f"{x0:.4f} {y_lo:.4f} m\n"    # bottom-left
-            f"{x1:.4f} {y_lo:.4f} l\n"    # bottom-right
-            f"{x1:.4f} {y_hi:.4f} l\n"    # top-right
-            f"{x0:.4f} {y_hi:.4f} l\n"    # top-left
-            f"h S\n"                       # close + stroke
+            f"{res_key[1:]} CS\n"      # set stroking colorspace
+            f"1.0 SCN\n"               # tint = 100%
+            f"{stroke_width_pt} w\n"
+            f"{x0:.4f} {y0:.4f} m\n"
+            f"{x1:.4f} {y0:.4f} l\n"
+            f"{x1:.4f} {y1:.4f} l\n"
+            f"{x0:.4f} {y1:.4f} l\n"
+            f"h S\n"
             f"Q\n"
         ).encode("latin-1")
+        new_stm = _DSO()
+        new_stm.set_data(content_bytes)
 
-        # ── 4. Append stream to page Contents ─────────────────────────────────
-        new_stm = doc.get_new_xref()
-        doc.update_stream(new_stm, content)
+        # ── Clone page into writer so we own the objects ───────────────────────
+        writer.add_page(page)
+        wp = writer.pages[-1]
 
-        cont_type, contents_val = doc.xref_get_key(page_xref, "Contents")
-        if cont_type in ("null", "none", "") or not contents_val:
-            doc.xref_set_key(page_xref, "Contents", f"{new_stm} 0 R")
+        # ── Inject colorspace into page Resources ──────────────────────────────
+        # Resolve Resources — may be an indirect ref pointing into the reader;
+        # we need the live object from the writer's copy.
+        def _resolve(obj):
+            return obj.get_object() if isinstance(obj, _IO) else obj
+
+        if "/Resources" not in wp:
+            wp[_NO("/Resources")] = _DO()
+        res_obj = _resolve(wp["/Resources"])
+
+        if "/ColorSpace" not in res_obj:
+            res_obj[_NO("/ColorSpace")] = _DO()
+        cs_dict = _resolve(res_obj["/ColorSpace"])
+
+        cs_dict[_NO(res_key)] = cs_array
+
+        # ── Append content stream to Contents ─────────────────────────────────
+        if "/Contents" not in wp:
+            wp[_NO("/Contents")] = new_stm
         else:
-            stripped = contents_val.strip()
-            if stripped.startswith("["):
-                inner = stripped[1:-1].strip()
-                doc.xref_set_key(page_xref, "Contents",
-                                  f"[{inner} {new_stm} 0 R]")
+            existing = _resolve(wp["/Contents"])
+            if isinstance(existing, _AO):
+                existing.append(new_stm)
             else:
-                doc.xref_set_key(page_xref, "Contents",
-                                  f"[{stripped} {new_stm} 0 R]")
+                wp[_NO("/Contents")] = _AO([existing, new_stm])
 
-    doc.save(output_path, deflate=True, garbage=4, clean=True)
-    doc.close()
+    with open(output_path, "wb") as fh:
+        writer.write(fh)
     print(f"  Thru-cut spot stroke added at BleedBox: {output_path}")
 
 

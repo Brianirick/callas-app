@@ -1366,31 +1366,14 @@ def stamp_overlay(input_path: str, output_path: str,
     else:
         over = fitz.open(overlay_pdf_path)
 
-    # ── Diagnostic: check which object causes the CropBox error ──────────
-    try:
-        _ov_rect = over[0].rect
-    except Exception as _ov_err:
-        raise RuntimeError(f"DIAG-OVERLAY: CropBox error accessing overlay page: {_ov_err}") from _ov_err
-
-    try:
-        _art_rect = doc[0].rect
-    except Exception as _art_err:
-        raise RuntimeError(f"DIAG-ARTWORK: CropBox error accessing artwork page: {_art_err}") from _art_err
-
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
 
         # Embed overlay page as a Form XObject; appended to content stream
-        try:
-            page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
-        except Exception as _sp_err:
-            raise RuntimeError(f"DIAG-SHOWPDF page {i}: {_sp_err}") from _sp_err
+        page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
 
         # Merge any content stream array into a single stream
-        try:
-            page.clean_contents()
-        except Exception as _cc_err:
-            raise RuntimeError(f"DIAG-CLEANCONTENTS page {i}: {_cc_err}") from _cc_err
+        page.clean_contents()
 
         contents_info = doc.xref_get_key(page.xref, "Contents")
         if contents_info[0] != "xref":
@@ -1455,6 +1438,11 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
     stem   = Path(output_path).stem
     folder = Path(output_path).parent
     ext    = Path(output_path).suffix or ".jpg"
+
+    # Strip any CropBox that sits outside MediaBox — prevents "CropBox not in
+    # MediaBox" when page.rect is accessed during pixmap rendering.
+    for _i in range(len(doc)):
+        doc.xref_set_key(doc.page_xref(_i), "CropBox", "null")
 
     for i, page in enumerate(doc):
         # Compute effective DPI — cap long edge at max_pixels

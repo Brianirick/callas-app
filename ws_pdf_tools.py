@@ -832,8 +832,15 @@ def run_pipeline(input_path: str, output_path: str, steps: list):
                 next_path = tmp.name
                 tmp_files.append(next_path)
 
-            print(f"  Step {i+1}/{len(steps)}: {step.__name__ if hasattr(step, '__name__') else 'lambda'}")
-            step(current, next_path)
+            _sname = step.__name__ if hasattr(step, "__name__") else "lambda"
+            print(f"  Step {i+1}/{len(steps)}: {_sname}")
+            try:
+                step(current, next_path)
+            except Exception as _pe:
+                raise RuntimeError(
+                    f"DIAG-PIPE step {i+1}/{len(steps)} ({_sname}): "
+                    f"{type(_pe).__name__}: {_pe}"
+                ) from None
             current = next_path
 
     finally:

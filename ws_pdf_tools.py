@@ -1488,28 +1488,32 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
     folder = Path(output_path).parent
     ext    = Path(output_path).suffix or ".jpg"
 
-    # ── pdftocairo path (preferred) ─────────────────────────────────────────
+    # ── pdftocairo path (preferred — bypasses fitz CropBox validation) ───────
     _pdftocairo = _ej_sh.which("pdftocairo")
     if _pdftocairo:
         _tmp   = _ej_tmp.mkdtemp()
         _ostem = _ej_os.path.join(_tmp, "pg")
 
-        # Single-page attempt
+        # Cap DPI so the long edge stays within max_pixels.
+        # Assume worst-case page = 144" (10368 pt). 8000px ÷ 144" ≈ 55 DPI.
+        # Use 60 DPI as a safe conservative cap; fine for proof viewing.
+        _safe_dpi = min(dpi, 60)
+
+        # Single-page attempt (no -scale-to: not available in older poppler)
         _ej_sp.run(
-            [_pdftocairo, "-jpeg", "-scale-to", str(max_pixels),
+            [_pdftocairo, "-jpeg", "-r", str(_safe_dpi),
              "-singlefile", input_path, _ostem],
             capture_output=True
         )
         _single = _ostem + ".jpg"
         if _ej_os.path.exists(_single):
             _ej_sh.copy2(_single, output_path)
-            print(f"  export_jpeg → {output_path} (pdftocairo)")
+            print(f"  export_jpeg → {output_path} (pdftocairo {_safe_dpi}dpi)")
             return [output_path]
 
         # Multi-page attempt
         _ej_sp.run(
-            [_pdftocairo, "-jpeg", "-scale-to", str(max_pixels),
-             input_path, _ostem],
+            [_pdftocairo, "-jpeg", "-r", str(_safe_dpi), input_path, _ostem],
             capture_output=True
         )
         _found = sorted(
@@ -1521,10 +1525,10 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
                 dest = str(folder / f"{stem}_p{i+1}{ext}") if len(_found) > 1 else output_path
                 _ej_sh.copy2(_p, dest)
                 paths.append(dest)
-                print(f"  export_jpeg p{i+1} → {dest} (pdftocairo)")
+                print(f"  export_jpeg p{i+1} → {dest} (pdftocairo {_safe_dpi}dpi)")
             return paths
 
-    # ── fitz fallback (no pdftocairo) ───────────────────────────────────────
+    # ── fitz fallback (no pdftocairo available) ─────────────────────────────
     # Strip CropBox via xrefs, save with minimal options (no content cleaning),
     # reopen so the page-rect cache is rebuilt from the clean data.
     _raw = fitz.open(input_path)
@@ -1535,7 +1539,10 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
         except Exception:
             pass
     _cpath = _ej_os.path.join(_ej_tmp.mkdtemp(), "ej_clean.pdf")
-    _raw.save(_cpath, garbage=0, deflate=False, clean=False)
+    try:
+        _raw.save(_cpath, garbage=0, deflate=False, clean=False)
+    except Exception as _fse:
+        raise RuntimeError(f"DIAG-EJ-SAVE: {_fse}")
     _raw.close()
     doc = fitz.open(_cpath)
 

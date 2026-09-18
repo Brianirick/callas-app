@@ -1342,18 +1342,27 @@ def stamp_overlay(input_path: str, output_path: str,
     Stamp overlay PDF centred on each artwork page at the given opacity.
     Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
     """
+    import tempfile as _tmpmod
+
     doc  = fitz.open(input_path)
     over = fitz.open(overlay_pdf_path)
 
     # Normalize overlay page boxes: remove any CropBox that sits outside
     # the MediaBox. Callas-generated overlays sometimes have this, which
     # causes PyMuPDF to raise "CropBox not in MediaBox" during show_pdf_page.
-    # We delete CropBox from the xref directly (bypasses Python-level validation).
+    # We remove CropBox via xref, then save+reopen to flush PyMuPDF's
+    # internal page-rect cache (xref changes alone don't clear it).
+    _had_cropbox = False
     for ov_page in over:
-        try:
+        info = over.xref_get_key(ov_page.xref, "CropBox")
+        if info[0] not in ("null", "invalid", ""):
             over.xref_set_key(ov_page.xref, "CropBox", "null")
-        except Exception:
-            pass
+            _had_cropbox = True
+    if _had_cropbox:
+        _tmp_ov = _tmpmod.mktemp(suffix=".pdf")
+        over.save(_tmp_ov)
+        over.close()
+        over = fitz.open(_tmp_ov)
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)

@@ -643,8 +643,8 @@ def enlarge_page(input_path: str, output_path: str,
         y1 = float(mb.top)    + top_pt     # expand upward in PDF space
         new_rect = RectangleObject([x0, y0, x1, y1])
         page.mediabox = new_rect
+        page.cropbox  = new_rect       # Always match MediaBox — fitz validates CropBox ⊆ MediaBox
         if update_trimbox:
-            page.cropbox  = new_rect   # CropBox controls display in Acrobat
             page.trimbox  = new_rect
             page.bleedbox = new_rect
         writer.add_page(page)

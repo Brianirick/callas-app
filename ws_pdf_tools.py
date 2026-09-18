@@ -1362,7 +1362,10 @@ def stamp_overlay(input_path: str, output_path: str,
         """Open a PDF, strip all CropBox entries via raw xrefs, then
         save+reopen so fitz's internal page-rect cache is rebuilt from the
         clean data (xref edits alone don't flush the cache)."""
-        _d = fitz.open(path)
+        try:
+            _d = fitz.open(path)
+        except Exception as _e1:
+            raise RuntimeError(f"DIAG-NOCB-OPEN: {_e1}")
         _strip_cropbox_xrefs(_d)
         _clean = _os.path.join(_tmpmod.mkdtemp(), "clean.pdf")
         try:
@@ -1370,7 +1373,10 @@ def stamp_overlay(input_path: str, output_path: str,
         except Exception as _se:
             raise RuntimeError(f"DIAG-OV-SAVE: {_se}")
         _d.close()
-        return fitz.open(_clean)
+        try:
+            return fitz.open(_clean)
+        except Exception as _e2:
+            raise RuntimeError(f"DIAG-NOCB-REOPEN: {_e2}")
 
     # ── pdftocairo: re-render both artwork and overlay to clean PDFs ─────────
     # pdftocairo produces a fresh PDF from scratch — the most reliable way to
@@ -1385,7 +1391,10 @@ def stamp_overlay(input_path: str, output_path: str,
         _pc_m    = _sp.run([_pdftocairo, "-pdf", input_path, _m_clean],
                            capture_output=True)
         if _os.path.exists(_m_clean):
-            doc = fitz.open(_m_clean)
+            try:
+                doc = fitz.open(_m_clean)
+            except Exception as _me:
+                raise RuntimeError(f"DIAG-MAIN-OPEN: {_me}")
         else:
             raise RuntimeError(
                 f"DIAG-MAIN-PC: pdftocairo failed rc={_pc_m.returncode} "

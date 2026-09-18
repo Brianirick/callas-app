@@ -747,37 +747,34 @@ def add_thrucut_spot(input_path: str, output_path: str,
         page_xref = page.xref
 
         # Resolve Resources (may be indirect ref or inline dict)
-        res_val = doc.xref_get_key(page_xref, "Resources")
-        if not res_val or res_val == "null":
+        # xref_get_key returns (type, value) tuple
+        res_type, res_val = doc.xref_get_key(page_xref, "Resources")
+        if res_type in ("null", "none", "") or not res_val:
             res_xref = doc.get_new_xref()
             doc.update_object(res_xref, "<<>>")
             doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
+        elif res_type == "xref":
+            res_xref = int(res_val.split()[0])
         else:
-            parts = res_val.split()
-            if len(parts) >= 3 and parts[-1] == "R":
-                res_xref = int(parts[0])
-            else:
-                # Inline dict — materialise as indirect object
-                res_xref = doc.get_new_xref()
-                inline = res_val if res_val.startswith("<<") else "<<>>"
-                doc.update_object(res_xref, inline)
-                doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
+            # Inline dict — materialise as indirect object
+            res_xref = doc.get_new_xref()
+            inline = res_val if res_val.startswith("<<") else "<<>>"
+            doc.update_object(res_xref, inline)
+            doc.xref_set_key(page_xref, "Resources", f"{res_xref} 0 R")
 
         # Resolve / create the ColorSpace sub-dict
-        cs_dict_val = doc.xref_get_key(res_xref, "ColorSpace")
-        if not cs_dict_val or cs_dict_val == "null":
+        cs_type, cs_dict_val = doc.xref_get_key(res_xref, "ColorSpace")
+        if cs_type in ("null", "none", "") or not cs_dict_val:
             cs_dict_xref = doc.get_new_xref()
             doc.update_object(cs_dict_xref, "<<>>")
             doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
+        elif cs_type == "xref":
+            cs_dict_xref = int(cs_dict_val.split()[0])
         else:
-            parts2 = cs_dict_val.split()
-            if len(parts2) >= 3 and parts2[-1] == "R":
-                cs_dict_xref = int(parts2[0])
-            else:
-                cs_dict_xref = doc.get_new_xref()
-                inline2 = cs_dict_val if cs_dict_val.startswith("<<") else "<<>>"
-                doc.update_object(cs_dict_xref, inline2)
-                doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
+            cs_dict_xref = doc.get_new_xref()
+            inline2 = cs_dict_val if cs_dict_val.startswith("<<") else "<<>>"
+            doc.update_object(cs_dict_xref, inline2)
+            doc.xref_set_key(res_xref, "ColorSpace", f"{cs_dict_xref} 0 R")
 
         doc.xref_set_key(cs_dict_xref, res_key, f"{cs_xref} 0 R")
 
@@ -799,8 +796,8 @@ def add_thrucut_spot(input_path: str, output_path: str,
         new_stm = doc.get_new_xref()
         doc.update_stream(new_stm, content)
 
-        contents_val = doc.xref_get_key(page_xref, "Contents")
-        if not contents_val or contents_val == "null":
+        cont_type, contents_val = doc.xref_get_key(page_xref, "Contents")
+        if cont_type in ("null", "none", "") or not contents_val:
             doc.xref_set_key(page_xref, "Contents", f"{new_stm} 0 R")
         else:
             stripped = contents_val.strip()

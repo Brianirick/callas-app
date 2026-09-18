@@ -1411,7 +1411,10 @@ def stamp_overlay(input_path: str, output_path: str,
             raise RuntimeError(f"DIAG-SHOWPAGE p{i}: {_spe}")
 
         # Merge any content stream array into a single stream
-        page.clean_contents()
+        try:
+            page.clean_contents()
+        except Exception as _ce:
+            raise RuntimeError(f"DIAG-CLEAN p{i}: {_ce}")
 
         contents_info = doc.xref_get_key(page.xref, "Contents")
         if contents_info[0] != "xref":
@@ -1445,7 +1448,10 @@ def stamp_overlay(input_path: str, output_path: str,
     # Strip CropBox from the output before saving so export_jpeg can open it cleanly
     _strip_cropbox_xrefs(doc)
 
-    doc.save(output_path, garbage=4, deflate=True)
+    try:
+        doc.save(output_path, garbage=4, deflate=True)
+    except Exception as _dse:
+        raise RuntimeError(f"DIAG-ARTSAVE: {_dse}")
     print(f"  stamp_overlay → {output_path}")
 
 

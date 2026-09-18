@@ -1343,26 +1343,22 @@ def stamp_overlay(input_path: str, output_path: str,
     Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
     """
     import tempfile as _tmpmod
+    from pypdf import PdfReader as _PdfReader, PdfWriter as _PdfWriter
 
-    doc  = fitz.open(input_path)
-    over = fitz.open(overlay_pdf_path)
+    doc = fitz.open(input_path)
 
-    # Normalize overlay page boxes: remove any CropBox that sits outside
-    # the MediaBox. Callas-generated overlays sometimes have this, which
-    # causes PyMuPDF to raise "CropBox not in MediaBox" during show_pdf_page.
-    # We remove CropBox via xref, then save+reopen to flush PyMuPDF's
-    # internal page-rect cache (xref changes alone don't clear it).
-    _had_cropbox = False
-    for ov_page in over:
-        info = over.xref_get_key(ov_page.xref, "CropBox")
-        if info[0] not in ("null", "invalid", ""):
-            over.xref_set_key(ov_page.xref, "CropBox", "null")
-            _had_cropbox = True
-    if _had_cropbox:
-        _tmp_ov = _tmpmod.mktemp(suffix=".pdf")
-        over.save(_tmp_ov)
-        over.close()
-        over = fitz.open(_tmp_ov)
+    # Normalize overlay page boxes using pypdf (which resolves inherited boxes
+    # correctly). Setting cropbox = mediabox on every page ensures PyMuPDF
+    # never raises "CropBox not in MediaBox" when stamping.
+    _ov_reader = _PdfReader(overlay_pdf_path)
+    _ov_writer = _PdfWriter()
+    for _pg in _ov_reader.pages:
+        _pg.cropbox = _pg.mediabox
+        _ov_writer.add_page(_pg)
+    _tmp_ov = _tmpmod.mktemp(suffix=".pdf")
+    with open(_tmp_ov, "wb") as _f:
+        _ov_writer.write(_f)
+    over = fitz.open(_tmp_ov)
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)

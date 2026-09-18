@@ -1556,12 +1556,6 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
             return paths
 
     # ── fitz fallback (pdftocairo unavailable or produced no output) ────────
-    # Canary: always raise here so we know if/when we reach this path
-    _ej_tmp_ls = _ej_os.listdir(_tmp) if _pdftocairo else []
-    raise RuntimeError(
-        f"DIAG-EJ-FITZ: pc={'found' if _pdftocairo else 'NOT_FOUND'} "
-        f"tmp={_ej_tmp_ls!r}"
-    )
     # Strip CropBox via xrefs, save with minimal options (no content cleaning),
     # reopen so the page-rect cache is rebuilt from the clean data.
     _raw = fitz.open(input_path)
@@ -2571,7 +2565,20 @@ def run_recipe(input_path: str, recipe: dict,
                     _step(f"🏁 Applying impose: {finishing}…")
                     impose_panels(tmp_pf, tmp_fin, profile_data)
                 else:
-                    run_profile(tmp_pf, tmp_fin, profile_data)
+                    _step(f"🏁 Applying finishing: {finishing}…")
+                    # Pre-clean with pdftocairo so fitz ops in run_profile
+                    # don't choke on CropBox-outside-MediaBox in tmp_pf.
+                    import shutil as _fin_sh, subprocess as _fin_sp, os as _fin_os
+                    _fin_pc  = _fin_sh.which("pdftocairo")
+                    _fin_src = tmp_pf
+                    if _fin_pc:
+                        _fin_clean = tempfile.mktemp(suffix=".pdf")
+                        _fin_r = _fin_sp.run(
+                            [_fin_pc, "-pdf", tmp_pf, _fin_clean],
+                            capture_output=True)
+                        if _fin_r.returncode == 0 and _fin_os.path.exists(_fin_clean):
+                            _fin_src = _fin_clean
+                    run_profile(_fin_src, tmp_fin, profile_data)
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")

@@ -1357,22 +1357,39 @@ def stamp_overlay(input_path: str, output_path: str,
         _tmp_dir  = _tmpmod.mkdtemp()
         _tmp_stem = _os.path.join(_tmp_dir, "overlay")
         _expected = _tmp_stem + ".pdf"
-        _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
-                capture_output=True)
+        _pc_result = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
+                             capture_output=True)
+        print(f"  DEBUG pdftocairo rc={_pc_result.returncode} "
+              f"stderr={_pc_result.stderr.decode()[:200]!r} "
+              f"dir={_os.listdir(_tmp_dir)}")
         # pdftocairo names output <stem>.pdf (or <stem>-1.pdf for multi-page)
         if not _os.path.exists(_expected):
             _candidates = sorted(_os.listdir(_tmp_dir))
             _expected = _os.path.join(_tmp_dir, _candidates[0]) if _candidates else None
-        over = fitz.open(_expected) if _expected and _os.path.exists(_expected) \
-               else fitz.open(overlay_pdf_path)
+        if _expected and _os.path.exists(_expected):
+            print(f"  DEBUG: opening normalized overlay: {_expected}")
+            over = fitz.open(_expected)
+        else:
+            print(f"  DEBUG: pdftocairo produced no output, using original")
+            over = fitz.open(overlay_pdf_path)
     else:
+        print("  DEBUG: pdftocairo not found, using original overlay")
         over = fitz.open(overlay_pdf_path)
+
+    # Test if overlay page access works
+    try:
+        _test_rect = over[0].rect
+        print(f"  DEBUG: overlay[0].rect = {_test_rect}")
+    except Exception as _e:
+        print(f"  DEBUG: overlay[0].rect FAILED: {_e}")
 
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
+        print(f"  DEBUG: artwork page {i} rect={page.rect}, calling show_pdf_page...")
 
         # Embed overlay page as a Form XObject; appended to content stream
         page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+        print(f"  DEBUG: show_pdf_page done")
 
         # Merge any content stream array into a single stream
         page.clean_contents()

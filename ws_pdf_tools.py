@@ -1312,10 +1312,103 @@ AVAILABLE_CHECKS = {
 
 
 # ---------------------------------------------------------------------------
+# Grommet placement
+# ---------------------------------------------------------------------------
+
+def add_grommets(input_path: str, output_path: str,
+                 grommet_file: str,
+                 n_across: int = 6,
+                 inset_in: float = 0.52,
+                 y_inset_in: float = 0.5,
+                 corner_offset_in: float = 4.0,
+                 grommet_size_pt: float = 60.0,
+                 triple_corners: bool = True):
+    """
+    Stamp a grommet symbol PDF at standard positions derived from the TrimBox.
+
+    Positions:
+      - n_across grommets evenly spaced across the top and bottom edges,
+        each inset_in inches from the trim left/right,
+        y_inset_in inches from the trim top/bottom.
+      - If triple_corners: add horizontal partners (corner_offset_in from
+        each corner along the same edge) and vertical partners
+        (corner_offset_in inward from the trim edge at the corner x positions).
+
+    grommet_file    : absolute path to the grommet symbol PDF
+    grommet_size_pt : bounding-box size in pt for each stamped grommet
+    """
+    from pypdf import PdfReader as _GR
+
+    # Read TrimBox for placement reference
+    _rdr = _GR(input_path)
+    _tb  = _rdr.pages[0].trimbox
+    tl, tb_bot, tr, tt = (float(_tb.left), float(_tb.bottom),
+                           float(_tb.right), float(_tb.top))
+
+    doc      = fitz.open(input_path)
+    grom_doc = fitz.open(grommet_file)
+    page     = doc[0]
+    page_h   = page.rect.height          # fitz Y is from top
+
+    inset_pt    = inset_in         * 72
+    y_inset_pt  = y_inset_in       * 72
+    corner_pt   = corner_offset_in * 72
+    half        = grommet_size_pt  / 2
+
+    # ── x positions (n_across evenly spaced, PDF X-right) ─────────────────
+    x_start = tl + inset_pt
+    x_end   = tr - inset_pt
+    if n_across <= 1:
+        x_positions = [(x_start + x_end) / 2]
+    else:
+        x_positions = [x_start + i * (x_end - x_start) / (n_across - 1)
+                       for i in range(n_across)]
+
+    # ── y positions (PDF Y-up) ─────────────────────────────────────────────
+    top_y = tt  - y_inset_pt
+    bot_y = tb_bot + y_inset_pt
+
+    # ── Collect all (x_pdf, y_pdf) centers ────────────────────────────────
+    positions = []
+    for x in x_positions:
+        positions.append((x, top_y))
+        positions.append((x, bot_y))
+
+    if triple_corners:
+        xl, xr = x_positions[0], x_positions[-1]
+
+        # Horizontal partners — same y as main row, 4" toward center
+        positions.append((xl + corner_pt, top_y))
+        positions.append((xr - corner_pt, top_y))
+        positions.append((xl + corner_pt, bot_y))
+        positions.append((xr - corner_pt, bot_y))
+
+        # Vertical partners — same x as corner grommets, 4" inward from trim edge
+        top_vert_y = top_y - corner_pt
+        bot_vert_y = bot_y + corner_pt
+        positions.append((xl, top_vert_y))
+        positions.append((xr, top_vert_y))
+        positions.append((xl, bot_vert_y))
+        positions.append((xr, bot_vert_y))
+
+    # ── Stamp ──────────────────────────────────────────────────────────────
+    for (xp, yp) in positions:
+        yf   = page_h - yp                          # PDF Y-up → fitz Y-down
+        dest = fitz.Rect(xp - half, yf - half, xp + half, yf + half)
+        page.show_pdf_page(dest, grom_doc, 0)
+
+    doc.save(output_path, garbage=4, deflate=True)
+    doc.close()
+    grom_doc.close()
+    print(f"  add_grommets → {output_path} ({len(positions)} grommets)")
+
+
+# ---------------------------------------------------------------------------
 # PROFILE RUNNER  — executes a JSON profile dict
 # ---------------------------------------------------------------------------
 
-def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
+def run_profile(input_path: str, output_path: str, profile: dict,
+                assets_dir: str = None) -> dict:
     """
     Execute a profile definition against a PDF.
 
@@ -1353,6 +1446,7 @@ def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
         "adjust_black_vectors":     adjust_black_vectors,
         "remap_white_spot_colors":  remap_white_spot_colors,
         "convert_lab_to_cmyk":      convert_lab_to_cmyk,
+        "add_grommets":             add_grommets,
     }
 
     CHECK_MAP = {
@@ -1368,8 +1462,14 @@ def run_profile(input_path: str, output_path: str, profile: dict) -> dict:
 
     for i, step_def in enumerate(profile.get("steps", [])):
         op_name   = step_def["op"]
-        params    = step_def.get("params", {})
+        params    = dict(step_def.get("params", {}))   # mutable copy
         step_type = step_def.get("type", "fixup")
+
+        # Resolve relative file paths in params against assets_dir
+        if assets_dir and op_name == "add_grommets" and "grommet_file" in params:
+            gf = params["grommet_file"]
+            if not Path(gf).is_absolute():
+                params["grommet_file"] = str(Path(assets_dir) / gf)
 
         if step_type == "check":
             fn = CHECK_MAP.get(op_name)
@@ -2666,7 +2766,8 @@ def run_recipe(input_path: str, recipe: dict,
                                 f"exists={_fin_os.path.exists(_fin_clean)} "
                                 f"stderr={_fin_r.stderr[:300]!r}"
                             )
-                    run_profile(_fin_src, tmp_fin, profile_data)
+                    run_profile(_fin_src, tmp_fin, profile_data,
+                                assets_dir=str(pfile.parent))
                 tmp_finished = tmp_fin
             else:
                 print(f"  [finishing] profile not found: {pfile}")

@@ -30,6 +30,18 @@
     },
     {
       "op": "add_thrucut_spot"
+    },
+    {
+      "op": "add_grommets",
+      "params": {
+        "grommet_file": "grommet.pdf",
+        "n_across": 6,
+        "inset_in": 0.52,
+        "y_inset_in": 0.5,
+        "corner_offset_in": 4.0,
+        "grommet_size_pt": 60,
+        "triple_corners": true
+      }
     }
   ]
 }

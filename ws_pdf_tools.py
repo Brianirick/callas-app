@@ -1372,41 +1372,40 @@ def stamp_overlay(input_path: str, output_path: str,
         _d.close()
         return fitz.open(_clean)
 
-    # ── Open artwork: strip CropBox and save+reopen to flush fitz's internal
-    #    page-rect cache (xref edits alone don't flush it; page creation in the
-    #    loop below would throw "CropBox not in MediaBox" on the stale cache).
-    _d_raw = fitz.open(input_path)
-    _strip_cropbox_xrefs(_d_raw)
-    _clean_main = _os.path.join(_tmpmod.mkdtemp(), "main_clean.pdf")
-    try:
-        _d_raw.save(_clean_main, garbage=0, deflate=False, clean=False)
-    except Exception as _ms:
-        raise RuntimeError(f"DIAG-MAIN-SAVE: {_ms}")
-    _d_raw.close()
-    doc = fitz.open(_clean_main)
-
-    # ── Overlay: pdftocairo first (fresh re-render), then open clean ────────
+    # ── pdftocairo: re-render both artwork and overlay to clean PDFs ─────────
+    # pdftocairo produces a fresh PDF from scratch — the most reliable way to
+    # eliminate CropBox-outside-MediaBox conditions that xref editing can miss
+    # (inherited /Pages CropBox, compressed xref streams, etc.).
     _pdftocairo = _sh.which("pdftocairo")
+
+    # Main artwork
+    if _pdftocairo:
+        _m_dir   = _tmpmod.mkdtemp()
+        _m_clean = _os.path.join(_m_dir, "artwork.pdf")
+        _pc_m    = _sp.run([_pdftocairo, "-pdf", input_path, _m_clean],
+                           capture_output=True)
+        if _os.path.exists(_m_clean):
+            doc = fitz.open(_m_clean)
+        else:
+            raise RuntimeError(
+                f"DIAG-MAIN-PC: pdftocairo failed rc={_pc_m.returncode} "
+                f"stderr={_pc_m.stderr[:300]!r}"
+            )
+    else:
+        # No pdftocairo: strip via xrefs + save+reopen to flush rect cache
+        doc = _open_no_cropbox(input_path)
+
+    # Overlay
     _ov_src = overlay_pdf_path
     if _pdftocairo:
-        _tmp_dir  = _tmpmod.mkdtemp()
-        # Pass the full output path (with .pdf) so pdftocairo creates it there directly
-        _expected = _os.path.join(_tmp_dir, "overlay.pdf")
-        _pc = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _expected],
-                      capture_output=True)
-        if _os.path.exists(_expected):
-            _ov_src = _expected
-        else:
-            # pdftocairo may have appended .pdf again → check for overlay.pdf.pdf
-            _alt = _expected + ".pdf"
-            if _os.path.exists(_alt):
-                _ov_src = _alt
-            else:
-                # Fall back: pick any file pdftocairo created
-                _all = _os.listdir(_tmp_dir)
-                _ov_src = _os.path.join(_tmp_dir, _all[0]) if _all else overlay_pdf_path
+        _ov_dir   = _tmpmod.mkdtemp()
+        _ov_clean = _os.path.join(_ov_dir, "overlay.pdf")
+        _pc_o     = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _ov_clean],
+                            capture_output=True)
+        if _os.path.exists(_ov_clean):
+            _ov_src = _ov_clean
+        # (if pdftocairo fails for overlay, fall through to _open_no_cropbox below)
 
-    # Strip CropBox + save + reopen to flush fitz's page-rect cache
     over = _open_no_cropbox(_ov_src)
 
     for i, page in enumerate(doc):

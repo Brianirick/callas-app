@@ -1382,23 +1382,21 @@ def stamp_overlay(input_path: str, output_path: str,
     _ov_src = overlay_pdf_path
     if _pdftocairo:
         _tmp_dir  = _tmpmod.mkdtemp()
-        _tmp_stem = _os.path.join(_tmp_dir, "overlay")
-        _expected = _tmp_stem + ".pdf"
-        _pc = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _tmp_stem],
+        # Pass the full output path (with .pdf) so pdftocairo creates it there directly
+        _expected = _os.path.join(_tmp_dir, "overlay.pdf")
+        _pc = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _expected],
                       capture_output=True)
         if _os.path.exists(_expected):
             _ov_src = _expected
         else:
-            _cands = [f for f in sorted(_os.listdir(_tmp_dir))
-                      if f.lower().endswith(".pdf")]
-            if _cands:
-                _ov_src = _os.path.join(_tmp_dir, _cands[0])
+            # pdftocairo may have appended .pdf again → check for overlay.pdf.pdf
+            _alt = _expected + ".pdf"
+            if _os.path.exists(_alt):
+                _ov_src = _alt
             else:
-                raise RuntimeError(
-                    f"DIAG-PDFTOCAIRO: rc={_pc.returncode} "
-                    f"stderr={_pc.stderr[:300]!r} "
-                    f"dir={_os.listdir(_tmp_dir)!r}"
-                )
+                # Fall back: pick any file pdftocairo created
+                _all = _os.listdir(_tmp_dir)
+                _ov_src = _os.path.join(_tmp_dir, _all[0]) if _all else overlay_pdf_path
 
     # Strip CropBox + save + reopen to flush fitz's page-rect cache
     over = _open_no_cropbox(_ov_src)

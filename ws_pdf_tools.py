@@ -127,23 +127,41 @@ def set_mediabox_to_origin(input_path: str, output_path: str):
     Replicates: SetMediaBoxTo00
     Moves the MediaBox so its lower-left corner is at (0, 0).
     All other page boxes are shifted to stay in register.
+
+    Uses pypdf (not fitz) so that pages with CropBox outside MediaBox
+    (a common state after enlarge_page bleed expansion) are handled
+    without triggering PyMuPDF's CropBox-validation error.
     """
-    doc = fitz.open(input_path)
-    for page in doc:
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    for page in reader.pages:
         mb = page.mediabox
-        dx, dy = -mb.x0, -mb.y0
-        if dx == 0 and dy == 0:
+        dx = float(mb.left)    # x0 to subtract
+        dy = float(mb.bottom)  # y0 to subtract
+        if abs(dx) < 0.001 and abs(dy) < 0.001:
+            writer.add_page(page)
             continue
-        # Shift all boxes
-        page.set_mediabox(fitz.Rect(0, 0, mb.width, mb.height))
-        for attr in ("cropbox", "trimbox", "bleedbox", "artbox"):
-            box = getattr(page, attr, None)
-            if box:
-                shifted = fitz.Rect(box.x0 + dx, box.y0 + dy,
-                                    box.x1 + dx, box.y1 + dy)
-                getattr(page, f"set_{attr}")(shifted)
-    save_pdf(doc, output_path)
-    doc.close()
+
+        def _shift(box):
+            return RectangleObject([
+                float(box.left)   - dx, float(box.bottom) - dy,
+                float(box.right)  - dx, float(box.top)    - dy,
+            ])
+
+        page.mediabox = _shift(mb)
+        for pdf_key, attr in [
+            ("/CropBox",  "cropbox"),
+            ("/TrimBox",  "trimbox"),
+            ("/BleedBox", "bleedbox"),
+            ("/ArtBox",   "artbox"),
+        ]:
+            if pdf_key in page:
+                setattr(page, attr, _shift(getattr(page, attr)))
+        writer.add_page(page)
+
+    with open(output_path, "wb") as fh:
+        writer.write(fh)
+    print(f"  set_mediabox_to_origin → {output_path}")
 
 
 def set_page_box(input_path: str, output_path: str,

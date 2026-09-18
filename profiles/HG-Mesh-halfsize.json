@@ -1,0 +1,37 @@
+{
+  "type": "finishing",
+  "name": "HG-Mesh-halfsize",
+  "description": "Mesh H&G finishing (half-size art): remap black, outline fonts, 0.5\" bleed, scale 2x, trim stroke",
+  "steps": [
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "adjust_black_vectors"
+    },
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 0.5,
+        "bottom_inch": 0.5,
+        "left_inch": 0.5,
+        "right_inch": 0.5
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "scale_pages",
+      "params": {
+        "scale_percent": "200"
+      }
+    },
+    {
+      "op": "add_trimbox_stroke"
+    }
+  ]
+}

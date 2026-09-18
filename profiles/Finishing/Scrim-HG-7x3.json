@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Scrim H&G 7x3",
+  "description": "Scrim Hem & Grommet 7ft x 3ft banner",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 84.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.5
+  },
+  "finishing": "HG-Scrim-bleed",
+  "overlay": null,
+  "cutpath": null
+}

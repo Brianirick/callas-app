@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mesh H&G 3x10",
+  "description": "Mesh Hem & Grommet 3ft x 10ft banner",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 120.0,
+    "tolerance_inch": 0.5
+  },
+  "finishing": "HG-Mesh-bleed",
+  "overlay": null,
+  "cutpath": null
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Mesh H&G 4x15",
+  "description": "Mesh Hem & Grommet 4ft x 15ft banner \u2014 half-size art",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 0.5
+  },
+  "finishing": "HG-Mesh-halfsize",
+  "overlay": null,
+  "cutpath": null
+}

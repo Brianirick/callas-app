@@ -1,0 +1,31 @@
+{
+  "type": "finishing",
+  "name": "HG-Mesh-bleed",
+  "description": "Mesh H&G finishing (full size): remap black, outline fonts, 1\" bleed, trim stroke",
+  "steps": [
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "adjust_black_vectors"
+    },
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 1.0,
+        "bottom_inch": 1.0,
+        "left_inch": 1.0,
+        "right_inch": 1.0
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "add_trimbox_stroke"
+    }
+  ]
+}

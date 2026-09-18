@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Scrim H&G 8x4",
+  "description": "Scrim Hem & Grommet 8ft x 4ft banner",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 96.0,
+    "height_inch": 48.0,
+    "tolerance_inch": 0.5
+  },
+  "finishing": "HG-Scrim-bleed",
+  "overlay": null,
+  "cutpath": null
+}

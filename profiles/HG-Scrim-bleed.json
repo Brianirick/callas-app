@@ -1,0 +1,28 @@
+{
+  "type": "finishing",
+  "name": "HG-Scrim-bleed",
+  "description": "Scrim H&G finishing: outline fonts, 1\" bleed all sides, trim stroke",
+  "steps": [
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 1.0,
+        "bottom_inch": 1.0,
+        "left_inch": 1.0,
+        "right_inch": 1.0
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "add_trimbox_stroke"
+    }
+  ]
+}

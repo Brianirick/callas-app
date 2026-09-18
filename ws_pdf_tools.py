@@ -1345,6 +1345,14 @@ def stamp_overlay(input_path: str, output_path: str,
     doc  = fitz.open(input_path)
     over = fitz.open(overlay_pdf_path)
 
+    # Normalize overlay page boxes: CropBox must be within MediaBox.
+    # Some overlay PDFs (e.g. Callas-generated templates) have a CropBox
+    # that extends outside the MediaBox, which causes PyMuPDF to raise
+    # "CropBox not in MediaBox" during show_pdf_page.
+    for ov_page in over:
+        mb = ov_page.mediabox
+        ov_page.set_cropbox(mb)
+
     for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
 

@@ -5,7 +5,7 @@
   "preflight": "75-75-75-100",
   "check_size": {
     "width_inch": 120.0,
-    "height_inch": 36.0,
+    "height_inch": 34.0,
     "tolerance_inch": 0.5
   },
   "finishing": "HG-Mesh-halfsize",

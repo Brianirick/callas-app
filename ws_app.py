@@ -238,7 +238,7 @@ st.markdown("""
 def load_all_profiles():
     """Return dict of {display_name: (path, profile_dict)} for recipe profiles only."""
     profiles = {}
-    for p in sorted(PROFILES_DIR.glob("*.json")):
+    for p in sorted(PROFILES_DIR.rglob("*.json")):
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             if data.get("type") == "recipe":

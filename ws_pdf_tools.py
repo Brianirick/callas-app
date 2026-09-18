@@ -655,6 +655,11 @@ def enlarge_page(input_path: str, output_path: str,
     writer = PdfWriter()
     for page in reader.pages:
         mb = page.mediabox            # PDF coords: bottom-left origin, y↑
+        # Save old MediaBox BEFORE modifying — needed for TrimBox fallback below
+        old_mb = RectangleObject([
+            float(mb.left), float(mb.bottom),
+            float(mb.right), float(mb.top),
+        ])
         x0 = float(mb.left)   - left_pt
         y0 = float(mb.bottom) - bottom_pt  # expand downward in PDF space
         x1 = float(mb.right)  + right_pt
@@ -665,6 +670,14 @@ def enlarge_page(input_path: str, output_path: str,
         if update_trimbox:
             page.trimbox  = new_rect
             page.bleedbox = new_rect
+        else:
+            # Preserve bleed intent: TrimBox marks the trim boundary (old MediaBox).
+            # If TrimBox already exists, leave it; if not, set it to the pre-expand MB.
+            if "/TrimBox" not in page:
+                page.trimbox = old_mb
+            # BleedBox = full new page (the outer bleed boundary)
+            if "/BleedBox" not in page:
+                page.bleedbox = new_rect
         writer.add_page(page)
     with open(output_path, "wb") as f:
         writer.write(f)
@@ -763,7 +776,7 @@ def add_thrucut_spot(input_path: str, output_path: str,
         # ── Content stream ─────────────────────────────────────────────────────
         content_bytes = (
             f"q\n"
-            f"{res_key[1:]} CS\n"      # set stroking colorspace
+            f"{res_key} CS\n"          # set stroking colorspace — name includes leading /
             f"1.0 SCN\n"               # tint = 100%
             f"{stroke_width_pt} w\n"
             f"{x0:.4f} {y0:.4f} m\n"

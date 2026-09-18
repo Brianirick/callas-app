@@ -1489,36 +1489,39 @@ def export_jpeg(input_path: str, output_path: str, dpi: int = 150,
     ext    = Path(output_path).suffix or ".jpg"
 
     # ── pdftocairo path (preferred — bypasses fitz CropBox validation) ───────
+    # NOTE: pdftocairo writes to EXACTLY the output path specified — it does
+    # NOT append an extension automatically.  We must pass paths that already
+    # include the desired extension.
     _pdftocairo = _ej_sh.which("pdftocairo")
     if _pdftocairo:
-        _tmp   = _ej_tmp.mkdtemp()
-        _ostem = _ej_os.path.join(_tmp, "pg")
+        _tmp = _ej_tmp.mkdtemp()
 
-        # Cap DPI so the long edge stays within max_pixels.
-        # Assume worst-case page = 144" (10368 pt). 8000px ÷ 144" ≈ 55 DPI.
-        # Use 60 DPI as a safe conservative cap; fine for proof viewing.
+        # Cap DPI: 60 DPI keeps a 144"-wide banner under ~8700 px (safe).
         _safe_dpi = min(dpi, 60)
 
-        # Single-page attempt (no -scale-to: not available in older poppler)
+        # Single-page: pass full path with .jpg so the file lands there directly
+        _single_out = _ej_os.path.join(_tmp, "pg.jpg")
         _ej_sp.run(
             [_pdftocairo, "-jpeg", "-r", str(_safe_dpi),
-             "-singlefile", input_path, _ostem],
+             "-singlefile", input_path, _single_out],
             capture_output=True
         )
-        _single = _ostem + ".jpg"
-        if _ej_os.path.exists(_single):
-            _ej_sh.copy2(_single, output_path)
+        if _ej_os.path.exists(_single_out):
+            _ej_sh.copy2(_single_out, output_path)
             print(f"  export_jpeg → {output_path} (pdftocairo {_safe_dpi}dpi)")
             return [output_path]
 
-        # Multi-page attempt
+        # Multi-page: pdftocairo appends -000001, -000002, … to the stem.
+        # Pass a stem WITHOUT extension; collect whatever files appear.
+        _mp_stem = _ej_os.path.join(_tmp, "mp")
         _ej_sp.run(
-            [_pdftocairo, "-jpeg", "-r", str(_safe_dpi), input_path, _ostem],
+            [_pdftocairo, "-jpeg", "-r", str(_safe_dpi), input_path, _mp_stem],
             capture_output=True
         )
+        # Grab every file that starts with "mp" (the stem we used)
         _found = sorted(
             _ej_os.path.join(_tmp, f) for f in _ej_os.listdir(_tmp)
-            if f.startswith("pg") and f.lower().endswith(".jpg")
+            if f.startswith("mp")
         )
         if _found:
             for i, _p in enumerate(_found):

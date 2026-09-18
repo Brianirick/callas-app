@@ -2572,12 +2572,19 @@ def run_recipe(input_path: str, recipe: dict,
                     _fin_pc  = _fin_sh.which("pdftocairo")
                     _fin_src = tmp_pf
                     if _fin_pc:
-                        _fin_clean = tempfile.mktemp(suffix=".pdf")
+                        _fin_dir   = tempfile.mkdtemp()
+                        _fin_clean = _fin_os.path.join(_fin_dir, "fin_clean.pdf")
                         _fin_r = _fin_sp.run(
                             [_fin_pc, "-pdf", tmp_pf, _fin_clean],
                             capture_output=True)
                         if _fin_r.returncode == 0 and _fin_os.path.exists(_fin_clean):
                             _fin_src = _fin_clean
+                        else:
+                            raise RuntimeError(
+                                f"DIAG-FIN-PC: rc={_fin_r.returncode} "
+                                f"exists={_fin_os.path.exists(_fin_clean)} "
+                                f"stderr={_fin_r.stderr[:300]!r}"
+                            )
                     run_profile(_fin_src, tmp_fin, profile_data)
                 tmp_finished = tmp_fin
             else:

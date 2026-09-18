@@ -714,7 +714,21 @@ def add_thrucut_spot(input_path: str, output_path: str,
     and cutters recognise it as a through-cut path.
     ffeat: OutlinePBox
     """
-    doc = fitz.open(input_path)
+    import shutil as _tc_sh, subprocess as _tc_sp, tempfile as _tc_tmp, os as _tc_os
+    # Pre-clean with pdftocairo: pypdf and fitz(garbage=4) can produce
+    # compressed ObjStm / xref streams that fitz's xref_get_key /
+    # xref_set_key cannot reach, raising "object is no PDF dict".
+    _tc_in = input_path
+    _tc_pc = _tc_sh.which("pdftocairo")
+    if _tc_pc:
+        _tc_dir   = _tc_tmp.mkdtemp()
+        _tc_clean = _tc_os.path.join(_tc_dir, "tc_clean.pdf")
+        _tc_r = _tc_sp.run([_tc_pc, "-pdf", input_path, _tc_clean],
+                           capture_output=True)
+        if _tc_r.returncode == 0 and _tc_os.path.exists(_tc_clean):
+            _tc_in = _tc_clean
+
+    doc = fitz.open(_tc_in)
 
     for page_idx in range(len(doc)):
         page = doc[page_idx]

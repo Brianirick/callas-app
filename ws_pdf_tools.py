@@ -1408,7 +1408,10 @@ def stamp_overlay(input_path: str, output_path: str,
 
     over = _open_no_cropbox(_ov_src)
 
-    for i, page in enumerate(doc):
+    # Outer wrapper catches page-creation errors from enumerate(doc) and any
+    # other gap; inner wrappers give per-operation detail.
+    try:
+      for i, page in enumerate(doc):
         ov_idx = min(i, len(over) - 1)
 
         # Embed overlay page as a Form XObject; appended to content stream
@@ -1451,6 +1454,11 @@ def stamp_overlay(input_path: str, output_path: str,
         if last_q is not None:
             lines.insert(last_q + 1, b"/GSov gs")
             doc.update_stream(c_xref, b"\n".join(lines))
+
+    except RuntimeError:
+        raise  # pass through our own DIAG errors
+    except Exception as _loop_e:
+        raise RuntimeError(f"DIAG-LOOP: {type(_loop_e).__name__}: {_loop_e}")
 
     # Strip CropBox from the output before saving so export_jpeg can open it cleanly
     _strip_cropbox_xrefs(doc)

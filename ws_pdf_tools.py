@@ -1372,10 +1372,18 @@ def stamp_overlay(input_path: str, output_path: str,
         _d.close()
         return fitz.open(_clean)
 
-    # ── Open artwork (export_jpeg confirms it has no bad CropBox, but strip
-    #    anyway to guard against any inherited /Pages CropBox) ───────────────
-    doc = fitz.open(input_path)
-    _strip_cropbox_xrefs(doc)
+    # ── Open artwork: strip CropBox and save+reopen to flush fitz's internal
+    #    page-rect cache (xref edits alone don't flush it; page creation in the
+    #    loop below would throw "CropBox not in MediaBox" on the stale cache).
+    _d_raw = fitz.open(input_path)
+    _strip_cropbox_xrefs(_d_raw)
+    _clean_main = _os.path.join(_tmpmod.mkdtemp(), "main_clean.pdf")
+    try:
+        _d_raw.save(_clean_main, garbage=0, deflate=False, clean=False)
+    except Exception as _ms:
+        raise RuntimeError(f"DIAG-MAIN-SAVE: {_ms}")
+    _d_raw.close()
+    doc = fitz.open(_clean_main)
 
     # ── Overlay: pdftocairo first (fresh re-render), then open clean ────────
     _pdftocairo = _sh.which("pdftocairo")

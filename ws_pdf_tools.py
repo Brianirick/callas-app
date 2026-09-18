@@ -126,21 +126,33 @@ def set_mediabox_to_origin(input_path: str, output_path: str):
     """
     Replicates: SetMediaBoxTo00
     Moves the MediaBox so its lower-left corner is at (0, 0).
-    All other page boxes are shifted to stay in register.
+    All other page boxes are shifted to stay in register AND the content
+    streams are wrapped with a CTM (q … cm … Q) so the visible content
+    moves with the boxes.
+
+    Without the CTM, shifting the boxes alone leaves the content anchored
+    at its original coordinates — producing blank bleed on only two sides
+    and no bleed on the other two (classic symptom after enlarge_page).
 
     Uses pypdf (not fitz) so that pages with CropBox outside MediaBox
     (a common state after enlarge_page bleed expansion) are handled
     without triggering PyMuPDF's CropBox-validation error.
     """
+    from pypdf.generic import (
+        DecodedStreamObject as _DSO, NameObject as _NO,
+        ArrayObject as _AO, IndirectObject as _IO,
+    )
+
     reader = PdfReader(input_path)
     writer = PdfWriter()
-    for page in reader.pages:
-        mb = page.mediabox
+    writer.append(reader)   # copies ALL objects (fonts, XObjects, streams)
+
+    for wp in writer.pages:
+        mb = wp.mediabox
         dx = float(mb.left)    # x0 to subtract
         dy = float(mb.bottom)  # y0 to subtract
         if abs(dx) < 0.001 and abs(dy) < 0.001:
-            writer.add_page(page)
-            continue
+            continue            # already at origin — nothing to do
 
         def _shift(box):
             return RectangleObject([
@@ -148,16 +160,44 @@ def set_mediabox_to_origin(input_path: str, output_path: str):
                 float(box.right)  - dx, float(box.top)    - dy,
             ])
 
-        page.mediabox = _shift(mb)
+        wp.mediabox = _shift(mb)
         for pdf_key, attr in [
             ("/CropBox",  "cropbox"),
             ("/TrimBox",  "trimbox"),
             ("/BleedBox", "bleedbox"),
             ("/ArtBox",   "artbox"),
         ]:
-            if pdf_key in page:
-                setattr(page, attr, _shift(getattr(page, attr)))
-        writer.add_page(page)
+            if pdf_key in wp:
+                setattr(wp, attr, _shift(getattr(wp, attr)))
+
+        # Shift CONTENT to stay in register with the shifted boxes.
+        # We wrap existing content streams with:
+        #   pre:  q  1 0 0 1 {-dx} {-dy} cm   ← translate by the shift amount
+        #   post: Q                             ← restore graphics state
+        # Using separate indirect stream objects (streams must be indirect in PDF).
+        shift_x, shift_y = -dx, -dy
+
+        pre_stm = _DSO()
+        pre_stm.set_data(
+            f"q\n1 0 0 1 {shift_x:.4f} {shift_y:.4f} cm\n".encode("latin-1")
+        )
+        pre_ref = writer._add_object(pre_stm)
+
+        post_stm = _DSO()
+        post_stm.set_data(b"Q\n")
+        post_ref = writer._add_object(post_stm)
+
+        existing = wp.get("/Contents")  # raw value — may be IndirectObject or Array
+        if existing is None:
+            wp[_NO("/Contents")] = _AO([pre_ref, post_ref])
+        elif isinstance(existing, _IO):
+            wp[_NO("/Contents")] = _AO([pre_ref, existing, post_ref])
+        elif isinstance(existing, _AO):
+            wp[_NO("/Contents")] = _AO([pre_ref] + list(existing) + [post_ref])
+        else:
+            # Direct stream (shouldn't happen after append) — register as indirect
+            existing_ref = writer._add_object(existing)
+            wp[_NO("/Contents")] = _AO([pre_ref, existing_ref, post_ref])
 
     with open(output_path, "wb") as fh:
         writer.write(fh)
@@ -762,7 +802,7 @@ def add_thrucut_spot(input_path: str, output_path: str,
             _NO("/FunctionType"): _NumO(2),
             _NO("/Domain"):  _AO([_FO(0.0), _FO(1.0)]),
             _NO("/C0"):      _AO([_FO(0.0)] * 4),
-            _NO("/C1"):      _AO([_FO(0.0), _FO(0.0), _FO(0.0), _FO(1.0)]),
+            _NO("/C1"):      _AO([_FO(0.0), _FO(1.0), _FO(0.0), _FO(0.0)]),  # 100% Magenta
             _NO("/N"):       _FO(1.0),
         })
         # Separation colorspace array (inline function — avoids extra indirect)

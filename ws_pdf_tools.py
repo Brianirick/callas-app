@@ -1518,9 +1518,11 @@ def run_profile(input_path: str, output_path: str, profile: dict,
 # ---------------------------------------------------------------------------
 
 def stamp_overlay(input_path: str, output_path: str,
-                  overlay_pdf_path: str, opacity: float = 0.5):
+                  overlay_pdf_path: str, opacity: float = 0.5,
+                  placement: str = "Center"):
     """
-    Stamp overlay PDF centred on each artwork page at the given opacity.
+    Stamp overlay PDF on each artwork page at the given opacity, scaled to fit.
+    placement: "Center" (default) or "TopCenter" (pdfToolbox --placement values).
     Uses PyMuPDF Form XObjects + PDF ExtGState (vector — no rasterisation).
     """
     import tempfile as _tmpmod
@@ -1605,8 +1607,15 @@ def stamp_overlay(input_path: str, output_path: str,
         ov_idx = min(i, len(over) - 1)
 
         # Embed overlay page as a Form XObject; appended to content stream
+        target = page.rect
+        if placement == "TopCenter":
+            # show_pdf_page fits + centres inside target; pin the fitted box to the top
+            ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
+            s = min(target.width / ow, target.height / oh)
+            x0 = target.x0 + (target.width - ow * s) / 2
+            target = fitz.Rect(x0, target.y0, x0 + ow * s, target.y0 + oh * s)
         try:
-            page.show_pdf_page(page.rect, over, ov_idx, overlay=True)
+            page.show_pdf_page(target, over, ov_idx, overlay=True)
         except Exception as _spe:
             raise RuntimeError(f"DIAG-SHOWPAGE p{i}: {_spe}")
 
@@ -2616,6 +2625,25 @@ def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
     print(f"  impose_panels (pypdf, spot-color-safe) → {output_path}")
 
 
+def preflight_colors(input_path: str, output_path: str, target: str,
+                     status_cb=None) -> None:
+    """Recipe preflight colour chain, in Callas KFPX order:
+    white spots → Lab→CMYK → black adjustment → template spots → CMYK."""
+    import tempfile
+    _step = status_cb or (lambda msg: None)
+    tmp_a = tempfile.mktemp(suffix=".pdf")
+    tmp_b = tempfile.mktemp(suffix=".pdf")
+    tmp_c = tempfile.mktemp(suffix=".pdf")
+    _step("🎨 Remapping white spot colors…")
+    remap_white_spot_colors(input_path, tmp_a)
+    _step("🔬 Converting Lab → CMYK…")
+    convert_lab_to_cmyk(tmp_a, tmp_b)
+    _step(f"⚫ Adjusting vector blacks → {target}…")
+    adjust_black_vectors(tmp_b, tmp_c, target=target)
+    _step("🎨 Converting template spot colors → CMYK…")
+    convert_template_colors_to_cmyk(tmp_c, output_path)
+
+
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
@@ -2651,17 +2679,7 @@ def run_recipe(input_path: str, recipe: dict,
     tmp_pf   = tempfile.mktemp(suffix=".pdf")
     preflight = recipe.get("preflight") or ""
     if preflight in _PREFLIGHT_TARGETS:
-        tmp_a = tempfile.mktemp(suffix=".pdf")
-        tmp_b = tempfile.mktemp(suffix=".pdf")
-        tmp_c = tempfile.mktemp(suffix=".pdf")
-        _step("🎨 Remapping white spot colors…")
-        remap_white_spot_colors(input_path, tmp_a)
-        _step("🔬 Converting Lab → CMYK…")
-        convert_lab_to_cmyk(tmp_a, tmp_b)
-        _step(f"⚫ Adjusting vector blacks → {preflight}…")
-        adjust_black_vectors(tmp_b, tmp_c, target=preflight)
-        _step("🎨 Converting template spot colors → CMYK…")
-        convert_template_colors_to_cmyk(tmp_c, tmp_pf)
+        preflight_colors(input_path, tmp_pf, preflight, status_cb=_step)
     else:
         if preflight:
             _step(f"⚠️ Unknown preflight target '{preflight}', skipping.")

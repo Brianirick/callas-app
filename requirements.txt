@@ -3,3 +3,6 @@ pymupdf
 pypdf
 PyGithub
 boto3>=1.26.0
+fastapi
+uvicorn
+python-multipart

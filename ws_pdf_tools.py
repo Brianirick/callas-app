@@ -480,6 +480,44 @@ def detect_spot_colors(input_path: str) -> dict:
     return found
 
 
+def find_template_spot_names(input_path: str, name_contains: str = "Template Layer") -> list:
+    """
+    Names of WS Display template spot colours ("Blue Template Layer", ...) present in
+    the file.  Mirrors the production KFPX rule "File contains template elements"
+    (spot colour name contains 'Template Layer').
+
+    Scans every Separation / DeviceN colour space in the file (page resources,
+    inherited resources and Form XObjects), so nothing hides in a nested object.
+    Returns a sorted list of decoded names, empty if the file has none.
+    """
+    import re
+    needle = name_contains.lower()
+    names = set()
+
+    def _decode(raw: str) -> str:
+        return re.sub(r"#([0-9A-Fa-f]{2})", lambda m: chr(int(m.group(1), 16)), raw)
+
+    doc = fitz.open(input_path)
+    try:
+        for xref in range(1, doc.xref_length()):
+            try:
+                obj = doc.xref_object(xref, compressed=True)
+            except Exception:
+                continue
+            if "/Separation" not in obj and "/DeviceN" not in obj:
+                continue
+            cands = re.findall(r"/Separation\s*/([^\s/\[\]<>()]+)", obj)
+            for group in re.findall(r"/DeviceN\s*\[([^\]]*)\]", obj):
+                cands += re.findall(r"/([^\s/\[\]<>()]+)", group)
+            for c in cands:
+                n = _decode(c)
+                if needle in n.lower():
+                    names.add(n)
+    finally:
+        doc.close()
+    return sorted(names)
+
+
 def preflight_report(input_path: str) -> dict:
     """
     Runs all preflight checks and returns a structured report.

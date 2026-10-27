@@ -136,12 +136,26 @@ def preflight(file: UploadFile = File(...), product: str = Form(...),
                                          tolerance_inch=size.get("tolerance_inch", 0.1))
             errors += [r["message"] for r in results if not r["passed"]]
 
+    # Template elements are left in the file and printed, so the customer is warned instead
+    # (production KFPX rule "File contains template elements": a document-level warning).
+    warnings = []
+    if not encrypted:
+        try:
+            tpl = ws.find_template_spot_names(out)
+        except Exception as e:
+            tpl = []
+            print(f"[template check] failed: {e}")
+        if tpl:
+            warnings.append("File contains template elements: " + ", ".join(tpl)
+                            + " — these areas will print. Remove template elements before uploading if unintended.")
+
     report = {
-        "doc_errors":      len(errors),
-        "doc_warnings":    0,  # ponytail: spot colours are already converted above, so no warning-driven second pass
-        "doc_size":        os.path.getsize(src),
-        "pdf_encrypted":   encrypted,
-        "doc_errors_list": errors[:20],
+        "doc_errors":        len(errors),
+        "doc_warnings":      len(warnings),
+        "doc_size":          os.path.getsize(src),
+        "pdf_encrypted":     encrypted,
+        "doc_errors_list":   errors[:20],
+        "doc_warnings_list": warnings[:20],
     }
     return _respond(out, workdir, "application/pdf",
                     {"X-Preflight-Report": json.dumps(report)})

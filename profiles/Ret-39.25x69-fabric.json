@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ret-39.25x69-fabric",
+  "description": "QuickProof product 'Ret-39.25x69-fabric' - uses recipe 'Ret-39.25x69'",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 39.25,
+    "height_inch": 69.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "Babystep-39-69-FAB-overlay.pdf",
+  "cutpath": null
+}

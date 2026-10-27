@@ -1,0 +1,17 @@
+{
+  "type": "recipe",
+  "name": "Ret-48x84-fabric",
+  "description": "QuickProof product 'Ret-48x84-fabric' - uses recipe 'Ret-48x84'",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 48.0,
+    "height_inch": 84.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
+  "overlay": "SS-48-84-FAB-overlay.pdf",
+  "cutpath": null
+}

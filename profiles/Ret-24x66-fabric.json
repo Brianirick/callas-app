@@ -1,0 +1,17 @@
+{
+  "type": "recipe",
+  "name": "Ret-24x66-fabric",
+  "description": "QuickProof product 'Ret-24x66-fabric' - uses recipe 'Ret-24x66'",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 24.0,
+    "height_inch": 66.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
+  "overlay": "banner-24-66-FAB-overlay.pdf",
+  "cutpath": null
+}

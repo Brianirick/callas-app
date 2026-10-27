@@ -1,0 +1,17 @@
+{
+  "type": "recipe",
+  "name": "RET-36x74-fabric",
+  "description": "QuickProof product 'RET-36x74-fabric' - uses recipe 'RET-36x74'",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 36.0,
+    "height_inch": 74.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
+  "overlay": "Banner-36-74--FAB-overlay.pdf",
+  "cutpath": null
+}

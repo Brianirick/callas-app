@@ -1,0 +1,17 @@
+{
+  "type": "recipe",
+  "name": "Ret-33-5x69-fabric",
+  "description": "QuickProof product 'Ret-33-5x69-fabric' - uses recipe 'Ret-33-5x69'",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 33.5,
+    "height_inch": 69.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
+  "overlay": "Banner-335-69-FAB-overlay.pdf",
+  "cutpath": null
+}

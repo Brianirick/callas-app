@@ -1,0 +1,17 @@
+{
+  "type": "recipe",
+  "name": "Ret-31_5x72",
+  "description": "QuickProof product 'Ret-31_5x72' - based on 'Ret-31-5x80', different overlay",
+  "preflight": null,
+  "check_size": {
+    "width_inch": 31.5,
+    "height_inch": 72.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "bottom_inch": 288.0
+  },
+  "overlay": "Econo-315-72-overlay1.pdf",
+  "cutpath": null
+}

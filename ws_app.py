@@ -616,6 +616,17 @@ if page == "run":
                             for r in sz_results:
                                 icon = "✅" if r.get("passed", True) else "❌"
                                 st.markdown(f"{icon}  {r['message']}")
+                    # Template elements stay in the file and print, so warn the user
+                    _fpdf = result.get("finished_pdf")
+                    if _fpdf and os.path.exists(_fpdf):
+                        try:
+                            _tpl = ws.find_template_spot_names(_fpdf)
+                        except Exception:
+                            _tpl = []
+                        if _tpl:
+                            with st.expander("⚠️ Template Elements", expanded=True):
+                                st.warning("File contains template elements: " + ", ".join(_tpl)
+                                           + " — these areas will print. Remove template elements before uploading if unintended.")
                     success_banner(f"{profile_name} complete")
                     recipe_download_buttons(result, st.session_state.run_stem)
 

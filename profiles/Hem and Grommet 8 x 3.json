@@ -1,0 +1,15 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 8 x 3",
+  "description": "Hem and Grommet scrim 8ft x 3ft (from Scrim-hem-grom-8x3-finish-V3-S.kfpx)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 96.0,
+    "height_inch": 36.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": "HG-Scrim-bleed",
+  "overlay": "One_Choice_Banner_Template_mesh-overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "HG-Scrim-8x3-CP.pdf"
+}

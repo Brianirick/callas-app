@@ -1,0 +1,15 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 15 X 3- MESH",
+  "description": "Hem and Grommet mesh 15ft x 3ft (from Mesh-hem-grom-3x15-finish-V3.kfpx)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 90.0,
+    "height_inch": 16.0,
+    "tolerance_inch": 0.0
+  },
+  "finishing": "HG-Mesh-halfsize",
+  "overlay": "FENCEMESH-3x15_overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "HG-Mesh-15x3-CP.pdf"
+}

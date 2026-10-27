@@ -1,0 +1,15 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 10 x 4 - MESH",
+  "description": "Hem and Grommet mesh 10ft x 4ft (from Mesh-hem-grom-4x10-finish-V3.kfpx)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 44.0,
+    "tolerance_inch": 0.0
+  },
+  "finishing": "HG-Mesh-bleed-cp",
+  "overlay": "FENCEMESH-4x10_overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "HG-Mesh-10x4-CP.pdf"
+}

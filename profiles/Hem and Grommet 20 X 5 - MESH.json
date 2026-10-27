@@ -1,0 +1,15 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 20 X 5 - MESH",
+  "description": "Hem and Grommet mesh 20ft x 5ft (from Mesh-hem-grom-5x20-finish-V3.kfpx)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 28.0,
+    "tolerance_inch": 0.0
+  },
+  "finishing": "HG-Mesh-halfsize",
+  "overlay": "FENCEMESH-5x20_Template-overlay-v2.pdf",
+  "cutpath": null,
+  "impose_cutpath": "HG-Mesh-20x5-CP.pdf"
+}

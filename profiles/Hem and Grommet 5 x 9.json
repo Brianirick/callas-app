@@ -1,0 +1,15 @@
+{
+  "type": "recipe",
+  "name": "Hem and Grommet 5 x 9",
+  "description": "Hem and Grommet scrim 5ft x 9ft (from Scrim-hem-grom-5x9-finish-V4.kfpx)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 60.0,
+    "height_inch": 108.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": "HG-Scrim-bleed",
+  "overlay": "Scrim-5x9_Template--overlay-v2.pdf",
+  "cutpath": null,
+  "impose_cutpath": "HG-Scrim-5x9-CP.pdf"
+}

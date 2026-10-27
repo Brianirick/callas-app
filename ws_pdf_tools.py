@@ -673,6 +673,42 @@ def _gs_rewrite(input_path: str, output_path: str, outline_fonts: bool = False) 
         raise RuntimeError(f"Ghostscript failed (rc={r.returncode}): {(r.stderr or r.stdout)[:400]}")
 
 
+def convert_to_pdf(input_path: str, output_path: str) -> bool:
+    """
+    Make sure a customer upload is a real PDF before preflight (Callas cannot read
+    EPS / legacy-AI and silently skips them).  Sniffs the file CONTENT, not the
+    extension, because customers rename files freely:
+      * starts with %PDF (incl. modern PDF-compatible .ai)  -> copied unchanged
+      * PostScript / EPS / DOS-EPS-binary / legacy .ai       -> Ghostscript pdfwrite,
+        -dEPSCrop so the page = the EPS BoundingBox, colour left unchanged
+        (CMYK and spot colours survive)
+    Returns True if a conversion was needed.  Raises RuntimeError if Ghostscript is
+    missing or fails.
+    """
+    import shutil, subprocess, os
+    with open(input_path, "rb") as fh:
+        head = fh.read(1024)
+    if head.lstrip(b"\x00\r\n\t ").startswith(b"%PDF") or b"%PDF-" in head[:1024]:
+        if os.path.abspath(input_path) != os.path.abspath(output_path):
+            shutil.copyfile(input_path, output_path)
+        return False
+    gs = _find_ghostscript()
+    if not gs:
+        raise RuntimeError("Ghostscript not found - needed to convert EPS/AI to PDF")
+    cmd = [gs, "-q", "-dBATCH", "-dNOPAUSE", "-dSAFER", "-dEPSCrop",
+           "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6",
+           "-sColorConversionStrategy=LeaveColorUnchanged",
+           "-dPreserveOverprintSettings=true",
+           "-dDownsampleColorImages=false", "-dDownsampleGrayImages=false",
+           "-dDownsampleMonoImages=false",
+           "-dEmbedAllFonts=true", "-dSubsetFonts=true",
+           "-o", output_path, input_path]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0 or not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        raise RuntimeError(f"Could not convert to PDF (rc={r.returncode}): {(r.stderr or r.stdout)[:400]}")
+    return True
+
+
 def _renders_match(path_a: str, path_b: str, max_px: int = 3200, max_band_px: int = 25):
     """
     Render page 1 of two PDFs (greyscale, ~max_px on the long side) and check that

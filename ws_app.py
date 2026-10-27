@@ -538,14 +538,21 @@ if page == "run":
 
         with right:
             st.markdown('<div style="font-size:0.75rem; color:#7f9bb5; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Upload PDF</div>', unsafe_allow_html=True)
-            uploaded = st.file_uploader("Drop your PDF here", type=["pdf"], label_visibility="collapsed")
+            uploaded = st.file_uploader("Drop your PDF, EPS or AI file here", type=["pdf", "eps", "ai"], label_visibility="collapsed")
 
             if uploaded:
                 st.markdown(f"**File:** `{uploaded.name}`  |  **Size:** {uploaded.size/1024:.1f} KB")
 
-                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
                     tmp.write(uploaded.read())
-                    input_path = tmp.name
+                    _raw_path = tmp.name
+                input_path = _raw_path + ".pdf"
+                try:
+                    if ws.convert_to_pdf(_raw_path, input_path):
+                        st.info(f"Converted {Path(uploaded.name).suffix.upper().lstrip('.')} to PDF before preflight.")
+                except Exception as _ce:
+                    st.error(f"Could not convert this file to PDF: {_ce}")
+                    st.stop()
 
                 page_info_expander(input_path)
                 st.divider()

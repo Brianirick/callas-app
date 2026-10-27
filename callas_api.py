@@ -55,6 +55,16 @@ def _save_upload(upload: UploadFile, folder: str, name: str) -> str:
     path = os.path.join(folder, name)
     with open(path, "wb") as fh:
         shutil.copyfileobj(upload.file, fh)
+    # Customers sometimes send EPS / legacy .ai (even renamed .pdf): Callas skips those,
+    # so turn them into a real PDF first. Real PDFs pass through untouched.
+    raw = path + ".raw"
+    os.replace(path, raw)
+    try:
+        ws.convert_to_pdf(raw, path)
+    except Exception as e:
+        os.replace(raw, path)
+        raise HTTPException(422, f"Could not read file as PDF/EPS/AI: {e}")
+    os.remove(raw)
     return path
 
 

@@ -1561,6 +1561,15 @@ def stamp_overlay(input_path: str, output_path: str,
         except Exception as _e2:
             raise RuntimeError(f"DIAG-NOCB-REOPEN: {_e2}")
 
+    # Remember each page's /UserUnit: the pdftocairo re-render below drops it, which
+    # would silently halve the physical size of pages scaled by scale_pages (e.g. the
+    # 15/20 ft mesh banners finished at 200%).
+    try:
+        from pypdf import PdfReader as _UURdr
+        _uu_by_page = [float(_p.get("/UserUnit", 1.0)) for _p in _UURdr(input_path).pages]
+    except Exception:
+        _uu_by_page = []
+
     # ── pdftocairo: re-render both artwork and overlay to clean PDFs ─────────
     # pdftocairo produces a fresh PDF from scratch — the most reliable way to
     # eliminate CropBox-outside-MediaBox conditions that xref editing can miss
@@ -1618,6 +1627,10 @@ def stamp_overlay(input_path: str, output_path: str,
             page.show_pdf_page(target, over, ov_idx, overlay=True)
         except Exception as _spe:
             raise RuntimeError(f"DIAG-SHOWPAGE p{i}: {_spe}")
+
+        # Re-apply the original /UserUnit (see note above)
+        if i < len(_uu_by_page) and _uu_by_page[i] != 1.0:
+            doc.xref_set_key(page.xref, "UserUnit", str(_uu_by_page[i]))
 
         # Merge any content stream array into a single stream
         try:

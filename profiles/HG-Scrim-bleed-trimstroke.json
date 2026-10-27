@@ -1,0 +1,35 @@
+{
+  "type": "finishing",
+  "name": "HG-Scrim-bleed-trimstroke",
+  "description": "Scrim H&G (5x8): as HG-Scrim-bleed plus 0.25pt 100K stroke on the trim line (BleedBox stroke in that KFPX).",
+  "steps": [
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 1.0,
+        "bottom_inch": 1.0,
+        "left_inch": 1.0,
+        "right_inch": 1.0,
+        "update_trimbox": false
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "add_trimbox_stroke"
+    },
+    {
+      "op": "add_cropbox_stroke",
+      "params": {
+        "stroke_width_pt": 2.0
+      }
+    }
+  ]
+}

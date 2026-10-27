@@ -1,16 +1,19 @@
 {
   "type": "finishing",
   "name": "HG-Mesh-bleed",
-  "description": "Mesh H&G finishing (full size): remap black, outline fonts, 1\" bleed, trim fold stroke, thrucut spot",
+  "description": "Mesh H&G (legacy, python-placed grommets): outline fonts, remap rich blacks to 100K, 1\" bleed, 2pt CropBox spot stroke, grommets added in code. Production recipes use HG-Mesh-bleed-cp.",
   "steps": [
-    {
-      "op": "set_mediabox_to_origin"
-    },
     {
       "op": "outline_fonts"
     },
     {
-      "op": "adjust_black_vectors"
+      "op": "adjust_black_vectors",
+      "params": {
+        "target": "0-0-0-100"
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
     },
     {
       "op": "enlarge_page",
@@ -26,10 +29,10 @@
       "op": "set_mediabox_to_origin"
     },
     {
-      "op": "add_trimbox_stroke"
-    },
-    {
-      "op": "add_thrucut_spot"
+      "op": "add_cropbox_stroke",
+      "params": {
+        "stroke_width_pt": 2.0
+      }
     },
     {
       "op": "add_grommets",

@@ -8,7 +8,7 @@
     "height_inch": 32.0,
     "tolerance_inch": 0.0
   },
-  "finishing": "HG-Mesh-bleed-cp",
+  "finishing": "HG-Mesh-bleed-cp-trimstroke",
   "overlay": "FENCEMESH-3x10_overlay.pdf",
   "cutpath": null,
   "impose_cutpath": "HG-Mesh-10x3-CP.pdf"

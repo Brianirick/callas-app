@@ -1,13 +1,13 @@
 {
   "type": "finishing",
   "name": "HG-Scrim-bleed",
-  "description": "Scrim H&G finishing: outline fonts, 1\" bleed all sides, trim fold stroke, thrucut spot",
+  "description": "Scrim H&G finishing (matches production KFPX): outline fonts, 1\" bleed all sides, 2pt CropBox spot stroke. Grommets/thru-cut come from the per-size cutpath (impose_cutpath).",
   "steps": [
     {
-      "op": "set_mediabox_to_origin"
+      "op": "outline_fonts"
     },
     {
-      "op": "outline_fonts"
+      "op": "set_mediabox_to_origin"
     },
     {
       "op": "enlarge_page",
@@ -23,10 +23,10 @@
       "op": "set_mediabox_to_origin"
     },
     {
-      "op": "add_trimbox_stroke"
-    },
-    {
-      "op": "add_thrucut_spot"
+      "op": "add_cropbox_stroke",
+      "params": {
+        "stroke_width_pt": 2.0
+      }
     }
   ]
 }

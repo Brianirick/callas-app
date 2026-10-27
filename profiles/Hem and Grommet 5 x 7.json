@@ -8,7 +8,7 @@
     "height_inch": 84.0,
     "tolerance_inch": 0.1
   },
-  "finishing": "HG-Scrim-bleed",
+  "finishing": "HG-Scrim-bleed-5x7",
   "overlay": "Scrim-5x7_Template-overlay.pdf",
   "cutpath": null,
   "impose_cutpath": "HG-Scrim-5x7-CP.pdf"

@@ -1,0 +1,41 @@
+{
+  "type": "finishing",
+  "name": "HG-Mesh-bleed-cp-trimstroke",
+  "description": "Mesh H&G (3x10): as HG-Mesh-bleed-cp plus 0.25pt trim-line stroke (BleedBox stroke in that KFPX).",
+  "steps": [
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "adjust_black_vectors",
+      "params": {
+        "target": "0-0-0-100"
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "enlarge_page",
+      "params": {
+        "top_inch": 1.0,
+        "bottom_inch": 1.0,
+        "left_inch": 1.0,
+        "right_inch": 1.0,
+        "update_trimbox": false
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "add_trimbox_stroke"
+    },
+    {
+      "op": "add_cropbox_stroke",
+      "params": {
+        "stroke_width_pt": 2.0
+      }
+    }
+  ]
+}

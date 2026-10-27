@@ -1,16 +1,19 @@
 {
   "type": "finishing",
   "name": "HG-Mesh-halfsize",
-  "description": "Mesh H&G finishing (half-size art): remap black, outline fonts, 0.5\" bleed, scale 2x, trim fold stroke, thrucut spot",
+  "description": "Mesh H&G finishing (half-size art, 15/20ft): outline fonts, remap rich blacks to 100K, 0.5\" bleed, scale 2x (UserUnit), 2pt CropBox spot stroke.",
   "steps": [
-    {
-      "op": "set_mediabox_to_origin"
-    },
     {
       "op": "outline_fonts"
     },
     {
-      "op": "adjust_black_vectors"
+      "op": "adjust_black_vectors",
+      "params": {
+        "target": "0-0-0-100"
+      }
+    },
+    {
+      "op": "set_mediabox_to_origin"
     },
     {
       "op": "enlarge_page",
@@ -32,10 +35,10 @@
       }
     },
     {
-      "op": "add_trimbox_stroke"
-    },
-    {
-      "op": "add_thrucut_spot"
+      "op": "add_cropbox_stroke",
+      "params": {
+        "stroke_width_pt": 2.0
+      }
     }
   ]
 }

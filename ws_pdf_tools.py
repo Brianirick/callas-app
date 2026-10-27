@@ -578,18 +578,136 @@ def remap_spot_white_to_cmyk(input_path: str, output_path: str):
 # FONT OUTLINING  (via Ghostscript — placeholder until outline-fonts KFPX read)
 # ---------------------------------------------------------------------------
 
+# Optional explicit path to Ghostscript (gswin64c.exe). Leave "" to auto-detect
+# (PATH, then C:\Program Files\gs\gs*\bin).  Can also be set with the GS_BIN env var.
+GS_BIN = ""
+
+
+def _find_ghostscript():
+    """Return the Ghostscript console executable, or None if not installed."""
+    import glob, os, shutil
+    for cand in (GS_BIN, os.environ.get("GS_BIN", "")):
+        if cand and os.path.exists(cand):
+            return cand
+    for name in ("gswin64c", "gswin32c", "gs"):
+        p = shutil.which(name)
+        if p:
+            return p
+    for pat in (r"C:\Program Files\gs\gs*\bin\gswin64c.exe",
+                r"C:\Program Files (x86)\gs\gs*\bin\gswin32c.exe",
+                r"C:\Tools\gs\gs*\bin\gswin64c.exe"):
+        hits = sorted(glob.glob(pat))
+        if hits:
+            return hits[-1]
+    return None
+
+
+def _gs_rewrite(input_path: str, output_path: str, outline_fonts: bool = False) -> None:
+    """
+    Re-write a PDF with Ghostscript's pdfwrite device WITHOUT touching colour:
+    CMYK stays CMYK, spot colours (Separation) and overprint are preserved, page
+    boxes and /UserUnit are kept, images are not downsampled.  With
+    outline_fonts=True all text is converted to vector outlines.
+
+    This replaces the old pdftocairo re-render, which converted every colour to
+    RGB and did not actually outline fonts.
+    Raises RuntimeError if Ghostscript is missing or fails.
+    """
+    import subprocess
+    gs = _find_ghostscript()
+    if not gs:
+        raise RuntimeError("Ghostscript not found")
+    cmd = [gs, "-q", "-dBATCH", "-dNOPAUSE", "-dSAFER",
+           "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6",
+           "-sColorConversionStrategy=LeaveColorUnchanged",
+           "-dPreserveOverprintSettings=true",
+           "-dAutoRotatePages=/None",
+           "-dDownsampleColorImages=false",
+           "-dDownsampleGrayImages=false",
+           "-dDownsampleMonoImages=false",
+           "-dEmbedAllFonts=true", "-dSubsetFonts=true"]
+    if outline_fonts:
+        cmd.append("-dNoOutputFonts")
+    cmd += ["-o", output_path, input_path]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    import os
+    if r.returncode != 0 or not os.path.exists(output_path):
+        raise RuntimeError(f"Ghostscript failed (rc={r.returncode}): {(r.stderr or r.stdout)[:400]}")
+
+
+def _renders_match(path_a: str, path_b: str, max_px: int = 3200, max_band_px: int = 25):
+    """
+    Render page 1 of two PDFs (greyscale, ~max_px on the long side) and check that
+    nothing moved or was rescaled between them.  Returns (ok, band_px).
+
+    Anti-aliasing noise only produces 1-2 px wide differences along edges; a real
+    shift or rescale produces wider bands.  So differing pixels are eroded (a pixel
+    survives only if its 4 neighbours differ too) and the survivors are counted.
+    Used to verify that Ghostscript font outlining did not alter letterforms.
+    """
+    def _img(path):
+        d = fitz.open(path)
+        try:
+            pg = d[0]
+            long_side = max(pg.rect.width, pg.rect.height) or 1.0
+            z = max_px / long_side
+            pm = pg.get_pixmap(matrix=fitz.Matrix(z, z), colorspace=fitz.csGRAY, alpha=False)
+            return pm.width, pm.height, pm.samples
+        finally:
+            d.close()
+    try:
+        wa, ha, a = _img(path_a)
+        wb, hb, b = _img(path_b)
+        if (wa, ha) != (wb, hb):
+            return False, -1
+        diff = {i for i, (x, y) in enumerate(zip(a, b)) if x - y > 48 or y - x > 48}
+        band = sum(1 for i in diff
+                   if (i - 1) in diff and (i + 1) in diff
+                   and (i - wa) in diff and (i + wa) in diff)
+        return band <= max_band_px, band
+    except Exception as e:
+        print(f"  [renders_match] comparison failed ({e}); assuming mismatch")
+        return False, -1
+
+
 def outline_fonts(input_path: str, output_path: str):
     """
     Replicates: OUTLINE-FONTS.kfpx → ffeat: ConvertFontsToOutlines (no params)
-    Uses Poppler's pdftocairo to convert all fonts to outlines (curves).
 
-    Requires: Poppler at POPPLER_BIN path above.
-    pdftocairo renders each page with fonts as paths — equivalent to
-    Callas ConvertFontsToOutlines with default settings.
+    Uses Ghostscript (-dNoOutputFonts) so text becomes real vector outlines and
+    colours are left untouched (CMYK / spot colours preserved).
+
+    Requires Ghostscript (https://ghostscript.com/releases/gsdnld.html) — either on
+    PATH, installed in C:\\Program Files\\gs, or pointed at by GS_BIN above.
+    If Ghostscript is NOT found, falls back to the old pdftocairo pass — which does
+    NOT outline fonts and converts colours to RGB — and prints a loud warning.
     """
     import subprocess
     import os
     import shutil
+
+    if _find_ghostscript():
+        tmp_out = output_path + ".gsoutline.pdf"
+        _gs_rewrite(input_path, tmp_out, outline_fonts=True)
+        close, pct = _renders_match(input_path, tmp_out)
+        if close:
+            shutil.move(tmp_out, output_path)
+            print(f"  Fonts outlined via Ghostscript: {output_path}")
+        else:
+            # Ghostscript can slightly rescale glyphs of some embedded CFF/Type1C fonts
+            # (seen with Myriad Pro subsets).  Never ship altered letterforms: keep the
+            # embedded (live) text instead — the RIP renders it correctly.
+            try:
+                os.remove(tmp_out)
+            except OSError:
+                pass
+            print(f"  ⚠️ Ghostscript outlines do not match the original text "
+                  f"({pct} px of shifted edges) — fonts left embedded (live) instead of outlined.")
+            _gs_rewrite(input_path, output_path)
+        return
+
+    print("  ⚠️ Ghostscript not found — falling back to pdftocairo: fonts are NOT "
+          "outlined and colours become RGB. Install Ghostscript for production use.")
 
     # Try pdftocairo.exe (Windows) then pdftocairo (Linux/Mac)
     pdftocairo = os.path.join(POPPLER_BIN, "pdftocairo.exe")
@@ -599,16 +717,15 @@ def outline_fonts(input_path: str, output_path: str):
         pdftocairo = shutil.which("pdftocairo")
     if not pdftocairo:
         raise RuntimeError(
-            f"pdftocairo not found.\n"
+            f"Neither Ghostscript nor pdftocairo found.\n"
             f"Checked: {os.path.join(POPPLER_BIN, 'pdftocairo.exe')}\n"
-            f"Make sure Poppler is installed and POPPLER_BIN is set correctly."
+            f"Install Ghostscript, or make sure Poppler is installed and POPPLER_BIN is set correctly."
         )
 
     # pdftocairo -pdf writes output as "<stem>.pdf" — use a dedicated temp dir
     import tempfile
     tmp_dir = tempfile.mkdtemp()
     tmp_stem = os.path.join(tmp_dir, "out")
-    expected = tmp_stem + ".pdf"
 
     # Add Poppler bin to PATH so its DLLs are found on Windows
     env = os.environ.copy()
@@ -636,7 +753,174 @@ def outline_fonts(input_path: str, output_path: str):
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    print(f"  Fonts outlined via pdftocairo: {output_path}")
+    print(f"  Fonts re-rendered via pdftocairo (NOT outlined): {output_path}")
+
+
+def remove_template_objects(input_path: str, output_path: str,
+                            name_contains: str = "Template Layer"):
+    """
+    Replicates: REMOVE TEMPLATE → ffeat: RemoveObjects (rule "File contains template
+    elements": spot colour name contains 'Template Layer' AND the object is not on an
+    optional-content layer).
+
+    Deletes every path / text object painted in a Separation (or DeviceN) colour
+    whose name contains `name_contains` (e.g. 'Blue Template Layer').  Clipping
+    paths are kept; text is hidden (render mode 3) so following text keeps its
+    position.  Recurses into Form XObjects.  Everything else is left untouched.
+    """
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import ContentStream, ArrayObject
+
+    reader = PdfReader(input_path)
+    writer = PdfWriter(clone_from=reader)
+    needle = name_contains.lower()
+    removed = [0]
+    seen_forms = set()
+
+    def _res(o):
+        return o.get_object() if hasattr(o, "get_object") else o
+
+    def _name_hit(n):
+        return needle in str(_res(n)).replace("#20", " ").lower()
+
+    def _cs_is_tpl(cs):
+        cs = _res(cs)
+        if isinstance(cs, ArrayObject) and len(cs) >= 2:
+            kind = str(_res(cs[0]))
+            if kind == "/Separation":
+                return _name_hit(cs[1])
+            if kind == "/DeviceN":
+                names = _res(cs[1])
+                return any(_name_hit(n) for n in names)
+            if kind == "/Indexed":
+                return _cs_is_tpl(cs[1])
+        return False
+
+    PATH_OPS = {b"m", b"l", b"c", b"v", b"y", b"h", b"re"}
+    CLIP_OPS = {b"W", b"W*"}
+    FILL_ONLY = {b"f", b"F", b"f*"}
+    STROKE_ONLY = {b"S", b"s"}
+    BOTH = {b"B", b"B*", b"b", b"b*"}
+    TEXT_SHOW = {b"Tj", b"TJ", b"'", b'"'}
+
+    def _process(content, resources):
+        """Filter one content stream in place. Returns True if anything was removed."""
+        resources = _res(resources) if resources is not None else {}
+        csres = _res(resources.get("/ColorSpace", {})) if resources else {}
+        xobjs = _res(resources.get("/XObject", {})) if resources else {}
+        tpl_cs = {k: _cs_is_tpl(v) for k, v in csres.items()}
+
+        out, pending, stack, mc = [], [], [], []
+        fill = stroke = False
+        tr = 0
+        changed = False
+
+        def _flush():
+            nonlocal pending
+            out.extend(pending)
+            pending = []
+
+        for operands, op in content.operations:
+            in_oc = any(mc)
+            if op in PATH_OPS or op in CLIP_OPS:
+                pending.append((operands, op))
+                continue
+            if op == b"n":
+                _flush()
+                out.append((operands, op))
+                continue
+            if op in FILL_ONLY or op in STROKE_ONLY or op in BOTH:
+                kf = (op in FILL_ONLY or op in BOTH) and fill and not in_oc
+                ks = (op in STROKE_ONLY or op in BOTH) and stroke and not in_oc
+                filled = op in FILL_ONLY or op in BOTH
+                stroked = op in STROKE_ONLY or op in BOTH
+                drop = (kf if not stroked else (ks if not filled else (kf and ks)))
+                if drop:
+                    changed = True
+                    removed[0] += 1
+                    if any(o == b"W" or o == b"W*" for _, o in pending):
+                        _flush()                      # keep the clip path
+                        out.append(([], b"n"))
+                    else:
+                        pending = []
+                    continue
+                if filled and stroked and (kf or ks):
+                    # only one half is template: keep the other half
+                    changed = True
+                    removed[0] += 1
+                    new_op = (b"S" if kf else (b"f*" if op in (b"B*", b"b*") else b"f"))
+                    if op in (b"b", b"b*") and kf:
+                        new_op = b"s"
+                    _flush()
+                    out.append(([], new_op))
+                    continue
+                _flush()
+                out.append((operands, op))
+                continue
+            if pending:
+                _flush()
+            if op == b"q":
+                stack.append((fill, stroke, tr))
+            elif op == b"Q":
+                if stack:
+                    fill, stroke, tr = stack.pop()
+            elif op == b"cs":
+                fill = tpl_cs.get(operands[0], False)
+            elif op == b"CS":
+                stroke = tpl_cs.get(operands[0], False)
+            elif op in (b"g", b"rg", b"k"):
+                fill = False
+            elif op in (b"G", b"RG", b"K"):
+                stroke = False
+            elif op == b"Tr":
+                try:
+                    tr = int(operands[0])
+                except Exception:
+                    tr = 0
+            elif op == b"BDC":
+                mc.append(bool(operands) and str(operands[0]) == "/OC")
+            elif op == b"BMC":
+                mc.append(False)
+            elif op == b"EMC":
+                if mc:
+                    mc.pop()
+            elif op in TEXT_SHOW:
+                kill = (not in_oc) and (
+                    (tr == 0 and fill) or (tr == 1 and stroke) or (tr == 2 and fill and stroke))
+                if kill:
+                    out.append(([_num(3)], b"Tr"))
+                    out.append((operands, op))
+                    out.append(([_num(tr)], b"Tr"))
+                    changed = True
+                    removed[0] += 1
+                    continue
+            elif op == b"Do" and operands:
+                xo = _res(xobjs.get(operands[0])) if xobjs else None
+                if xo is not None and str(_res(xo.get("/Subtype", ""))) == "/Form":
+                    key = id(xo)
+                    if key not in seen_forms:
+                        seen_forms.add(key)
+                        fcs = ContentStream(xo, reader)
+                        if _process(fcs, xo.get("/Resources", resources)):
+                            xo.set_data(fcs.get_data())
+            out.append((operands, op))
+        _flush()
+        if changed:
+            content.operations = out
+        return changed
+
+    from pypdf.generic import NumberObject as _num
+
+    for page in writer.pages:
+        content = page.get_contents()
+        if content is None:
+            continue
+        if _process(content, page.get("/Resources")):
+            page.replace_contents(content)
+
+    with open(output_path, "wb") as fh:
+        writer.write(fh)
+    print(f"  Template objects removed ({removed[0]}): {output_path}")
 
 
 def remove_private_data(input_path: str, output_path: str):
@@ -871,6 +1155,81 @@ def add_thrucut_spot(input_path: str, output_path: str,
     with open(output_path, "wb") as fh:
         writer.write(fh)
     print(f"  Thru-cut spot stroke added at BleedBox: {output_path}")
+
+
+def add_cropbox_stroke(input_path: str, output_path: str,
+                       stroke_width_pt: float = 2.0, spot_name: str = "CropBox"):
+    """
+    Replicates (production H&G KFPX):
+      OutlinePBox(CropBox, 2pt, CMYK 0/0/0/100) — drawn as a 'CropBox' Separation
+      spot (alternate = 100K), stroke overprint on, projecting-square caps.
+    This is the 2pt black line around the outer edge of the finished H&G file.
+    ffeat: OutlinePBox
+    """
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import (
+        ArrayObject as _AO, DictionaryObject as _DO, NameObject as _NO,
+        FloatObject as _FO, NumberObject as _NumO, DecodedStreamObject as _DSO,
+        BooleanObject as _BO, IndirectObject as _IO,
+    )
+
+    reader = PdfReader(input_path)
+    writer = PdfWriter()
+    writer.append(reader)
+    cs_key, gs_key = "/CSCropBox", "/GSCropBox"
+
+    for wp in writer.pages:
+        box = wp.cropbox if "/CropBox" in wp else wp.mediabox
+        x0, y0, x1, y1 = (float(box.left), float(box.bottom),
+                          float(box.right), float(box.top))
+
+        fn = _DO({
+            _NO("/FunctionType"): _NumO(2),
+            _NO("/Domain"): _AO([_FO(0.0), _FO(1.0)]),
+            _NO("/C0"):     _AO([_FO(0.0)] * 4),
+            _NO("/C1"):     _AO([_FO(0.0), _FO(0.0), _FO(0.0), _FO(1.0)]),   # 100K
+            _NO("/N"):      _FO(1.0),
+        })
+        cs_array = _AO([_NO("/Separation"), _NO("/" + spot_name.replace(" ", "#20")),
+                        _NO("/DeviceCMYK"), fn])
+        gs_dict = _DO({_NO("/Type"): _NO("/ExtGState"),
+                       _NO("/OP"): _BO(True)})
+
+        content_bytes = (
+            f"q\n{gs_key} gs\n{cs_key} CS\n1.0 SCN\n{stroke_width_pt} w\n2 J\n"
+            f"{x0:.4f} {y0:.4f} m\n{x0:.4f} {y1:.4f} l\n{x1:.4f} {y1:.4f} l\n"
+            f"{x1:.4f} {y0:.4f} l\n{x0:.4f} {y0:.4f} l\nS\nQ\n"
+        ).encode("latin-1")
+        stm = _DSO()
+        stm.set_data(content_bytes)
+        stm_ref = writer._add_object(stm)
+
+        if "/Resources" not in wp:
+            wp[_NO("/Resources")] = _DO()
+        res_raw = wp["/Resources"]
+        res_obj = res_raw.get_object() if isinstance(res_raw, _IO) else res_raw
+        for sect, key, val in (("/ColorSpace", cs_key, cs_array),
+                               ("/ExtGState", gs_key, gs_dict)):
+            if sect not in res_obj:
+                res_obj[_NO(sect)] = _DO()
+            sraw = res_obj[sect]
+            sdict = sraw.get_object() if isinstance(sraw, _IO) else sraw
+            sdict[_NO(key)] = val
+
+        if "/Contents" not in wp:
+            wp[_NO("/Contents")] = stm_ref
+        else:
+            ex = wp["/Contents"]
+            if isinstance(ex, _IO):
+                wp[_NO("/Contents")] = _AO([ex, stm_ref])
+            elif isinstance(ex, _AO):
+                ex.append(stm_ref)
+            else:
+                wp[_NO("/Contents")] = _AO([writer._add_object(ex), stm_ref])
+
+    with open(output_path, "wb") as fh:
+        writer.write(fh)
+    print(f"  CropBox spot stroke added ({stroke_width_pt}pt, '{spot_name}'): {output_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -1443,6 +1802,8 @@ def run_profile(input_path: str, output_path: str, profile: dict,
         "add_trimbox_stroke":       add_trimbox_stroke,
         "set_bleedbox_from_cropbox":set_bleedbox_from_cropbox,
         "add_thrucut_spot":         add_thrucut_spot,
+        "add_cropbox_stroke":       add_cropbox_stroke,
+        "remove_template_objects":  remove_template_objects,
         "adjust_black_vectors":     adjust_black_vectors,
         "remap_white_spot_colors":  remap_white_spot_colors,
         "convert_lab_to_cmyk":      convert_lab_to_cmyk,
@@ -1576,8 +1937,22 @@ def stamp_overlay(input_path: str, output_path: str,
     # (inherited /Pages CropBox, compressed xref streams, etc.).
     _pdftocairo = _sh.which("pdftocairo")
 
-    # Main artwork
-    if _pdftocairo:
+    # Main artwork — Ghostscript first: keeps CMYK / spot colours (pdftocairo turns
+    # everything into RGB).  Falls back to pdftocairo only if Ghostscript is missing.
+    _gs_art = None
+    if _find_ghostscript():
+        try:
+            _gs_art = _os.path.join(_tmpmod.mkdtemp(), "artwork.pdf")
+            _gs_rewrite(input_path, _gs_art)
+        except Exception as _gse:
+            print(f"  [stamp_overlay] Ghostscript pass failed ({_gse}); falling back")
+            _gs_art = None
+    if _gs_art:
+        try:
+            doc = fitz.open(_gs_art)
+        except Exception as _me:
+            raise RuntimeError(f"DIAG-MAIN-OPEN-GS: {_me}")
+    elif _pdftocairo:
         _m_dir   = _tmpmod.mkdtemp()
         _m_clean = _os.path.join(_m_dir, "artwork.pdf")
         _pc_m    = _sp.run([_pdftocairo, "-pdf", input_path, _m_clean],
@@ -1598,7 +1973,16 @@ def stamp_overlay(input_path: str, output_path: str,
 
     # Overlay
     _ov_src = overlay_pdf_path
-    if _pdftocairo:
+    _gs_ov = None
+    if _find_ghostscript():
+        try:
+            _gs_ov = _os.path.join(_tmpmod.mkdtemp(), "overlay.pdf")
+            _gs_rewrite(overlay_pdf_path, _gs_ov)
+            _ov_src = _gs_ov
+        except Exception as _gse:
+            print(f"  [stamp_overlay] Ghostscript overlay pass failed ({_gse}); falling back")
+            _gs_ov = None
+    if _pdftocairo and not _gs_ov:
         _ov_dir   = _tmpmod.mkdtemp()
         _ov_clean = _os.path.join(_ov_dir, "overlay.pdf")
         _pc_o     = _sp.run([_pdftocairo, "-pdf", overlay_pdf_path, _ov_clean],
@@ -1830,7 +2214,24 @@ _PREFLIGHT_TARGETS = {
 }
 
 
-def _bv_cmyk_matches(c, m, y, k):
+# Sources of the production mesh KFPX step "Correct To 100K-black"
+# (MapColors → CMYK 0/0/0/100).  (c, m, y, k, tolerance) — tolerance is +/- per channel;
+# the KFPX uses 10% on three of the mappings.
+_BLACK_SOURCES_100K = [
+    (0.75,   0.75,   0.75,   1.00,   0.10),
+    (1.00,   1.00,   1.00,   1.00,   _BLACK_MATCH_TOL),
+    (0.60,   0.40,   0.40,   1.00,   0.10),
+    (0.75,   0.67,   0.67,   0.99,   _BLACK_MATCH_TOL),
+    (0.6982, 0.6745, 0.6386, 0.7394, _BLACK_MATCH_TOL),
+    (0.75,   0.679,  0.671,  0.901,  _BLACK_MATCH_TOL),
+    (0.30,   0.30,   0.30,   1.00,   0.10),
+]
+
+
+def _bv_cmyk_matches(c, m, y, k, sources=None):
+    if sources is not None:
+        return any(abs(c-sc)<=t and abs(m-sm)<=t and abs(y-sy)<=t and abs(k-sk)<=t
+                   for sc, sm, sy, sk, t in sources)
     t = _BLACK_MATCH_TOL
     return any(abs(c-sc)<=t and abs(m-sm)<=t and abs(y-sy)<=t and abs(k-sk)<=t
                for sc, sm, sy, sk in _BLACK_SOURCES_CMYK)
@@ -1896,8 +2297,10 @@ def _bv_tokenize(data: bytes) -> list:
     return tokens
 
 
-def _bv_recolor(data: bytes, tgt: tuple) -> bytes:
-    """Replace matching black color operators with target CMYK in a content stream."""
+def _bv_recolor(data: bytes, tgt: tuple, sources=None, map_rgb_gray: bool = True) -> bytes:
+    """Replace matching black color operators with target CMYK in a content stream.
+    sources: optional list of (c,m,y,k,tol) overriding the default source blacks.
+    map_rgb_gray: also map RGB / gray black (default True)."""
     tc, tm, ty, tk = [_bv_fmt(v) for v in tgt]
     tokens = _bv_tokenize(data)
     out = []
@@ -1905,6 +2308,8 @@ def _bv_recolor(data: bytes, tgt: tuple) -> bytes:
     while i < len(tokens):
         tp, tv = tokens[i]
         if tp == 'op' and tv in (b'k', b'K', b'rg', b'RG', b'g', b'G'):
+            if not map_rgb_gray and tv not in (b'k', b'K'):
+                out.append((tp, tv)); i += 1; continue
             need = 4 if tv in (b'k', b'K') else 3 if tv in (b'rg', b'RG') else 1
             # collect last `need` num positions in out[]
             num_pos, j = [], len(out) - 1
@@ -1915,7 +2320,7 @@ def _bv_recolor(data: bytes, tgt: tuple) -> bytes:
             if len(num_pos) == need:
                 vals = [float(out[p][1]) for p in num_pos]
                 hit = (
-                    _bv_cmyk_matches(*vals) if tv in (b'k', b'K') else
+                    _bv_cmyk_matches(*vals, sources=sources) if tv in (b'k', b'K') else
                     _bv_rgb_matches(*vals)  if tv in (b'rg', b'RG') else
                     vals[0] <= 0.05
                 )
@@ -1948,11 +2353,18 @@ def adjust_black_vectors(input_path: str, output_path: str,
     target: "60-50-50-100"  →  CMYK 60/50/50/100  (WS Display standard)
             "75-75-75-100"  →  CMYK 75/75/75/100
             "100k" / "75x3" accepted as legacy aliases.
+            "0-0-0-100"     →  pure 100K: the production mesh KFPX step
+                               "Correct To 100K-black" (rich blacks → 0/0/0/100,
+                               CMYK only, using that KFPX's source list).
 
     Only the main page content stream is modified (k, K, rg, RG, g, G operators).
     Raster images are skipped. Form XObjects inside the page are also processed.
     """
-    tgt = _PREFLIGHT_TARGETS.get(target, _PREFLIGHT_TARGETS["60-50-50-100"])
+    pure_k = (target == "0-0-0-100")
+    if pure_k:
+        tgt, sources = (0.0, 0.0, 0.0, 1.0), _BLACK_SOURCES_100K
+    else:
+        tgt, sources = _PREFLIGHT_TARGETS.get(target, _PREFLIGHT_TARGETS["60-50-50-100"]), None
     doc = fitz.open(input_path)
     done = set()
 
@@ -1964,7 +2376,7 @@ def adjust_black_vectors(input_path: str, output_path: str,
             if c_xref not in done:
                 raw = doc.xref_stream(c_xref)
                 if raw:
-                    new = _bv_recolor(raw, tgt)
+                    new = _bv_recolor(raw, tgt, sources, not pure_k)
                     if new != raw:
                         doc.update_stream(c_xref, new)
                 done.add(c_xref)
@@ -1976,7 +2388,7 @@ def adjust_black_vectors(input_path: str, output_path: str,
                 if doc.xref_get_key(xref, "Subtype")[1] == "/Form":
                     raw = doc.xref_stream(xref)
                     if raw:
-                        new = _bv_recolor(raw, tgt)
+                        new = _bv_recolor(raw, tgt, sources, not pure_k)
                         if new != raw:
                             doc.update_stream(xref, new)
                 done.add(xref)
@@ -2783,7 +3195,17 @@ def run_recipe(input_path: str, recipe: dict,
                     import shutil as _fin_sh, subprocess as _fin_sp, os as _fin_os
                     _fin_pc  = _fin_sh.which("pdftocairo")
                     _fin_src = tmp_pf
-                    if _fin_pc:
+                    _fin_gs_ok = False
+                    if _find_ghostscript():
+                        # Ghostscript keeps CMYK/spot colours; pdftocairo makes everything RGB
+                        try:
+                            _fin_gs = _fin_os.path.join(tempfile.mkdtemp(), "fin_clean.pdf")
+                            _gs_rewrite(tmp_pf, _fin_gs)
+                            _fin_src = _fin_gs
+                            _fin_gs_ok = True
+                        except Exception as _fge:
+                            print(f"  [finishing] Ghostscript pre-clean failed ({_fge}); falling back to pdftocairo")
+                    if _fin_pc and not _fin_gs_ok:
                         _fin_dir   = tempfile.mkdtemp()
                         _fin_clean = _fin_os.path.join(_fin_dir, "fin_clean.pdf")
                         _fin_r = _fin_sp.run(

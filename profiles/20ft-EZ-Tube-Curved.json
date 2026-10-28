@@ -8,7 +8,9 @@
     "height_inch": 46.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": "EZ-Tube-halfsize",
   "overlay": "20ft_EZ_Tube_Curved_HALF_overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "EZTube_20ft_Curved_CP-full-fix-V2-.pdf",
+  "black_guide": true
 }

@@ -1,0 +1,16 @@
+{
+  "type": "recipe",
+  "name": "10ftx10ft-EZ-Tube-Straight",
+  "description": "EZ-Tube straight, full size (from QuickProof Id=1270): thru-cut from curved cutpath + black hand-cut guide",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 113.5,
+    "height_inch": 119.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "finishing_cutpath": "EZTube-10x10_Template-_CP_V2-.pdf",
+  "black_guide": true,
+  "overlay": "EZTube-10x10_Template_V3_Overlay.pdf",
+  "cutpath": "EZTube-10x10_Template-_CP_V2-.pdf"
+}

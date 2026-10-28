@@ -8,7 +8,9 @@
     "height_inch": 45.63,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": "EZ-Tube-halfsize",
   "overlay": "20ft_EZ_Tube_Straight_HALF_Overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "EZTube_20ft_Straight_NEW_CP_10-720-V2-.pdf",
+  "black_guide": true
 }

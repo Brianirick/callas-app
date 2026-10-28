@@ -1,0 +1,16 @@
+{
+  "type": "recipe",
+  "name": "20ftx10ft-EZ-Tube-Straight",
+  "description": "EZ-Tube (from QuickProof Id=1269): thru-cut CP + black guide, then outline fonts and scale up",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 117.625,
+    "height_inch": 59.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": "EZ-Tube-halfsize",
+  "finishing_cutpath": "EZTube-20x10_Template-cp-V2-.pdf",
+  "black_guide": true,
+  "overlay": "EZTube-20x10_Template-overlay-v3.pdf",
+  "cutpath": "EZTube-20x10_Template-cp-v3.pdf"
+}

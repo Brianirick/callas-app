@@ -1,0 +1,19 @@
+{
+  "type": "finishing",
+  "name": "EZ-Tube-quartersize",
+  "description": "EZ-Tube quarter-size art: outline fonts, mediabox to origin, scale 400% (UserUnit). Thru-cut CP is stamped before via recipe finishing_cutpath.",
+  "steps": [
+    {
+      "op": "outline_fonts"
+    },
+    {
+      "op": "set_mediabox_to_origin"
+    },
+    {
+      "op": "scale_pages",
+      "params": {
+        "scale_percent": "400"
+      }
+    }
+  ]
+}

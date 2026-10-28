@@ -8,7 +8,9 @@
     "height_inch": 45.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": "EZ-Tube-halfsize",
   "overlay": "EZ-Tube-20FT-Kicktail-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "EZ-Tube-20FT-Kicktail-half-CP.pdf",
+  "black_guide": true
 }

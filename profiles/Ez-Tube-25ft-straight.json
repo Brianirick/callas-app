@@ -1,0 +1,16 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-25ft-straight",
+  "description": "EZ-Tube (from QuickProof Id=1258): thru-cut CP + black guide, then outline fonts and scale up",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 148.125,
+    "height_inch": 45.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": "EZ-Tube-halfsize",
+  "finishing_cutpath": "EZTube-25ft-Straight_Template-CP-V2-.pdf",
+  "black_guide": true,
+  "overlay": "EZTube-25ft-Straight_Template-overlay-v2.pdf",
+  "cutpath": null
+}

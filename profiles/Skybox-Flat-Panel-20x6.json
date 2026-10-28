@@ -1,7 +1,7 @@
 {
   "type": "recipe",
   "name": "Skybox-Flat-Panel-20x6",
-  "description": "Auto-imported from QuickProof (Id=1410); half-size art scaled 200%, thru-cut perimeter added in finishing",
+  "description": "Auto-imported from QuickProof (Id=1410); half-size art scaled 200%, rounded thru-cut cutpath added",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 120.5,
@@ -10,5 +10,6 @@
   },
   "finishing": "Skybox-Flat-halfsize",
   "overlay": "HBPANEL20x72_Template-overlay.pdf",
-  "cutpath": null
+  "cutpath": "HBPANEL20x72_Template-CP-V1.pdf",
+  "finishing_cutpath": "HBPANEL20x72_Template-CP-V1.pdf"
 }

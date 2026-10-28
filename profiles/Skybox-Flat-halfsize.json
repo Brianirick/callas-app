@@ -1,20 +1,13 @@
 {
   "type": "finishing",
   "name": "Skybox-Flat-halfsize",
-  "description": "Skybox flat panels 15/20ft (half-size art): outline fonts, mediabox to origin, 1pt 'thru-cut' spot perimeter, scale 200% (UserUnit).",
+  "description": "Skybox flat panels 15/20ft (half-size art): outline fonts, mediabox to origin, scale 200% (UserUnit). Rounded-corner thru-cut CP is stamped before this step via recipe finishing_cutpath.",
   "steps": [
     {
       "op": "outline_fonts"
     },
     {
       "op": "set_mediabox_to_origin"
-    },
-    {
-      "op": "add_cropbox_stroke",
-      "params": {
-        "stroke_width_pt": 1.0,
-        "spot_name": "thru-cut"
-      }
     },
     {
       "op": "scale_pages",

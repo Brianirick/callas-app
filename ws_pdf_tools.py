@@ -3274,7 +3274,7 @@ def cutpath_with_black_guide(cp_path: str) -> str:
     Return a temp PDF = the cutpath PDF plus a 100K (registration-black) copy of its main
     outline drawn UNDER the thru-cut spot stroke.  The thru-cut spot is set to cut (not print),
     so only the black copy is visible/printed - a guide for hand-cut rolls.
-    Only the perimeter path is duplicated (stroke >= 0.9pt); small tick marks are left alone.
+    Only the perimeter path is duplicated (stroke >= 0.9pt or spanning half the page); small tick marks are left alone.
     """
     import tempfile as _t
     src = fitz.open(cp_path)
@@ -3285,7 +3285,9 @@ def cutpath_with_black_guide(cp_path: str) -> str:
         sh = np_.new_shape()
         for d in sp.get_drawings():
             wd = d.get("width") or 0
-            if wd < 0.9 or len(d.get("items", [])) < 3:
+            _r = d["rect"]
+            _perimeter = _r.width >= 0.5 * sp.rect.width or _r.height >= 0.5 * sp.rect.height
+            if len(d.get("items", [])) < 3 or not (wd >= 0.9 or _perimeter):
                 continue
             for it in d["items"]:
                 if it[0] == "l":

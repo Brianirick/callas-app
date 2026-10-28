@@ -583,6 +583,12 @@ if page == "run":
                                         st.write(f"✅ Cutpath fetched: {_cp}")
                                     else:
                                         st.write(f"⚠️ Could not fetch cutpath from S3: {_cp}")
+                                _fcp = profile_data.get("finishing_cutpath") or ""
+                                if _fcp:
+                                    if fetch_pdf_from_s3(_fcp, "cutpath"):
+                                        st.write(f"✅ Finishing cutpath fetched: {_fcp}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch finishing cutpath from S3: {_fcp}")
                                 _icp = profile_data.get("impose_cutpath") or ""
                                 if _icp:
                                     _icp_local = fetch_pdf_from_s3(_icp, "cutpath")
@@ -1580,6 +1586,8 @@ elif page == "build":
                             fetch_pdf_from_s3(_ov, "overlay")
                         if _cp:
                             fetch_pdf_from_s3(_cp, "cutpath")
+                        if test_recipe.get("finishing_cutpath"):
+                            fetch_pdf_from_s3(test_recipe["finishing_cutpath"], "cutpath")
                         result = ws.run_recipe(t_in, test_recipe,
                                                profiles_dir=str(PROFILES_DIR),
                                                overlays_dir=str(OVERLAYS_DIR),

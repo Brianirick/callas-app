@@ -244,6 +244,7 @@ def finish(file: UploadFile = File(...), product: str = Form(...),
             lbl = dict(lbl, placeholder=lbl.get("placeholder", "ORDER #00000").replace("00000", order_name))
             recipe["labels"] = lbl
     _fetch_cutpath(recipe.get("impose_cutpath"))
+    _fetch_cutpath(recipe.get("finishing_cutpath"))
 
     result = ws.run_recipe(src, recipe, profiles_dir=str(PROFILES_DIR),
                            cutpaths_dir=str(CUTPATHS_DIR),

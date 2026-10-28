@@ -8,7 +8,16 @@
     "height_inch": 40.25,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 1.0,
+    "black_stroke": false,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
+  },
   "overlay": "BigSkyCounter-6ft-GP_Template-overlay.pdf",
   "cutpath": "BigSkyCounter-6ft-GP_CP.pdf"
 }

@@ -8,7 +8,16 @@
     "height_inch": 40.5,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 1.0,
+    "black_stroke": false,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
+  },
   "overlay": "big-sky-counter-4ft-2ft-70-375x40_5-overlay.pdf",
   "cutpath": "big-sky-counter-4ft-2ft-70-375x40_5-CP.pdf"
 }

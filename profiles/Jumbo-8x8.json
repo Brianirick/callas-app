@@ -11,8 +11,13 @@
   "finishing": {
     "type": "hem_top_bottom",
     "top_inch": 4.5,
-    "bottom_inch": 4.5
+    "bottom_inch": 4.5,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
   },
   "overlay": "jmb_8x8.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "overlay_placement": "TopCenterActual"
 }

@@ -11,7 +11,11 @@
   "finishing": {
     "type": "hem_top_bottom",
     "top_inch": 1.0,
-    "bottom_inch": 1.0
+    "bottom_inch": 1.0,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
   },
   "overlay": null,
   "cutpath": null

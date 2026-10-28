@@ -1232,7 +1232,8 @@ def add_thrucut_spot(input_path: str, output_path: str,
 
 
 def add_cropbox_stroke(input_path: str, output_path: str,
-                       stroke_width_pt: float = 2.0, spot_name: str = "CropBox"):
+                       stroke_width_pt: float = 2.0, spot_name: str = "CropBox",
+                       rects: list = None):
     """
     Replicates (production H&G KFPX):
       OutlinePBox(CropBox, 2pt, CMYK 0/0/0/100) — drawn as a 'CropBox' Separation
@@ -1252,16 +1253,20 @@ def add_cropbox_stroke(input_path: str, output_path: str,
     writer.append(reader)
     cs_key, gs_key = "/CSCropBox", "/GSCropBox"
 
-    for wp in writer.pages:
+    for _pi, wp in enumerate(writer.pages):
         box = wp.cropbox if "/CropBox" in wp else wp.mediabox
         x0, y0, x1, y1 = (float(box.left), float(box.bottom),
                           float(box.right), float(box.top))
+        if rects and _pi < len(rects) and rects[_pi]:
+            # explicit stroke rectangle (PDF points, lower-left origin)
+            x0, y0, x1, y1 = [float(v) for v in rects[_pi]]
 
         fn = _DO({
             _NO("/FunctionType"): _NumO(2),
             _NO("/Domain"): _AO([_FO(0.0), _FO(1.0)]),
             _NO("/C0"):     _AO([_FO(0.0)] * 4),
-            _NO("/C1"):     _AO([_FO(0.0), _FO(0.0), _FO(0.0), _FO(1.0)]),   # 100K
+            _NO("/C1"):     (_AO([_FO(0.0), _FO(1.0), _FO(0.0), _FO(0.0)]) if spot_name.lower() == "thru-cut"
+                             else _AO([_FO(0.0), _FO(0.0), _FO(0.0), _FO(1.0)])),   # thru-cut=100M else 100K
             _NO("/N"):      _FO(1.0),
         })
         cs_array = _AO([_NO("/Separation"), _NO("/" + spot_name.replace(" ", "#20")),
@@ -1625,9 +1630,12 @@ for _op_id, _op_meta in AVAILABLE_OPS.items():
 
 def check_page_size(input_path: str,
                     width_inch: float = None, height_inch: float = None,
-                    box: str = "TrimBox", tolerance_inch: float = 0.1) -> list:
+                    box: str = "TrimBox", tolerance_inch: float = 0.1,
+                    max_height_inch: float = None) -> list:
     """
     Check that each page's box matches expected dimensions (±tolerance).
+    If max_height_inch is given, any height from height_inch up to max_height_inch
+    passes (used for products where customers may leave bleed in).
     Returns list of {page, passed, message} dicts.
     """
     doc = fitz.open(input_path)
@@ -1640,7 +1648,11 @@ def check_page_size(input_path: str,
         if width_inch is not None and abs(w - width_inch) > tolerance_inch:
             ok = False
             msgs.append(f"width mismatch — expected {width_inch:.3f}\"")
-        if height_inch is not None and abs(h - height_inch) > tolerance_inch:
+        if height_inch is not None and max_height_inch is not None:
+            if h < height_inch - tolerance_inch or h > max_height_inch + tolerance_inch:
+                ok = False
+                msgs.append(f"height outside range — expected {height_inch:.3f}\" to {max_height_inch:.3f}\"")
+        elif height_inch is not None and abs(h - height_inch) > tolerance_inch:
             ok = False
             msgs.append(f"height mismatch — expected {height_inch:.3f}\"")
         results.append({"page": i+1, "passed": ok, "message": " | ".join(msgs)})
@@ -2075,7 +2087,14 @@ def stamp_overlay(input_path: str, output_path: str,
 
         # Embed overlay page as a Form XObject; appended to content stream
         target = page.rect
-        if placement == "TopCenter":
+        if placement == "TopCenterActual":
+            # Actual size (no scaling), centred horizontally, pinned to the TOP.
+            # Overlay excludes bleed, so bleed (if supplied) hangs off all sides evenly
+            # horizontally and sits at the bottom/top per the art, overlay stays at top.
+            ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
+            x0 = target.x0 + (target.width - ow) / 2
+            target = fitz.Rect(x0, target.y0, x0 + ow, target.y0 + oh)
+        elif placement == "TopCenter":
             # show_pdf_page fits + centres inside target; pin the fitted box to the top
             ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
             s = min(target.width / ow, target.height / oh)
@@ -2923,6 +2942,7 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
 
     src = fitz.open(input_path)
     dst = fitz.open()
+    _cut_rects = []
 
     for pno in range(len(src)):
         src_page = src[pno]
@@ -2930,6 +2950,13 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
         h = src_page.rect.height
 
         if ftype in ("hem_top_bottom", "hem_top_bottom_black"):
+            # Bleed-aware: customers may upload with or without bleed.  Add only what
+            # is missing: band = clamp(base_height + bottom_inch - page_height, 0, bottom_inch)
+            if finishing.get("bleed_aware") and finishing.get("base_height_inch"):
+                target_h = float(finishing["base_height_inch"]) + bot_in
+                BOT_PT   = max(0.0, min(bot_in, target_h - h / 72.0)) * 72.0
+                if BOT_PT < 0.5:
+                    BOT_PT = 0.0
             new_h    = h + TOP_PT + BOT_PT
             new_page = dst.new_page(width=w, height=new_h)
 
@@ -2945,18 +2972,23 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
                     new_page.draw_rect(fitz.Rect(0, TOP_PT + h, w, new_h),
                                        color=None, fill=DARK_FILL, overlay=False)
 
-            # Dashed fold line at top
-            if TOP_PT > 0:
+            # Dashed fold line at top (recipes can turn it off with "fold_lines": false)
+            if TOP_PT > 0 and finishing.get("fold_lines", True):
                 new_page.draw_line(fitz.Point(0, TOP_PT), fitz.Point(w, TOP_PT),
                                    color=BLACK, width=0.75, dashes="[6 4] 0")
             # Dashed fold line at bottom
-            if BOT_PT > 0:
+            if BOT_PT > 0 and finishing.get("fold_lines", True):
                 new_page.draw_line(fitz.Point(0, TOP_PT + h), fitz.Point(w, TOP_PT + h),
                                    color=BLACK, width=0.75, dashes="[6 4] 0")
 
-            # Thru-cut line at outer edge
-            new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, new_h - 0.5),
-                               color=THRU_CUT, width=0.75)
+            if finishing.get("cut_spot"):
+                # Cutter line = Separation spot (e.g. "BleedBox") stroked around the
+                # ARTWORK area (page minus the added hem band), added after save.
+                _cut_rects.append((0.0, BOT_PT, w, new_h - TOP_PT))
+            else:
+                # Thru-cut line at outer edge
+                new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, new_h - 0.5),
+                                   color=THRU_CUT, width=0.75)
 
         elif ftype == "flag_label":
             # Flag finishing: keep original page size.
@@ -2983,6 +3015,15 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
     dst.save(output_path, deflate=True, garbage=4)
     dst.close()
     src.close()
+
+    _cs = finishing.get("cut_spot") if ftype in ("hem_top_bottom", "hem_top_bottom_black") else None
+    if _cs and _cut_rects:
+        import os as _os
+        _tmp_cut = output_path + ".cut.pdf"
+        add_cropbox_stroke(output_path, _tmp_cut,
+                           stroke_width_pt=float(_cs.get("width_pt", 0.25)),
+                           spot_name=_cs.get("name", "BleedBox"), rects=_cut_rects)
+        _os.replace(_tmp_cut, output_path)
 
 
 def impose_panels(input_path: str, output_path: str, finishing: dict) -> None:
@@ -3143,11 +3184,72 @@ def preflight_colors(input_path: str, output_path: str, target: str,
     convert_template_colors_to_cmyk(tmp_c, output_path)
 
 
+# ── Order block (Code 128 barcode + order text in the bleed) ──────────────────
+_CODE128_PATTERNS = ['11011001100', '11001101100', '11001100110', '10010011000', '10010001100', '10001001100', '10011001000', '10011000100', '10001100100', '11001001000', '11001000100', '11000100100', '10110011100', '10011011100', '10011001110', '10111001100', '10011101100', '10011100110', '11001110010', '11001011100', '11001001110', '11011100100', '11001110100', '11101101110', '11101001100', '11100101100', '11100100110', '11101100100', '11100110100', '11100110010', '11011011000', '11011000110', '11000110110', '10100011000', '10001011000', '10001000110', '10110001000', '10001101000', '10001100010', '11010001000', '11000101000', '11000100010', '10110111000', '10110001110', '10001101110', '10111011000', '10111000110', '10001110110', '11101110110', '11010001110', '11000101110', '11011101000', '11011100010', '11011101110', '11101011000', '11101000110', '11100010110', '11101101000', '11101100010', '11100011010', '11101111010', '11001000010', '11110001010', '10100110000', '10100001100', '10010110000', '10010000110', '10000101100', '10000100110', '10110010000', '10110000100', '10011010000', '10011000010', '10000110100', '10000110010', '11000010010', '11001010000', '11110111010', '11000010100', '10001111010', '10100111100', '10010111100', '10010011110', '10111100100', '10011110100', '10011110010', '11110100100', '11110010100', '11110010010', '11011011110', '11011110110', '11110110110', '10101111000', '10100011110', '10001011110', '10111101000', '10111100010', '11110101000', '11110100010', '10111011110', '10111101110', '11101011110', '11110101110', '11010000100', '11010010000', '11010011100']
+_CODE128_STOP = "1100011101011"
+
+
+def _code128_bits(text: str, fnc1: bool = True) -> str:
+    """Code 128-B bit string ("1" = bar module) for text, optionally led by FNC1
+    (production's retractable barcode is FNC1 + order name, start code B)."""
+    codes = [104]
+    if fnc1:
+        codes.append(102)
+    for ch in text:
+        c = ord(ch) - 32
+        if not 0 <= c <= 94:
+            raise ValueError(f"Character {ch!r} cannot be encoded in Code 128-B")
+        codes.append(c)
+    chk = (codes[0] + sum(i * c for i, c in enumerate(codes[1:], start=1))) % 103
+    return "".join(_CODE128_PATTERNS[c] for c in codes + [chk]) + _CODE128_STOP
+
+
+def stamp_order_block(input_path: str, output_path: str, text: str,
+                      x_pt: float = 36.0, y_pt: float = 90.0,
+                      width_pt: float = 216.0, bar_height_pt: float = 45.333,
+                      font_size: float = 24.0, module_pt: float = 12.0 / 11.0) -> None:
+    """
+    Stamp production's order block: a Code 128 barcode with the order text centred
+    beneath it, lower-left of the page (x_pt/y_pt measured from the page's
+    lower-left corner; block is width_pt wide, bars sit 26.67pt above y_pt).
+    Drawn as 100% registration black (C=M=Y=K=100), like the KFPX output.
+    """
+    bits = _code128_bits(text)
+    doc = fitz.open(input_path)
+    for page in doc:
+        h = page.rect.height
+        shape = page.new_shape()
+        n = len(bits)
+        x0 = x_pt + (width_pt - n * module_pt) / 2.0
+        y_bot = h - (y_pt + 72.0 - bar_height_pt)        # lower edge of bars (fitz y-down)
+        y_top = y_bot - bar_height_pt
+        i = 0
+        while i < n:
+            if bits[i] == "1":
+                j = i
+                while j < n and bits[j] == "1":
+                    j += 1
+                shape.draw_rect(fitz.Rect(x0 + i * module_pt, y_top, x0 + j * module_pt, y_bot))
+                i = j
+            else:
+                i += 1
+        shape.finish(fill=(1, 1, 1, 1), color=None)
+        tw = fitz.get_text_length(text, fontname="helv", fontsize=font_size)
+        shape.insert_text(fitz.Point(x_pt + (width_pt - tw) / 2.0, h - y_pt), text,
+                          fontname="helv", fontsize=font_size, color=(1, 1, 1, 1),
+                          fill=(1, 1, 1, 1))
+        shape.commit()
+    doc.save(output_path, deflate=True, garbage=3)
+    doc.close()
+
+
+
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
                cutpaths_dir: str = None,
-               status_cb=None) -> dict:
+               status_cb=None,
+               order_name: str = None) -> dict:
     """
     Execute a structured recipe and return a dict of output paths:
 
@@ -3193,6 +3295,7 @@ def run_recipe(input_path: str, recipe: dict,
             width_inch=check_sz["width_inch"],
             height_inch=check_sz["height_inch"],
             tolerance_inch=check_sz.get("tolerance_inch", 0.1),
+            max_height_inch=check_sz.get("max_height_inch"),
         )
 
     # ── 2. Original JPEG (preflighted, no overlay) ────────────────────────────
@@ -3208,7 +3311,8 @@ def run_recipe(input_path: str, recipe: dict,
             _step(f"📄 Stamping overlay: {overlay}…")
             tmp_ov     = tempfile.mktemp(suffix=".pdf")
             tmp_ov_jpg = tempfile.mktemp(suffix=".jpg")
-            stamp_overlay(tmp_pf, tmp_ov, str(ov_path))
+            stamp_overlay(tmp_pf, tmp_ov, str(ov_path),
+                          placement=recipe.get("overlay_placement") or "Center")
             results["overlay_pdf"]  = tmp_ov
             results["overlay_jpeg"] = export_jpeg(tmp_ov, tmp_ov_jpg)
         else:
@@ -3344,6 +3448,16 @@ def run_recipe(input_path: str, recipe: dict,
         _ltmp = tempfile.mktemp(suffix=".pdf")
         stamp_overlay(tmp_finished, _ltmp, _ltmp_lbl, opacity=1.0)
         tmp_finished = _ltmp
+
+    # ── 4d. Order block: barcode + order text in the bleed (retractables) ─────
+    _ob = recipe.get("order_block")
+    if _ob:
+        _otext = (order_name or _ob.get("placeholder") or "PREFLOW")
+        _step(f"🏷 Adding order barcode: {_otext}…")
+        _tmp_ob = tempfile.mktemp(suffix=".pdf")
+        stamp_order_block(tmp_finished, _tmp_ob, _otext,
+                          x_pt=float(_ob.get("x_pt", 36)), y_pt=float(_ob.get("y_pt", 90)))
+        tmp_finished = _tmp_ob
 
     results["finished_pdf"]    = tmp_finished
     results["preflighted_pdf"] = tmp_pf

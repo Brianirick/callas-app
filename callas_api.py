@@ -246,7 +246,8 @@ def finish(file: UploadFile = File(...), product: str = Form(...),
     _fetch_cutpath(recipe.get("impose_cutpath"))
 
     result = ws.run_recipe(src, recipe, profiles_dir=str(PROFILES_DIR),
-                           cutpaths_dir=str(CUTPATHS_DIR))
+                           cutpaths_dir=str(CUTPATHS_DIR),
+                           order_name=order_name or None)
     out = os.path.join(workdir, "out.pdf")
     shutil.copy2(result["finished_pdf"], out)
     return _respond(out, workdir, "application/pdf")

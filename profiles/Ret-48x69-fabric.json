@@ -6,12 +6,26 @@
   "check_size": {
     "width_inch": 48.0,
     "height_inch": 69.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 0.1,
+    "max_height_inch": 74.0
   },
   "finishing": {
     "type": "hem_top_bottom",
-    "bottom_inch": 288.0
+    "bottom_inch": 4.0,
+    "base_height_inch": 69.0,
+    "bleed_aware": true,
+    "fold_lines": false,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
   },
   "overlay": "SS-48-69-FAB-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "order_block": {
+    "x_pt": 36.0,
+    "y_pt": 90.0,
+    "placeholder": "PREFLOW"
+  },
+  "overlay_placement": "TopCenterActual"
 }

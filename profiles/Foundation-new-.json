@@ -9,8 +9,13 @@
     "tolerance_inch": 0.1
   },
   "finishing": {
-    "type": "hem_top_bottom"
+    "type": "hem_top_bottom",
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    }
   },
   "overlay": "Foundation_Template-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "overlay_placement": "TopCenterActual"
 }

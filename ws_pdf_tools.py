@@ -2999,6 +2999,26 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
             new_page = dst.new_page(width=w, height=h)
             new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
 
+        elif ftype == "split_panels":
+            # Skybox squares etc.: art holds N panels side by side (e.g. 120x14" = 2 x 60x14").
+            # Output = one page per panel, each scaled up (scale 2.0 = 200%), with a 100K
+            # border and the thru-cut spot border drawn around each page (as production).
+            _n   = int(finishing.get("panels", 2))
+            _sc  = float(finishing.get("scale", 2.0))
+            _pw  = w / _n
+            _ord = list(range(_n))
+            if finishing.get("reverse"):
+                _ord.reverse()
+            _W, _H = _pw * _sc, h * _sc
+            _lw = float((finishing.get("cut_spot") or {}).get("width_pt", 1.0 * _sc))
+            for _k in _ord:
+                _np = dst.new_page(width=_W, height=_H)
+                _np.show_pdf_page(fitz.Rect(0, 0, _W, _H), src, pno,
+                                  clip=fitz.Rect(_k * _pw, 0, (_k + 1) * _pw, h))
+                if finishing.get("black_stroke", True):
+                    _np.draw_rect(fitz.Rect(0, 0, _W, _H), color=(0, 0, 0, 1), width=_lw)
+                _cut_rects.append((0.0, 0.0, _W, _H))
+
         elif ftype == "thru_cut_only":
             new_page = dst.new_page(width=w, height=h)
             new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
@@ -3017,7 +3037,7 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
     dst.close()
     src.close()
 
-    _cs = finishing.get("cut_spot") if ftype in ("hem_top_bottom", "hem_top_bottom_black") else None
+    _cs = finishing.get("cut_spot") if ftype in ("hem_top_bottom", "hem_top_bottom_black", "split_panels") else None
     if _cs and _cut_rects:
         import os as _os
         _tmp_cut = output_path + ".cut.pdf"

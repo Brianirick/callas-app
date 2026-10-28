@@ -1,0 +1,23 @@
+{
+  "type": "recipe",
+  "name": "Skybox-square-12x36",
+  "description": "Skybox square, 2 panels split + scaled (from QuickProof finishing)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 144.0,
+    "height_inch": 20.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "split_panels",
+    "panels": 2,
+    "scale": 2.0,
+    "black_stroke": true,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 2.0
+    }
+  },
+  "overlay": "12ftx36in_Square_2-SEC-V-overlay.pdf",
+  "cutpath": null
+}

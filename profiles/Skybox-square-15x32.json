@@ -8,7 +8,17 @@
     "height_inch": 18.0,
     "tolerance_inch": 0.1
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 2,
+    "scale": 2.0,
+    "black_stroke": true,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 2.0
+    },
+    "reverse": true
+  },
   "overlay": "15ftx32in_Square_2-SEC-V-overlay.pdf",
   "cutpath": null
 }

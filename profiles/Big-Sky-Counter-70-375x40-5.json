@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Counter-70-375x40-5",
+  "description": "Auto-imported from QuickProof (Id=1374)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 70.375,
+    "height_inch": 40.5,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "big-sky-counter-4ft-2ft-70-375x40_5-overlay.pdf",
+  "cutpath": "big-sky-counter-4ft-2ft-70-375x40_5-CP.pdf"
+}

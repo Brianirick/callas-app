@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Counter-6ft-side-67-5x40-25-backlit",
+  "description": "Auto-imported from QuickProof (Id=1284)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 67.5,
+    "height_inch": 40.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyCounter-6ft-GO_Template-overlay.pdf",
+  "cutpath": "BigSkyCounter-6ft-GO_CP.pdf"
+}

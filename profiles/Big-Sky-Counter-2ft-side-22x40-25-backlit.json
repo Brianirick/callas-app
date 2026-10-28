@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Counter-2ft-side-22x40-25-backlit",
+  "description": "Auto-imported from QuickProof (Id=1282)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 22,
+    "height_inch": 40.25,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyCounter-2ft-GP_Template-overlay.pdf",
+  "cutpath": "BigSkyCounter-2ft-GP_CP.pdf"
+}

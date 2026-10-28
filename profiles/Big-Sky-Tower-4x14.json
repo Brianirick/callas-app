@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Big-Sky-Tower-4x14",
+  "description": "Auto-imported from QuickProof (Id=1261)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 45.5,
+    "height_inch": 169.0,
+    "tolerance_inch": 0.1
+  },
+  "finishing": null,
+  "overlay": "BigSkyTower-60D_4x14-overlay.pdf",
+  "cutpath": "BigSkyTower-60D_4x14-cp.pdf"
+}

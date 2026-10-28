@@ -3347,6 +3347,20 @@ def run_recipe(input_path: str, recipe: dict,
             else:
                 _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")
 
+    # ── 4a-2. Recipe-level finishing cutpath: stamp the thru-cut PDF onto the artwork
+    # BEFORE finishing so it is scaled/processed with it (e.g. half-scale Skybox flats).
+    _orig_pf_for_fin = tmp_pf
+    _fcp_name = recipe.get("finishing_cutpath") or ""
+    if _fcp_name and cutpaths_dir:
+        _fcp_path = Path(cutpaths_dir) / _fcp_name
+        if _fcp_path.exists():
+            _step(f"✂️ Adding thru-cut before finishing: {_fcp_name}…")
+            _tmp_fcp = tempfile.mktemp(suffix=".pdf")
+            stamp_overlay(tmp_pf, _tmp_fcp, str(_fcp_path), opacity=1.0)
+            tmp_pf = _tmp_fcp
+        else:
+            _step(f"⚠️ Finishing cutpath not found: {_fcp_name}")
+
     if finishing:
         if isinstance(finishing, dict):
             ftype = finishing.get("type", "finishing")
@@ -3460,6 +3474,7 @@ def run_recipe(input_path: str, recipe: dict,
                           x_pt=float(_ob.get("x_pt", 36)), y_pt=float(_ob.get("y_pt", 90)))
         tmp_finished = _tmp_ob
 
+    tmp_pf = _orig_pf_for_fin   # keep the clean preflighted file for proofs
     results["finished_pdf"]    = tmp_finished
     results["preflighted_pdf"] = tmp_pf
 

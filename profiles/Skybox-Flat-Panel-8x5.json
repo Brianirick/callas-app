@@ -10,5 +10,6 @@
   },
   "finishing": null,
   "overlay": "HBPANEL8x60_Template-overlay-v2.pdf",
-  "cutpath": "HBPANEL8x60_Template-CP-V1.pdf"
+  "cutpath": "HBPANEL8x60_Template-CP-V1.pdf",
+  "black_guide": true
 }

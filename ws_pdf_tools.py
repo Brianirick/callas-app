@@ -3269,6 +3269,41 @@ def stamp_order_block(input_path: str, output_path: str, text: str,
 
 
 
+def cutpath_with_black_guide(cp_path: str) -> str:
+    """
+    Return a temp PDF = the cutpath PDF plus a 100K (registration-black) copy of its main
+    outline drawn UNDER the thru-cut spot stroke.  The thru-cut spot is set to cut (not print),
+    so only the black copy is visible/printed - a guide for hand-cut rolls.
+    Only the perimeter path is duplicated (stroke >= 0.9pt); small tick marks are left alone.
+    """
+    import tempfile as _t
+    src = fitz.open(cp_path)
+    out = fitz.open()
+    for pno in range(len(src)):
+        sp = src[pno]
+        np_ = out.new_page(width=sp.rect.width, height=sp.rect.height)
+        sh = np_.new_shape()
+        for d in sp.get_drawings():
+            wd = d.get("width") or 0
+            if wd < 0.9 or len(d.get("items", [])) < 3:
+                continue
+            for it in d["items"]:
+                if it[0] == "l":
+                    sh.draw_line(it[1], it[2])
+                elif it[0] == "c":
+                    sh.draw_bezier(it[1], it[2], it[3], it[4])
+                elif it[0] == "re":
+                    sh.draw_rect(it[1])
+            sh.finish(color=(0, 0, 0, 1), fill=None, width=wd,
+                      closePath=bool(d.get("closePath")))
+        sh.commit()
+        np_.show_pdf_page(np_.rect, src, pno, overlay=True)   # spot thru-cut on top
+    tmp = _t.mktemp(suffix=".pdf")
+    out.save(tmp, deflate=True, garbage=3)
+    out.close(); src.close()
+    return tmp
+
+
 def run_recipe(input_path: str, recipe: dict,
                profiles_dir: str = None,
                overlays_dir: str = None,
@@ -3380,7 +3415,8 @@ def run_recipe(input_path: str, recipe: dict,
         if _fcp_path.exists():
             _step(f"✂️ Adding thru-cut before finishing: {_fcp_name}…")
             _tmp_fcp = tempfile.mktemp(suffix=".pdf")
-            stamp_overlay(tmp_pf, _tmp_fcp, str(_fcp_path), opacity=1.0)
+            _fcp_use = cutpath_with_black_guide(str(_fcp_path)) if recipe.get("black_guide") else str(_fcp_path)
+            stamp_overlay(tmp_pf, _tmp_fcp, _fcp_use, opacity=1.0)
             tmp_pf = _tmp_fcp
         else:
             _step(f"⚠️ Finishing cutpath not found: {_fcp_name}")
@@ -3510,7 +3546,8 @@ def run_recipe(input_path: str, recipe: dict,
             _step(f"✂️ Stamping cutpath: {cutpath}…")
             tmp_cp     = tempfile.mktemp(suffix=".pdf")
             tmp_cp_jpg = tempfile.mktemp(suffix=".jpg")
-            stamp_overlay(tmp_pf, tmp_cp, str(cp_path), opacity=1.0)
+            _cp_use = cutpath_with_black_guide(str(cp_path)) if recipe.get("black_guide") else str(cp_path)
+            stamp_overlay(tmp_pf, tmp_cp, _cp_use, opacity=1.0)
             results["cutpath_pdf"]  = tmp_cp
             results["cutpath_jpeg"] = export_jpeg(tmp_cp, tmp_cp_jpg)
         else:

@@ -11,5 +11,6 @@
   "finishing": "Skybox-Flat-halfsize",
   "overlay": "HBPANEL20x72_Template-overlay.pdf",
   "cutpath": "HBPANEL20x72_Template-CP-V1.pdf",
-  "finishing_cutpath": "HBPANEL20x72_Template-CP-V1.pdf"
+  "finishing_cutpath": "HBPANEL20x72_Template-CP-V1.pdf",
+  "black_guide": true
 }

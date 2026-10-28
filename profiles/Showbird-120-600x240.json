@@ -1,0 +1,24 @@
+{
+  "type": "recipe",
+  "name": "Showbird-120-600x240",
+  "description": "Auto-imported from QuickProof (Id=1411)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 117.875,
+    "height_inch": 47.875,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 2.0,
+    "user_unit": true,
+    "black_stroke": true,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 1.0
+    }
+  },
+  "overlay": "SB120-600x240_Template-overlay-v2.pdf",
+  "cutpath": null
+}

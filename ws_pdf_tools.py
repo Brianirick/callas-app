@@ -3431,7 +3431,12 @@ def run_recipe(input_path: str, recipe: dict,
                 impose_panels(tmp_pf, tmp_fin, finishing)
             else:
                 # Native Python finishing (hem, thru-cut, flag_label, etc.)
-                apply_finishing(tmp_pf, tmp_fin, finishing)
+                _fin_in = tmp_pf
+                if finishing.get("remove_bleed"):      # KFPX "Remove bleed": CropBox = TrimBox
+                    _t = tempfile.mktemp(suffix=".pdf"); remove_bleed(_fin_in, _t); _fin_in = _t
+                if finishing.get("outline_fonts"):     # KFPX "Convert fonts to outlines"
+                    _t = tempfile.mktemp(suffix=".pdf"); outline_fonts(_fin_in, _t); _fin_in = _t
+                apply_finishing(_fin_in, tmp_fin, finishing)
             tmp_finished = tmp_fin
         elif isinstance(finishing, str) and profiles_dir:
             pfile = Path(profiles_dir) / f"{finishing}.json"

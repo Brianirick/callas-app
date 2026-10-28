@@ -1,0 +1,26 @@
+{
+  "type": "recipe",
+  "name": "Smoothwall-25x10",
+  "description": "Smoothwall (from QuickProof Id=1358): remove bleed, outline fonts, scale 200%, black stroke + thru-cut",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 150.5,
+    "height_inch": 60.75,
+    "tolerance_inch": 0.1
+  },
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 2.0,
+    "remove_bleed": true,
+    "outline_fonts": true,
+    "black_stroke": true,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 1.0
+    },
+    "user_unit": true
+  },
+  "overlay": "SWFGP-25X10_overlay.pdf",
+  "cutpath": null
+}

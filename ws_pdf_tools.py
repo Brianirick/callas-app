@@ -3418,6 +3418,8 @@ def run_recipe(input_path: str, recipe: dict,
             _fcp_use = cutpath_with_black_guide(str(_fcp_path)) if recipe.get("black_guide") else str(_fcp_path)
             stamp_overlay(tmp_pf, _tmp_fcp, _fcp_use, opacity=1.0)
             tmp_pf = _tmp_fcp
+            if not finishing:                 # no finishing step: the stamped thru-cut IS the finished file
+                tmp_finished = _tmp_fcp
         else:
             _step(f"⚠️ Finishing cutpath not found: {_fcp_name}")
 

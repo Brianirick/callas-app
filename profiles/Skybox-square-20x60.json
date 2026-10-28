@@ -15,8 +15,9 @@
     "black_stroke": true,
     "cut_spot": {
       "name": "thru-cut",
-      "width_pt": 4.0
-    }
+      "width_pt": 1.0
+    },
+    "user_unit": true
   },
   "overlay": "20ftx60in_Square_2-SEC-V2-overlay.pdf",
   "cutpath": null

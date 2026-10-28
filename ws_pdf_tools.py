@@ -3009,14 +3009,18 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
             _ord = list(range(_n))
             if finishing.get("reverse"):
                 _ord.reverse()
-            _W, _H = _pw * _sc, h * _sc
-            _lw = float((finishing.get("cut_spot") or {}).get("width_pt", 1.0 * _sc))
+            _uu = bool(finishing.get("user_unit"))   # scale via /UserUnit (pages > 200" in Acrobat)
+            _geo = 1.0 if _uu else _sc                # geometry multiplier actually baked in
+            _W, _H = _pw * _geo, h * _geo
+            _lw = float((finishing.get("cut_spot") or {}).get("width_pt", 1.0 * _geo))
             for _k in _ord:
                 _np = dst.new_page(width=_W, height=_H)
                 _np.show_pdf_page(fitz.Rect(0, 0, _W, _H), src, pno,
                                   clip=fitz.Rect(_k * _pw, 0, (_k + 1) * _pw, h))
                 if finishing.get("black_stroke", True):
                     _np.draw_rect(fitz.Rect(0, 0, _W, _H), color=(0, 0, 0, 1), width=_lw)
+                if _uu:
+                    dst.xref_set_key(_np.xref, "UserUnit", str(_sc))
                 _cut_rects.append((0.0, 0.0, _W, _H))
 
         elif ftype == "thru_cut_only":

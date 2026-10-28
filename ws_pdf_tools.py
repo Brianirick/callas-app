@@ -2984,11 +2984,7 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
             if finishing.get("cut_spot"):
                 # Cutter line = Separation spot (e.g. "BleedBox") stroked around the
                 # ARTWORK area (page minus the added hem band), added after save.
-                _cy0 = BOT_PT
-                if finishing.get("bleed_aware") and finishing.get("base_height_inch"):
-                    # Cut at the TRIM (base height measured from the top); any bleed the
-                    # customer supplied, plus the added band, falls outside the cut line.
-                    _cy0 = max(0.0, new_h - TOP_PT - float(finishing["base_height_inch"]) * 72.0)
+                _cy0 = 0.0   # cut around the whole finished page: art + bleed + leader panel
                 _cut_rects.append((0.0, _cy0, w, new_h - TOP_PT))
             else:
                 # Thru-cut line at outer edge

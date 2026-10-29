@@ -12,5 +12,6 @@
   "overlay": "30ftx7_5_RPL-HALF-ONLY_OVERLAY.pdf",
   "cutpath": null,
   "finishing_cutpath": "RPL_30ft_wEndcaps_HALFSCALE_CP--.pdf",
-  "black_guide": true
+  "black_guide": true,
+  "finishing_cutpath_placement": "Stretch"
 }

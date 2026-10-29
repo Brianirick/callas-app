@@ -2101,7 +2101,10 @@ def stamp_overlay(input_path: str, output_path: str,
             x0 = target.x0 + (target.width - ow * s) / 2
             target = fitz.Rect(x0, target.y0, x0 + ow * s, target.y0 + oh * s)
         try:
-            page.show_pdf_page(target, over, ov_idx, overlay=True)
+            # placement "Stretch": fit the overlay exactly to the page (non-proportional),
+            # so a cutpath drawn a hair bigger/smaller than the art still sits on the page edge
+            page.show_pdf_page(target, over, ov_idx, overlay=True,
+                               keep_proportion=(placement != "Stretch"))
         except Exception as _spe:
             raise RuntimeError(f"DIAG-SHOWPAGE p{i}: {_spe}")
 
@@ -3418,7 +3421,8 @@ def run_recipe(input_path: str, recipe: dict,
             _step(f"✂️ Adding thru-cut before finishing: {_fcp_name}…")
             _tmp_fcp = tempfile.mktemp(suffix=".pdf")
             _fcp_use = cutpath_with_black_guide(str(_fcp_path)) if recipe.get("black_guide") else str(_fcp_path)
-            stamp_overlay(tmp_pf, _tmp_fcp, _fcp_use, opacity=1.0)
+            stamp_overlay(tmp_pf, _tmp_fcp, _fcp_use, opacity=1.0,
+                          placement=recipe.get("finishing_cutpath_placement") or "Center")
             tmp_pf = _tmp_fcp
             if not finishing:                 # no finishing step: the stamped thru-cut IS the finished file
                 tmp_finished = _tmp_fcp

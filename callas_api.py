@@ -166,6 +166,8 @@ def preflight(file: UploadFile = File(...), product: str = Form(...),
         "pdf_encrypted":     encrypted,
         "doc_errors_list":   errors[:20],
         "doc_warnings_list": warnings[:20],
+        # KFPX finish.json shape: QuickProof's ProofMessage.GetWarningMessage reads this list by hit name
+        "doc_warning_list":  [{"name": n.replace("Template Layer", "Template Color Used")} for n in tpl] if warnings else [],
     }
     return _respond(out, workdir, "application/pdf",
                     {"X-Preflight-Report": json.dumps(report)})

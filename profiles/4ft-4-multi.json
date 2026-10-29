@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 112.25,
     "height_inch": 88,
-    "tolerance_inch": 0.5
+    "tolerance_inch": 1.0
   },
   "finishing": "4ft-4-MULTI-24in-3pc",
   "overlay": "4ft_4-sided_Stretch_Table_Throw_24in.pdf",

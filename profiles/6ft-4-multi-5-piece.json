@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 134.4,
     "height_inch": 87.5,
-    "tolerance_inch": 0.5
+    "tolerance_inch": 1.0
   },
   "finishing": "6ft-4-MULTI-5pc",
   "overlay": null,

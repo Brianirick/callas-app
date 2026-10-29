@@ -1,0 +1,16 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-8ft-Arrow",
+  "description": "EZ Arrow 8ft: thru-cut at art size, then impose onto production sheet",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 147.5,
+    "height_inch": 190,
+    "tolerance_inch": 1.0
+  },
+  "finishing": "EZ-ARW-8ft-impose",
+  "finishing_cutpath": "EZT-ARW-8FT_Template -72026-CP.pdf",
+  "overlay": "EZT-ARW-8FT_Template -72026-overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": null
+}

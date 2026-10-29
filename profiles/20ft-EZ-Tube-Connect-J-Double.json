@@ -8,7 +8,34 @@
     "height_inch": 90.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          45,
+          160.25,
+          45
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          0,
+          160.25,
+          45
+        ]
+      }
+    ],
+    "out_in": [
+      320.5,
+      90
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-20ft-J-Double_Template-overlay.pdf",
-  "cutpath": "EZTube-Connect-20ft-J-Double_CP.pdf"
+  "cutpath": "EZTube-Connect-20ft-J-Double_CP.pdf",
+  "finishing_cutpath": "EZTube-Connect-20ft-J-Double-stack-CP.pdf"
 }

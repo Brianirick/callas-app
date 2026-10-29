@@ -1,14 +1,53 @@
 {
   "type": "recipe",
   "name": "10ft-EZ-Tube-Connect-L-Double",
-  "description": "Auto-imported from QuickProof (Id=1206)",
+  "description": "10ft Connect L Double: half-size 79x90.5 art, 2 pages scaled to 159x90, per-page thru-cut",
   "preflight": "60-50-50-100",
   "check_size": {
-    "width_inch": 79.0,
+    "width_inch": 79,
     "height_inch": 90.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          79,
+          44.5
+        ],
+        "dst_in": [
+          0.5,
+          0.25,
+          158,
+          89
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          46,
+          79,
+          44.5
+        ],
+        "dst_in": [
+          0.5,
+          0.5,
+          158,
+          89
+        ]
+      }
+    ],
+    "page_in": [
+      159,
+      90
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-10ft-L-Double_overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "EZTube-Connect-10ft-L-Double-CP-2pg.pdf"
 }

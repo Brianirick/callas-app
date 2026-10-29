@@ -1,14 +1,53 @@
 {
   "type": "recipe",
   "name": "10FT-EZ-Tube-Connect-M-Double",
-  "description": "Auto-imported from QuickProof (Id=1208)",
+  "description": "10ft Connect M Double (not yet checked vs production): half-size 67.5x89.5 art, 2 pages scaled to 136x90",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 67.5,
-    "height_inch": 90.5,
+    "height_inch": 89.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          67.5,
+          44.75
+        ],
+        "dst_in": [
+          0.5,
+          0.25,
+          135,
+          89.5
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          44.75,
+          67.5,
+          44.75
+        ],
+        "dst_in": [
+          0.5,
+          0.25,
+          135,
+          89.5
+        ]
+      }
+    ],
+    "page_in": [
+      136,
+      90
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-10ft-M-Double_Template-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "EZTube-Connect-10ft-M-Double-CP-2pg.pdf"
 }

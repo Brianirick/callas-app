@@ -1,0 +1,75 @@
+{
+  "type": "impose",
+  "output_size_in": [
+    49,
+    121.5
+  ],
+  "panels": [
+    {
+      "name": "top",
+      "src_in": [
+        0,
+        77.5,
+        73.5,
+        17.5
+      ],
+      "dst_in": [
+        0.5,
+        47.5,
+        17.5,
+        73.5
+      ],
+      "rotate": 90
+    },
+    {
+      "name": "arrow8",
+      "src_in": [
+        0,
+        48.0,
+        47.75,
+        29.5
+      ],
+      "dst_in": [
+        0.125,
+        0.0,
+        47.75,
+        29.5
+      ],
+      "rotate": 180
+    },
+    {
+      "name": "arrow9",
+      "src_in": [
+        0,
+        18.25,
+        47.75,
+        29.5
+      ],
+      "dst_in": [
+        0.794,
+        22.7826,
+        47.75,
+        29.5
+      ],
+      "rotate": 180
+    },
+    {
+      "name": "bottom",
+      "src_in": [
+        0,
+        0,
+        58,
+        18
+      ],
+      "dst_in": [
+        18.669,
+        62.7826,
+        18,
+        58
+      ],
+      "rotate": 90
+    }
+  ],
+  "name": "EZ-ARW-6ft-impose",
+  "description": "EZ Arrow 6ft imposition (from KFPX sheetconfig, verified vs production output)"
+}

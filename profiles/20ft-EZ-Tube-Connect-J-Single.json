@@ -8,7 +8,26 @@
     "height_inch": 44.75,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          160.25,
+          44.75
+        ]
+      }
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true,
+    "out_in": [
+      320.5,
+      89.5
+    ]
+  },
   "overlay": "EZTube-Connect-20ft-J-Single_Template-overlay.pdf",
-  "cutpath": "EZTube-Connect-20ft-J-Single_CP.pdf"
+  "cutpath": "EZTube-Connect-20ft-J-Single_CP.pdf",
+  "finishing_cutpath": "EZTube-Connect-20ft-J-Single_CP.pdf"
 }

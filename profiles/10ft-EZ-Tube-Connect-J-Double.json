@@ -1,14 +1,53 @@
 {
   "type": "recipe",
   "name": "10ft-EZ-Tube-Connect-J-Double",
-  "description": "Auto-imported from QuickProof (Id=1207)",
+  "description": "10ft Connect J Double (not yet checked vs production): half-size 68.5x90.5 art, 2 pages scaled to 138x90.5",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 68.5,
-    "height_inch": 90.0,
+    "height_inch": 90.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          68.5,
+          44.75
+        ],
+        "dst_in": [
+          0.5,
+          0.25,
+          137,
+          89.5
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          45.575,
+          68.5,
+          44.925
+        ],
+        "dst_in": [
+          0.5,
+          0,
+          137,
+          89.85
+        ]
+      }
+    ],
+    "page_in": [
+      138,
+      90.5
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-10ft-J-Double_Template-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "EZTube-Connect-10ft-J-Double-CP-2pg.pdf"
 }

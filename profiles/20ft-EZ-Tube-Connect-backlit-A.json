@@ -1,14 +1,33 @@
 {
   "type": "recipe",
   "name": "20ft-EZ-Tube-Connect-backlit-A",
-  "description": "Auto-imported from QuickProof (Id=262)",
+  "description": "Connect 20ft - built from KFPX pattern (half-size art in)",
   "preflight": "75-75-75-100",
   "check_size": {
     "width_inch": 123.52,
     "height_inch": 44.25,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          123.52,
+          44.25
+        ]
+      }
+    ],
+    "out_in": [
+      247,
+      88.5
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZCNCT-BL-20ft-A-Frame-single-layout-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "EZCNCT-BL-20ft-A-Frame-single-CP-HALF.pdf"
 }

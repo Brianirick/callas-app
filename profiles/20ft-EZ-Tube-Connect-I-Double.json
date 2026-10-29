@@ -1,0 +1,41 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Connect-I-Double",
+  "description": "Connect 20ft I double (KFPX pattern, half-size art in)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 141,
+    "height_inch": 89.5,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          44.75,
+          141,
+          44.75
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          0,
+          141,
+          44.75
+        ]
+      }
+    ],
+    "out_in": [
+      282,
+      89.5
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
+  "finishing_cutpath": "EZTube-Connect-20ft-I-Double-stack-CP.pdf",
+  "overlay": "EZTube-Connect-20ft-I-Double_Template-overlay.pdf",
+  "cutpath": null
+}

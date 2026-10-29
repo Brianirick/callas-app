@@ -1,14 +1,41 @@
 {
   "type": "recipe",
   "name": "20ft-EZ-Tube-Connect-H-Double",
-  "description": "Auto-imported from QuickProof (Id=305)",
+  "description": "Connect 20ft - built from KFPX pattern (half-size art in)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 123.0,
     "height_inch": 90.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          123,
+          44.75
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          45.25,
+          123,
+          44.75
+        ]
+      }
+    ],
+    "out_in": [
+      246,
+      90
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "20ft-H-CONFIG-double-SPOT-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "20ft-H-CONFIG-double-SPOT-WHITE.pdf"
 }

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-Connect-Return-Wall-Left-Single",
+  "description": "Return wall single (cutpath names as in QuickProof)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 96,
+    "height_inch": 90,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "EZCNCT-RWL-G1_Template-overlay.pdf",
+  "cutpath": "EZCNCT-RIGHT-CP.pdf"
+}

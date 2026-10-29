@@ -1,0 +1,20 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-Connect-Return-Wall-Left-Double",
+  "description": "Return wall double: art 96x180 split into 2 pages 96x90 (bottom first), per-page thru-cut (from KFPX)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 96,
+    "height_inch": 180,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "split_stack",
+    "panels": 2,
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
+  "overlay": "EZCNCT-RWL-G2_Template-overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "EZCNCT-RWL-G2_Template-CP-2pg-LeftFront.pdf"
+}

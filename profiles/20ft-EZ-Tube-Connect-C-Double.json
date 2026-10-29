@@ -1,14 +1,41 @@
 {
   "type": "recipe",
   "name": "20ft-EZ-Tube-Connect-C-Double",
-  "description": "Auto-imported from QuickProof (Id=264)",
+  "description": "Connect 20ft - built from KFPX pattern (half-size art in)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 92.17,
     "height_inch": 89.96,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          92.17,
+          44.75
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          45.25,
+          92.17,
+          44.75
+        ]
+      }
+    ],
+    "out_in": [
+      184.4,
+      90
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "20ft-Config-C-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "20FT-C-CONFIG--stroke.pdf"
 }

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Ez-Tube-Bridge",
+  "description": "Built from QuickProof row (no finishing)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 34,
+    "height_inch": 155,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "EZT-BRDG-F_Template-overlay.pdf",
+  "cutpath": "EZT-BRDG-F_Template-CP.pdf"
+}

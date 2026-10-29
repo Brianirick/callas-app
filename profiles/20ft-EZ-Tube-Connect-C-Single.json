@@ -1,0 +1,33 @@
+{
+  "type": "recipe",
+  "name": "20ft-EZ-Tube-Connect-C-Single",
+  "description": "Connect 20ft - built from KFPX pattern (half-size art in)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 92.12,
+    "height_inch": 44.75,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          92.12,
+          44.75
+        ]
+      }
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true,
+    "out_in": [
+      184.24,
+      89.5
+    ]
+  },
+  "overlay": "20ft-Config-C-overlay-single.pdf",
+  "cutpath": null,
+  "finishing_cutpath": "20FT-C-CONFIG--single-stroke-100.pdf"
+}

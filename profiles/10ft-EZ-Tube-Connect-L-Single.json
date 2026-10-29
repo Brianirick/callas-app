@@ -1,14 +1,37 @@
 {
   "type": "recipe",
   "name": "10ft-EZ-Tube-Connect-L-Single",
-  "description": "Auto-imported from QuickProof (Id=1009)",
+  "description": "10ft Connect L Single: 159x89.5 art -> page 1 circle 61.5x61.5, page 2 main 96.5x89.5, per-page thru-cut",
   "preflight": "60-50-50-100",
   "check_size": {
-    "width_inch": 158.0,
+    "width_inch": 159,
     "height_inch": 89.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          97.375,
+          14,
+          61.5,
+          61.5
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          0,
+          96.5,
+          89.5
+        ]
+      }
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-10ft-L-Single_overlay.pdf",
-  "cutpath": "EZTube-Connect-10ft-L-Single_CP_all.pdf"
+  "cutpath": null,
+  "impose_cutpath": "EZTube-Connect-10ft-L-Single-CP-2pg.pdf"
 }

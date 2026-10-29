@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "6ft-Ez-Tube-Tabletop-Straight",
+  "description": "Built from QuickProof row (no finishing)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 69.5,
+    "height_inch": 59.5,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "EZT6STRTT_Template-72026-overlay.pdf",
+  "cutpath": "EZT6STRTT_Template-72026-cp-.pdf"
+}

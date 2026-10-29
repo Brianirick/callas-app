@@ -1,14 +1,21 @@
 {
   "type": "recipe",
   "name": "10ft-EZ-Tube-Connect-K-Double",
-  "description": "Auto-imported from QuickProof (Id=1051)",
+  "description": "10ft Connect K Double: 161x180 split into 2 pages 161x90 (top first), per-page thru-cut",
   "preflight": "60-50-50-100",
   "check_size": {
-    "width_inch": 161.0,
-    "height_inch": 180.0,
+    "width_inch": 161,
+    "height_inch": 180,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_stack",
+    "panels": 2,
+    "top_first": true,
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "EZTube-Connect-10ft-K-Double_overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "EZTube-Connect-10ft-K-Double-CP-2pg.pdf"
 }

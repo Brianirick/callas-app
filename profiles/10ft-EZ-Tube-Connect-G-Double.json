@@ -1,14 +1,41 @@
 {
   "type": "recipe",
   "name": "10ft-EZ-Tube-Connect-G-Double",
-  "description": "Auto-imported from QuickProof (Id=211)",
+  "description": "10ft Connect Double: 125x180 art split into 2 pages 126x91 (bottom first), stroke added before split",
   "preflight": "60-50-50-100",
   "check_size": {
-    "width_inch": 125.0,
-    "height_inch": 180.0,
+    "width_inch": 125,
+    "height_inch": 180,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          125,
+          90
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          90,
+          125,
+          90
+        ]
+      }
+    ],
+    "page_in": [
+      126,
+      91
+    ],
+    "remove_bleed": true,
+    "outline_fonts": true
+  },
   "overlay": "10ft-Config-G-overlay-double.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "10ft-Config-G-overlay-double-stroke-CP.pdf"
 }

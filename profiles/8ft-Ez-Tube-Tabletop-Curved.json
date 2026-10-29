@@ -1,10 +1,10 @@
 {
   "type": "recipe",
   "name": "8ft-Ez-Tube-Tabletop-Curved",
-  "description": "Auto-imported from QuickProof (Id=330)",
+  "description": "Built from QuickProof row (no finishing)",
   "preflight": "75-75-75-100",
   "check_size": {
-    "width_inch": 105.0,
+    "width_inch": 105,
     "height_inch": 61.25,
     "tolerance_inch": 1.0
   },

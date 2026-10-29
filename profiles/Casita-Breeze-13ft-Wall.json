@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Casita-Breeze-13ft-Wall",
+  "description": "Built from QuickProof row (no finishing)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 157.5,
+    "height_inch": 118,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "BRZ-WALL13_Template-overlay-61226.pdf",
+  "cutpath": "BRZ-WALL13_Template-CP-61226.pdf"
+}

@@ -538,21 +538,14 @@ if page == "run":
 
         with right:
             st.markdown('<div style="font-size:0.75rem; color:#7f9bb5; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:0.5rem;">Upload PDF</div>', unsafe_allow_html=True)
-            uploaded = st.file_uploader("Drop your PDF, EPS or AI file here", type=["pdf", "eps", "ai"], label_visibility="collapsed")
+            uploaded = st.file_uploader("Drop your PDF here", type=["pdf"], label_visibility="collapsed")
 
             if uploaded:
                 st.markdown(f"**File:** `{uploaded.name}`  |  **Size:** {uploaded.size/1024:.1f} KB")
 
-                with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tmp:
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                     tmp.write(uploaded.read())
-                    _raw_path = tmp.name
-                input_path = _raw_path + ".pdf"
-                try:
-                    if ws.convert_to_pdf(_raw_path, input_path):
-                        st.info(f"Converted {Path(uploaded.name).suffix.upper().lstrip('.')} to PDF before preflight.")
-                except Exception as _ce:
-                    st.error(f"Could not convert this file to PDF: {_ce}")
-                    st.stop()
+                    input_path = tmp.name
 
                 page_info_expander(input_path)
                 st.divider()
@@ -583,12 +576,6 @@ if page == "run":
                                         st.write(f"✅ Cutpath fetched: {_cp}")
                                     else:
                                         st.write(f"⚠️ Could not fetch cutpath from S3: {_cp}")
-                                _fcp = profile_data.get("finishing_cutpath") or ""
-                                if _fcp:
-                                    if fetch_pdf_from_s3(_fcp, "cutpath"):
-                                        st.write(f"✅ Finishing cutpath fetched: {_fcp}")
-                                    else:
-                                        st.write(f"⚠️ Could not fetch finishing cutpath from S3: {_fcp}")
                                 _icp = profile_data.get("impose_cutpath") or ""
                                 if _icp:
                                     _icp_local = fetch_pdf_from_s3(_icp, "cutpath")
@@ -1000,7 +987,7 @@ elif page == "build":
         st.session_state.rb_check_size = bool(_sz)
         st.session_state.rb_width      = float(_sz.get("width_inch", 0.0))
         st.session_state.rb_height     = float(_sz.get("height_inch", 0.0))
-        st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 0.1))
+        st.session_state.rb_tol        = float(_sz.get("tolerance_inch", 1.0))
         # Top-level labels (works alongside any finishing type)
         st.session_state.rb_labels     = rdata.get("labels") or None
         st.rerun()
@@ -1586,8 +1573,6 @@ elif page == "build":
                             fetch_pdf_from_s3(_ov, "overlay")
                         if _cp:
                             fetch_pdf_from_s3(_cp, "cutpath")
-                        if test_recipe.get("finishing_cutpath"):
-                            fetch_pdf_from_s3(test_recipe["finishing_cutpath"], "cutpath")
                         result = ws.run_recipe(t_in, test_recipe,
                                                profiles_dir=str(PROFILES_DIR),
                                                overlays_dir=str(OVERLAYS_DIR),

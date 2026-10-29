@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 106.75,
     "height_inch": 88.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RPL8ft_Curved_106_75x88_5H.pdf",

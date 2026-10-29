@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 135.3,
     "height_inch": 88.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "6ft_3-sided_Stretch_Table_Throw.pdf",

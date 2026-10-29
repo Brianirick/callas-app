@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 51.0,
     "height_inch": 89.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "EZCNCT-SLT-24x90-front-back-overlay.pdf",

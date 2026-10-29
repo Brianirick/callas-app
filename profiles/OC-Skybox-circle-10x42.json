@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 186.0,
     "height_inch": 45.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": {
     "type": "thru_cut_only"

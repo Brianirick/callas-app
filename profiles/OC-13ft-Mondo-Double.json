@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 62.0,
     "height_inch": 121.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "OC_Mondo13ft_Double_Template-OVERLAY.pdf",

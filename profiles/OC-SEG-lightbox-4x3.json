@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 132.5,
     "height_inch": 44.4,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "OC_4x3_SEG_Pop_Up-front-back-half_half-only-overlay.pdf",

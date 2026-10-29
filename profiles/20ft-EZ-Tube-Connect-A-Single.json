@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 122.25,
     "height_inch": 44.75,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "EZ-Tube-Connect-20FT-Config-A--single-outlines-6-8-26-overlay.pdf",

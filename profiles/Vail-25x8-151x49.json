@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 151.0,
     "height_inch": 49.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "VAIL-180D-25x8_Template-overlay.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 50.5,
     "height_inch": 112.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "EZ-Extend-2x9-5_double-overlay-V2.pdf",

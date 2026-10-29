@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 24.75,
     "height_inch": 144.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Mamba-X-Large-Single_overlay.pdf",

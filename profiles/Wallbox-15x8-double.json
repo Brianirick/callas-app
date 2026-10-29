@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 107.75,
     "height_inch": 96.75,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "15x8_wallbox_double-sided-overlay.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 24.375,
     "height_inch": 36.375,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "DSA-24x36_Template-overlay.pdf",

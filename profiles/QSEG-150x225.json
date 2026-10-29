@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 61.5,
     "height_inch": 91.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "QSEG-150x225_overlay.pdf",

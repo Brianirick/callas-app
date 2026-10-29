@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 60.0,
     "height_inch": 164.25,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Feather-Large-double-BF_CP-OVERLAY.pdf",

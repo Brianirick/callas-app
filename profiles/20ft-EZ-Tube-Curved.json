@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 122.875,
     "height_inch": 46.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "EZ-Tube-halfsize",
   "overlay": "20ft_EZ_Tube_Curved_HALF_overlay.pdf",

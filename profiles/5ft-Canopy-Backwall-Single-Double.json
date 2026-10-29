@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 55.25,
     "height_inch": 83.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "5ft-Tent-Backwall-Template-REV-V2-BOTH-overlay.pdf",

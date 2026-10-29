@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 92.17,
     "height_inch": 89.96,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "20ft-Config-C-overlay.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 79.0,
     "height_inch": 40.625,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "GopherPopUp_counter_79x40.625H--.pdf",

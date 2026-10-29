@@ -143,7 +143,7 @@ def preflight(file: UploadFile = File(...), product: str = Form(...),
         if size.get("width_inch") and size.get("height_inch"):
             results = ws.check_page_size(out, width_inch=size["width_inch"],
                                          height_inch=size["height_inch"],
-                                         tolerance_inch=size.get("tolerance_inch", 0.1))
+                                         tolerance_inch=size.get("tolerance_inch", 1.0))
             errors += [r["message"] for r in results if not r["passed"]]
 
     # Template elements are left in the file and printed, so the customer is warned instead
@@ -244,11 +244,9 @@ def finish(file: UploadFile = File(...), product: str = Form(...),
             lbl = dict(lbl, placeholder=lbl.get("placeholder", "ORDER #00000").replace("00000", order_name))
             recipe["labels"] = lbl
     _fetch_cutpath(recipe.get("impose_cutpath"))
-    _fetch_cutpath(recipe.get("finishing_cutpath"))
 
     result = ws.run_recipe(src, recipe, profiles_dir=str(PROFILES_DIR),
-                           cutpaths_dir=str(CUTPATHS_DIR),
-                           order_name=order_name or None)
+                           cutpaths_dir=str(CUTPATHS_DIR))
     out = os.path.join(workdir, "out.pdf")
     shutil.copy2(result["finished_pdf"], out)
     return _respond(out, workdir, "application/pdf")

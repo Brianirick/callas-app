@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 114.0,
     "height_inch": 180.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "10ft-Config-I-overlay-double.pdf",

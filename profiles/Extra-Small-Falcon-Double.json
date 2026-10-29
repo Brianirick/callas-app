@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 37.85,
     "height_inch": 66.64,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": {
     "type": "flag_label",

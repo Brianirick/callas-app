@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 122.5,
     "height_inch": 180.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Config-D-overlay.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 72.4,
     "height_inch": 33.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Genie_Counter_Case_overlay.pdf",

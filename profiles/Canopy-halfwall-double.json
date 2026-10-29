@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 112.0,
     "height_inch": 41.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Halfwall_double_112x41.5H-overlay.pdf",

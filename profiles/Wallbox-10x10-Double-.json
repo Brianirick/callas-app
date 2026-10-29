@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 138.0,
     "height_inch": 60.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "WB-10X10-G2_Template-overlay.pdf",

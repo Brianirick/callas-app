@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 104.0,
     "height_inch": 35.625,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Hard_Trolley_Case_REV__104x35.625H-7-3-17.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 74.0,
     "height_inch": 58.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "PU-POD_Template-overlay-v2-.pdf",

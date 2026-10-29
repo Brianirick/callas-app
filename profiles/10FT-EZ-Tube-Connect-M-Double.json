@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 67.5,
     "height_inch": 90.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "EZTube-Connect-10ft-M-Double_Template-overlay.pdf",

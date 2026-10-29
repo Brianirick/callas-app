@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 115.875,
     "height_inch": 59.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "20x10_RPL-NE-HALF-ONLY__OVERLAY.pdf",

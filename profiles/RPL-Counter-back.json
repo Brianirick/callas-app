@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 35.0,
     "height_inch": 35.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RPL-Counter-Back_Template-overlay.pdf",

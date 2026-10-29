@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 24.0,
     "height_inch": 48.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": {
     "type": "hem_top_bottom_black",

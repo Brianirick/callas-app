@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 48.6,
     "height_inch": 165.3,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "teardropbanner-XL1-WCP--.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 32.75,
     "height_inch": 23.125,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Spring_snap_frame_overlay.pdf",

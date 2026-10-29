@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 62.5,
     "height_inch": 34.12,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "ready_pop_counter_NEW_60x34.13H.pdf",

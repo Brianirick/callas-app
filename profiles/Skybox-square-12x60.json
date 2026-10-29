@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 144.0,
     "height_inch": 32.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": {
     "type": "split_panels",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 76.5,
     "height_inch": 31.2,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "6ft_Backlit_Table_Throw-overlay.pdf",

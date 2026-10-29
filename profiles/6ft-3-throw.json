@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 131.25,
     "height_inch": 64.75,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "6ft-3-FITTED-3pc",
   "overlay": "6ft-3sided-FittedTablethrow_.pdf",

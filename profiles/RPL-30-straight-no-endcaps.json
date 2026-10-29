@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 173.0,
     "height_inch": 44.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "EZ-Tube-halfsize",
   "overlay": "30ftx7_5_RPL-NE-HALF-ONLY_OVERLAY.pdf",

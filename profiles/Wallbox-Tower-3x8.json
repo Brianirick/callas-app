@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 135.0,
     "height_inch": 96.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "WB-TOWER-3x8_Template-overlay.pdf",

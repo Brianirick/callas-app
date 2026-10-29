@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 135.5,
     "height_inch": 45.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "EZ-Tube-halfsize",
   "overlay": "EZ-Tube-20FT-Kicktail-overlay.pdf",

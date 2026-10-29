@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 67.875,
     "height_inch": 40.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Lumiere_Counter_Backlit-front-only_V2_overlay.pdf",

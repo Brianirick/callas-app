@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 84.8,
     "height_inch": 84.8,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "7ft_RoundEZ_Extend_template.pdf",

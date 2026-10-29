@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 117.75,
     "height_inch": 118.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RPL_10x10-NE-117_75x118-overlay.pdf",

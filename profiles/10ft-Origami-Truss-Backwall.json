@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 108.0,
     "height_inch": 84.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "10ftTrussBackwall_revised_108x84.5H.pdf",

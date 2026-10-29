@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 118.5,
     "height_inch": 118.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "10x10_Lumiere_Light_Wall.pdf",

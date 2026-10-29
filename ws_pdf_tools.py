@@ -1630,7 +1630,7 @@ for _op_id, _op_meta in AVAILABLE_OPS.items():
 
 def check_page_size(input_path: str,
                     width_inch: float = None, height_inch: float = None,
-                    box: str = "TrimBox", tolerance_inch: float = 0.1,
+                    box: str = "TrimBox", tolerance_inch: float = 1.0,
                     max_height_inch: float = None) -> list:
     """
     Check that each page's box matches expected dimensions (±tolerance).
@@ -1730,7 +1730,7 @@ AVAILABLE_CHECKS = {
              "options": ["TrimBox","MediaBox","BleedBox","CropBox"], "default": "TrimBox"},
             {"name": "width_inch",   "type": "float",  "label": "Expected Width (in)",  "default": 0.0, "step": 0.25},
             {"name": "height_inch",  "type": "float",  "label": "Expected Height (in)", "default": 0.0, "step": 0.25},
-            {"name": "tolerance_inch","type": "float", "label": "Tolerance (in)",       "default": 0.1, "step": 0.01},
+            {"name": "tolerance_inch","type": "float", "label": "Tolerance (in)",       "default": 1.0, "step": 0.01},
         ],
     },
     "check_has_trimbox": {
@@ -3026,6 +3026,52 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
                     dst.xref_set_key(_np.xref, "UserUnit", str(_sc))
                 _cut_rects.append((0.0, 0.0, _W, _H))
 
+        elif ftype == "split_stack":
+            # Double-sided return walls etc.: art holds N panels stacked top-to-bottom
+            # (e.g. 96x180 = 2 x 96x90). Output = one page per panel, FIRST page = BOTTOM
+            # slice (KFPX: odd pages TrimBox at the bottom, even pages above it).
+            # Per-page cutpaths are stamped later (2-page impose_cutpath PDF).
+            _n  = int(finishing.get("panels", 2))
+            _ph = h / _n
+            _ord = list(range(_n))              # 0 = bottom slice
+            if finishing.get("top_first"):
+                _ord.reverse()
+            for _k in _ord:
+                _np = dst.new_page(width=w, height=_ph)
+                _np.show_pdf_page(fitz.Rect(0, 0, w, _ph), src, pno,
+                                  clip=fitz.Rect(0, h - (_k + 1) * _ph, w, h - _k * _ph))
+
+        elif ftype == "slice_pages":
+            # Generic multi-page slicer (KFPX "Set trimbox for both pages" + "scale to WxH"):
+            # one output page per entry in "pages"; src_in = [x, y, w, h] in inches, PDF
+            # lower-left origin. Optional "out_in": [W, H] stretches every page to that
+            # size (>200" outputs use /UserUnit (raw page max 200in, as Callas) so Acrobat/RIP open them at full size).
+            _outs = finishing.get("out_in")
+            _pgsz = finishing.get("page_in")     # optional fixed page size (KFPX sheet), art placed via dst_in
+            for _pg in finishing.get("pages", []):
+                _sx, _sy, _sw, _sh = [float(v) * 72.0 for v in _pg["src_in"]]
+                _ow, _oh = _sw, _sh
+                _uu = 1.0
+                if _pgsz:
+                    _pw2, _ph2 = float(_pgsz[0]) * 72.0, float(_pgsz[1]) * 72.0
+                    _dx, _dy, _dw, _dh = [float(v) * 72.0 for v in _pg.get("dst_in", [(float(_pgsz[0]) - _pg["src_in"][2]) / 2, (float(_pgsz[1]) - _pg["src_in"][3]) / 2, _pg["src_in"][2], _pg["src_in"][3]])]
+                    _np = dst.new_page(width=_pw2, height=_ph2)
+                    _np.show_pdf_page(fitz.Rect(_dx, _ph2 - _dy - _dh, _dx + _dw, _ph2 - _dy), src, pno,
+                                      clip=fitz.Rect(_sx, h - _sy - _sh, _sx + _sw, h - _sy),
+                                      keep_proportion=False)
+                    continue
+                if _outs:
+                    _ow, _oh = float(_outs[0]) * 72.0, float(_outs[1]) * 72.0
+                    if max(_ow, _oh) > 200 * 72.0:
+                        _uu = max(_ow, _oh) / (200 * 72.0)   # raw page max 200" like Callas
+                        _ow, _oh = _ow / _uu, _oh / _uu
+                _np = dst.new_page(width=_ow, height=_oh)
+                _np.show_pdf_page(fitz.Rect(0, 0, _ow, _oh), src, pno,
+                                  clip=fitz.Rect(_sx, h - _sy - _sh, _sx + _sw, h - _sy),
+                                  keep_proportion=False)
+                if _uu != 1.0:
+                    dst.xref_set_key(_np.xref, "UserUnit", str(_uu))
+
         elif ftype == "thru_cut_only":
             new_page = dst.new_page(width=w, height=h)
             new_page.show_pdf_page(fitz.Rect(0, 0, w, h), src, pno)
@@ -3359,7 +3405,7 @@ def run_recipe(input_path: str, recipe: dict,
             tmp_pf,
             width_inch=check_sz["width_inch"],
             height_inch=check_sz["height_inch"],
-            tolerance_inch=check_sz.get("tolerance_inch", 0.1),
+            tolerance_inch=check_sz.get("tolerance_inch", 1.0),
             max_height_inch=check_sz.get("max_height_inch"),
         )
 

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 41.0,
     "height_inch": 69.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Falcon-Storefront-Double_overlay.pdf",

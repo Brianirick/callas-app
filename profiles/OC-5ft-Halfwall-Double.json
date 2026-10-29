@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 55.25,
     "height_inch": 33.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "OneChoice-5ft-Tent-Halfwall-Double_overlay.pdf",

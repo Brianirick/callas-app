@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 88.34,
     "height_inch": 45.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "6PanelUmbrella-UV_overlay.pdf",

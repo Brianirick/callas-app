@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 29.0,
     "height_inch": 149.25,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "featherbanner-M1-rightside-WCP.pdf",

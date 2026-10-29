@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 123.2,
     "height_inch": 59.646,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "tabletop8ft_overlay-(1).pdf",

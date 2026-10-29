@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 73.0,
     "height_inch": 65.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "StreetPoleBanner-36x60_overlay.pdf",

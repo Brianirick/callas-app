@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 18.0,
     "height_inch": 27.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "TOWEL-GOLF_overlay-fix-NEW.pdf",

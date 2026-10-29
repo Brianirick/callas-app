@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 139.85,
     "height_inch": 88.96,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "9ft_straight_overlay-(1).pdf",

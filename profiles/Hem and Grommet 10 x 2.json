@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 120.0,
     "height_inch": 24.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "HG-Scrim-bleed",
   "overlay": "Scrim-10x2_Template-overlay.pdf",

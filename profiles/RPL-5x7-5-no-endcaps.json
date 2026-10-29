@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 60.75,
     "height_inch": 88.75,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RPL-5x7-5ft-Straight-Nocaps_Template-overlay.pdf",

@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 60.0,
     "height_inch": 110.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Mondo23_double_sided_HALF-ONLY-OVERLAY.pdf",

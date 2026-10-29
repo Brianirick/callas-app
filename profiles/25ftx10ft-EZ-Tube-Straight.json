@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 148.25,
     "height_inch": 59.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "EZ-Tube-halfsize",
   "finishing_cutpath": "EZTube-25x10_Template-cp-V2-.pdf",

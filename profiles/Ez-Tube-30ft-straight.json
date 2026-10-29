@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 89.125,
     "height_inch": 22.625,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": "EZ-Tube-quartersize",
   "finishing_cutpath": "EZTube-30ft-Straight_Template-cutpatj-V2-.pdf",

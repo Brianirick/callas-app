@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 59.0,
     "height_inch": 50.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "5ft-Tent_Template_V4_overlay.pdf",

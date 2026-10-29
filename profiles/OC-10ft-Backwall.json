@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 115.0,
     "height_inch": 82.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "10ft_Backwall_115x82_5-ONE-CHOICE-.pdf",

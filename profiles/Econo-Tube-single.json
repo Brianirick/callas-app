@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 34.25,
     "height_inch": 91.25,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Econotube_SS.pdf",

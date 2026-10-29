@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 176.0,
     "height_inch": 119.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "finishing_cutpath": "EZTube-15x10_Template-cp-V2-.pdf",

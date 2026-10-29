@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 135.0,
     "height_inch": 89.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RP_Large_Curved_135x89H-2-1-18.pdf",

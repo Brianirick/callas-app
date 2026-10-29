@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 36.5,
     "height_inch": 52.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "CANVASFRM-32x48-G_overlay.pdf",

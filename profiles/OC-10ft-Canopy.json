@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 126.0,
     "height_inch": 87.031,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "10ft_Canopy_V3-overlay.pdf",

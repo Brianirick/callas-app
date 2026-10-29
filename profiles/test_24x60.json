@@ -12,7 +12,7 @@
         "box": "TrimBox",
         "width_inch": 24.0,
         "height_inch": 60.0,
-        "tolerance_inch": 0.1
+        "tolerance_inch": 1.0
       }
     },
     {

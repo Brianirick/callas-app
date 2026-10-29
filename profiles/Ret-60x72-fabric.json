@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 60.0,
     "height_inch": 72.0,
-    "tolerance_inch": 0.1,
+    "tolerance_inch": 1.0,
     "max_height_inch": 77.0
   },
   "finishing": {

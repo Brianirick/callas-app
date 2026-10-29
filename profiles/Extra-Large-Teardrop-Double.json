@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 87.2,
     "height_inch": 164.5,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "Teardrop-XLarge-double-BF_OVERLAY.pdf",

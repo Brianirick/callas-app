@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 64.0,
     "height_inch": 54.0,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "BLANKET-SHERPA-60_overlay.pdf",

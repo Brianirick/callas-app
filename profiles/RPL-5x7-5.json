@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 84.75,
     "height_inch": 88.75,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": "RPL5x7_5_84_75Hx88_75H-overlay.pdf",

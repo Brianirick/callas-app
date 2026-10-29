@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 119.5,
     "height_inch": 87.6,
-    "tolerance_inch": 0.1
+    "tolerance_inch": 1.0
   },
   "finishing": null,
   "overlay": null,

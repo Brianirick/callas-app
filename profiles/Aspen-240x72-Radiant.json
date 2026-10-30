@@ -1,14 +1,26 @@
 {
   "type": "recipe",
   "name": "Aspen-240x72-Radiant",
-  "description": "Auto-imported from QuickProof (Id=886)",
+  "description": "Aspen half-size upload: scaled 200% (UserUnit 2) with thru-cut border (from KFPX)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 120.5,
     "height_inch": 36.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 2.0,
+    "user_unit": true,
+    "outline_fonts": true,
+    "black_stroke": false,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 1.0
+    },
+    "remove_bleed": true
+  },
   "overlay": "240Wx72H-half-OVERLAY-Radiant.pdf",
   "cutpath": null
 }

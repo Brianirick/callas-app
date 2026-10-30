@@ -1,0 +1,18 @@
+{
+  "type": "recipe",
+  "name": "ScaleUp-10pct-to-1000pct",
+  "description": "Generic scale-up: file uploaded at 10% size is scaled up 1000% (x10) via UserUnit. Any size accepted.",
+  "preflight": null,
+  "check_size": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 10.0,
+    "user_unit": true,
+    "outline_fonts": true,
+    "black_stroke": false,
+    "remove_bleed": false
+  },
+  "overlay": null,
+  "cutpath": null
+}

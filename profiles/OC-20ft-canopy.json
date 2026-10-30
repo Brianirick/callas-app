@@ -1,14 +1,45 @@
 {
   "type": "recipe",
   "name": "OC-20ft-canopy",
-  "description": "Auto-imported from QuickProof (Id=643)",
+  "description": "OC 20ft canopy: 2 sections sliced from 176.75x43.85 upload and scaled 200% (119.6x87.8 and 233x87.2) with cut paths (from 20ft_IMPOSE KFPX)",
   "preflight": "75-75-75-100",
   "check_size": {
     "width_inch": 176.75,
     "height_inch": 43.85,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "outline_fonts": true,
+    "remove_bleed": true,
+    "pages": [
+      {
+        "src_in": [
+          117,
+          0,
+          59.8,
+          43.9
+        ],
+        "out_in": [
+          119.6,
+          87.8
+        ]
+      },
+      {
+        "src_in": [
+          0,
+          0,
+          116.5,
+          43.6
+        ],
+        "out_in": [
+          233,
+          87.2
+        ]
+      }
+    ]
+  },
   "overlay": "One_Choice_20ft_Classic_Dye-Sub_Template-OVERLAY.pdf",
-  "cutpath": "OC_20ft_Canopy_both_half_scale-CP.pdf"
+  "cutpath": null,
+  "impose_cutpath": "OC-20ft-Canopy_CP-2pg.pdf"
 }

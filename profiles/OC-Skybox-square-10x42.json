@@ -1,14 +1,45 @@
 {
   "type": "recipe",
   "name": "OC-Skybox-square-10x42",
-  "description": "Auto-imported from QuickProof (Id=653)",
+  "description": "OC Skybox square 10x42: 120x22.5 upload split into 2 sections (60x22.5) scaled 200% to 120x45 with cut path (from OC-10ftx42-Square-Finish KFPX)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 120.0,
     "height_inch": 22.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "outline_fonts": true,
+    "remove_bleed": true,
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          60,
+          22.5
+        ],
+        "out_in": [
+          120,
+          45
+        ]
+      },
+      {
+        "src_in": [
+          60,
+          0,
+          60,
+          22.5
+        ],
+        "out_in": [
+          120,
+          45
+        ]
+      }
+    ]
+  },
   "overlay": "OC-10ftx42in_Square-half-overlay.pdf",
-  "cutpath": "OC-Skybox-square-10x42-CP.pdf"
+  "cutpath": null,
+  "impose_cutpath": "OC-Skybox-square-10x42_CP-2pg.pdf"
 }

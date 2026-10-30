@@ -1,14 +1,29 @@
 {
   "type": "recipe",
   "name": "OC-10ft-Canopy",
-  "description": "Auto-imported from QuickProof (Id=639)",
+  "description": "OC 10ft canopy: centered crop to 118x86.25, clipped to tent shape with thru-cut outline (from KFPX 10FT_TENT_FINISH_NB_V2 mask-and-bleed)",
   "preflight": "75-75-75-100",
   "check_size": {
     "width_inch": 126.0,
     "height_inch": 87.031,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "outline_fonts": true,
+    "remove_bleed": true,
+    "pages": [
+      {
+        "src_in": [
+          4,
+          0.3905,
+          118,
+          86.25
+        ]
+      }
+    ]
+  },
   "overlay": "10ft_Canopy_V3-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "10ft_Canopy_V4-CP.pdf"
 }

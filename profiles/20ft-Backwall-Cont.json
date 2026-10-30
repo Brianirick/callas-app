@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "20ft-Backwall-Cont",
+  "description": "20ft custom backwall, continuous (half-size upload; proof KFPX scale not needed) - from QuickProof row (no finishing)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 115.79,
+    "height_inch": 44,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "CUSTOM_20ft_BACKWALL_CONT_halfsize-overlay.pdf",
+  "cutpath": "CUSTOM_20ft_BACKWALL_CONT_halfsize-cp.pdf"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "OC-10ft-Backwall-w-window-single-double",
+  "description": "One Choice 10ft backwall with window, single/double - from QuickProof row (no finishing)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 114,
+    "height_inch": 40,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "OC-CAS-10BW-WIN-G1_G2_-overlay.pdf",
+  "cutpath": "OC-CAS-10BW-WIN-G1_G2_-CP.pdf"
+}

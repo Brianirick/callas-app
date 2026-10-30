@@ -1,0 +1,45 @@
+{
+  "type": "recipe",
+  "name": "Falcon-Arch",
+  "description": "Falcon Arch: 133.5x86 upload at 100% split into 3 panels (44.5x82, 44.5x35, 44.5x82) with per-panel cut paths (from Falcon-Arch-Finish KFPX)",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 133.5,
+    "height_inch": 86.0,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "slice_pages",
+    "outline_fonts": true,
+    "remove_bleed": true,
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          44.5,
+          82
+        ]
+      },
+      {
+        "src_in": [
+          44.5,
+          51.375,
+          44.5,
+          35
+        ]
+      },
+      {
+        "src_in": [
+          89,
+          0,
+          44.5,
+          82
+        ]
+      }
+    ]
+  },
+  "overlay": "FAL-ARCH_Template-overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "FAL-ARCH_CP-3pg.pdf"
+}

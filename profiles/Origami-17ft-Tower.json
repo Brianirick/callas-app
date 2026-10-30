@@ -1,0 +1,22 @@
+{
+  "type": "recipe",
+  "name": "Origami-17ft-Tower",
+  "description": "Origami 17ft Tower: half-size upload (23.5x103.25) scaled 200% to 47x206.5 (from Origami-Tower-FINISH KFPX)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 23.5,
+    "height_inch": 103.25,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 2.0,
+    "user_unit": true,
+    "outline_fonts": true,
+    "black_stroke": false,
+    "remove_bleed": true
+  },
+  "overlay": "ORIGAMI-TOWER_Template-overlay.pdf",
+  "cutpath": null
+}

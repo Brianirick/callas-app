@@ -3049,6 +3049,7 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
             _outs = finishing.get("out_in")
             _pgsz = finishing.get("page_in")     # optional fixed page size (KFPX sheet), art placed via dst_in
             for _pg in finishing.get("pages", []):
+                _outs = _pg.get("out_in") or finishing.get("out_in")   # per-page scale-up override
                 _sx, _sy, _sw, _sh = [float(v) * 72.0 for v in _pg["src_in"]]
                 _ow, _oh = _sw, _sh
                 _uu = 1.0

@@ -1,14 +1,26 @@
 {
   "type": "recipe",
   "name": "Vail-30x9-181x55",
-  "description": "Auto-imported from QuickProof (Id=1102)",
+  "description": "Vail: 200% scale-up with thru-cut border (from KFPX); upload arrives at half size",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 181.0,
     "height_inch": 55.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "split_panels",
+    "panels": 1,
+    "scale": 2.0,
+    "user_unit": true,
+    "outline_fonts": true,
+    "black_stroke": false,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 2.0
+    },
+    "remove_bleed": true
+  },
   "overlay": "VAIL-180D-30x9_Template-overlay.pdf",
   "cutpath": "Vail-30x9-181x55-CP.pdf"
 }

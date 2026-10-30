@@ -6,7 +6,7 @@
   "check_size": {
     "width_inch": 73.5,
     "height_inch": 95,
-    "tolerance_inch": 1.0
+    "tolerance_inch": 0.5
   },
   "finishing": "EZ-ARW-6ft-impose",
   "finishing_cutpath": "EZT-ARW_Template-72126-cp.pdf",

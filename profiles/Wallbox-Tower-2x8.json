@@ -1,14 +1,37 @@
 {
   "type": "recipe",
   "name": "Wallbox-Tower-2x8",
-  "description": "Auto-imported from QuickProof (Id=1186)",
+  "description": "Wallbox Tower 2x8: 87x96.5 upload split into 2 panels (43.5x96.5) with thru-cut (same layout as 3x8 Wallbox-Tower-3x8-finish KFPX)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 87.0,
     "height_inch": 96.5,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "slice_pages",
+    "outline_fonts": true,
+    "remove_bleed": true,
+    "pages": [
+      {
+        "src_in": [
+          0,
+          0,
+          43.5,
+          96.5
+        ]
+      },
+      {
+        "src_in": [
+          43.5,
+          0,
+          43.5,
+          96.5
+        ]
+      }
+    ]
+  },
   "overlay": "WB-TOWER-2x8_Template-overlay.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "WB-TOWER-2x8_CP-2pg.pdf"
 }

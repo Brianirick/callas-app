@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "5ft-round-throw",
+  "description": "Round throw - from QuickProof row (no finishing)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 98,
+    "height_inch": 98,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "RTTHRW-60_Template-overlay.pdf",
+  "cutpath": "RTTHRW-60_Template-cp-v2.pdf"
+}

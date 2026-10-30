@@ -1,0 +1,71 @@
+{
+  "type": "recipe",
+  "name": "Casita-Mesa-Top",
+  "description": "Casita Mesa Top: 177.25x96.25 upload imposed onto a 98.5x146.75 sheet (center rotated 270, left rotated 90, right rotated 270) with cut path (from Casita-Mesa-Top-FINISH KFPX)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 177.25,
+    "height_inch": 96.25,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "impose",
+    "output_size_in": [
+      98.5,
+      146.75
+    ],
+    "panels": [
+      {
+        "name": "left",
+        "src_in": [
+          0,
+          32.75,
+          33,
+          32.75
+        ],
+        "dst_in": [
+          0.325,
+          0.6,
+          32.75,
+          33
+        ],
+        "rotate": 90
+      },
+      {
+        "name": "right",
+        "src_in": [
+          144.25,
+          32.75,
+          33,
+          32.75
+        ],
+        "dst_in": [
+          35.125,
+          0.6,
+          32.75,
+          33
+        ],
+        "rotate": 270
+      },
+      {
+        "name": "center",
+        "src_in": [
+          33,
+          0,
+          111.25,
+          96.25
+        ],
+        "dst_in": [
+          1.25,
+          34.725,
+          96.25,
+          111.25
+        ],
+        "rotate": 270
+      }
+    ]
+  },
+  "overlay": "CAS-MESA_Template-overlay.pdf",
+  "cutpath": null,
+  "impose_cutpath": "CAS-MESA_Template_CP-IMPOSE.pdf"
+}

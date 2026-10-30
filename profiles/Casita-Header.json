@@ -1,0 +1,14 @@
+{
+  "type": "recipe",
+  "name": "Casita-Header",
+  "description": "Auto-imported from QuickProof",
+  "preflight": "75-75-75-100",
+  "check_size": {
+    "width_inch": 118.0,
+    "height_inch": 31.5,
+    "tolerance_inch": 1.0
+  },
+  "finishing": null,
+  "overlay": "CAS-HDR_Template-v2-overlay.pdf",
+  "cutpath": "CAS-HDR_Template-v2-CP.pdf"
+}

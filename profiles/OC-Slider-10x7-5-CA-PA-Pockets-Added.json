@@ -1,0 +1,25 @@
+{
+  "type": "recipe",
+  "name": "OC-Slider-10x7-5-CA-PA-Pockets-Added",
+  "description": "OC Slider 10x7.5, pole pockets on all sides: +4.5in top and bottom, black stroke at trim, thru-cut around the enlarged page (from SLD_4_2_TOP_BTTM_FINISH KFPX)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 120.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 4.5,
+    "bottom_inch": 4.5,
+    "fold_lines": false,
+    "trim_stroke": 0.25,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    },
+    "cut_full_page": true
+  },
+  "overlay": "OC-Slider-10x75_Template-overlay.pdf",
+  "cutpath": null
+}

@@ -1,0 +1,25 @@
+{
+  "type": "recipe",
+  "name": "OC-Slider-8x7-5-Cutpath-only",
+  "description": "OC Slider 8x7.5, cut path only (top/bottom pockets handled by the file): black stroke at trim and thru-cut at page edge (from SLD_4_2_TOP_BTTM_FINISH KFPX)",
+  "preflight": "60-50-50-100",
+  "check_size": {
+    "width_inch": 96.0,
+    "height_inch": 90.0,
+    "tolerance_inch": 1.0
+  },
+  "finishing": {
+    "type": "hem_top_bottom",
+    "top_inch": 0.0,
+    "bottom_inch": 0.0,
+    "fold_lines": false,
+    "trim_stroke": 0.25,
+    "cut_spot": {
+      "name": "thru-cut",
+      "width_pt": 0.25
+    },
+    "cut_full_page": true
+  },
+  "overlay": "OC-Slider-8x75_Template-overlay.pdf",
+  "cutpath": null
+}

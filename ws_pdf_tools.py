@@ -2984,11 +2984,16 @@ def apply_finishing(input_path: str, output_path: str, finishing: dict) -> None:
                 new_page.draw_line(fitz.Point(0, TOP_PT + h), fitz.Point(w, TOP_PT + h),
                                    color=BLACK, width=0.75, dashes="[6 4] 0")
 
+            if finishing.get("trim_stroke"):
+                # thin black stroke on the original page (TrimBox) edge, inside the hem bands
+                new_page.draw_rect(fitz.Rect(0, TOP_PT, w, TOP_PT + h), color=BLACK,
+                                   width=float(finishing["trim_stroke"]))
+
             if finishing.get("cut_spot"):
                 # Cutter line = Separation spot (e.g. "BleedBox") stroked around the
                 # ARTWORK area (page minus the added hem band), added after save.
                 _cy0 = 0.0   # cut around the whole finished page: art + bleed + leader panel
-                _cut_rects.append((0.0, _cy0, w, new_h - TOP_PT))
+                _cut_rects.append((0.0, _cy0, w, new_h if finishing.get("cut_full_page") else new_h - TOP_PT))
             else:
                 # Thru-cut line at outer edge
                 new_page.draw_rect(fitz.Rect(0.5, 0.5, w - 0.5, new_h - 0.5),

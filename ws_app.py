@@ -583,6 +583,13 @@ if page == "run":
                                         st.write(f"✅ Impose cutpath fetched: {_icp}")
                                     else:
                                         st.write(f"⚠️ Could not fetch impose cutpath from S3: {_icp}")
+                                _fcp = profile_data.get("finishing_cutpath") or ""
+                                if _fcp:
+                                    _fcp_local = fetch_pdf_from_s3(_fcp, "cutpath")
+                                    if _fcp_local:
+                                        st.write(f"✅ Finishing cutpath fetched: {_fcp}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch finishing cutpath from S3: {_fcp}")
                                 result = ws.run_recipe(input_path, profile_data,
                                                        profiles_dir=str(PROFILES_DIR),
                                                        overlays_dir=str(OVERLAYS_DIR),

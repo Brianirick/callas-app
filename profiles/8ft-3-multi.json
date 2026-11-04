@@ -1,14 +1,15 @@
 {
   "type": "recipe",
   "name": "8ft-3-multi",
-  "description": "QuickProof product '8ft-3-multi' - uses recipe '8ft-3sided-multi-table-throw'",
+  "description": "QuickProof product '8ft-3-multi' - 5-piece imposition with thru-cut path (from 8ft-3 MULTI-MEXICO-ONLY KFPX layout)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 157.8,
     "height_inch": 87.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": "8ft-3-MULTI-5pc",
   "overlay": "8ft_3-sided_Stretch_Table_Throw_overlay-v2.pdf",
-  "cutpath": "8ft_3-sided_Stretch_Table_Throw-CP--.pdf"
+  "cutpath": "8ft_3-sided_Stretch_Table_Throw-CP--.pdf",
+  "impose_cutpath": "8ft-3-MX-5pc-CP-FINAL-blk.pdf"
 }

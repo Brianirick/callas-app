@@ -1,14 +1,15 @@
 {
   "type": "recipe",
   "name": "RPL-15x10",
-  "description": "Auto-imported from QuickProof (Id=727)",
+  "description": "QuickProof product 'RPL-15x10' - half-size art: outline fonts, 200% via UserUnit, thru-cut path (from KFPX)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 100.375,
     "height_inch": 59.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": "EZ-Tube-halfsize",
   "overlay": "RPL_15x10_200_752_x_118--Half-OVERLAY.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "finishing_cutpath": "RPL_15x10_wEndcaps_CP_V2_.pdf"
 }

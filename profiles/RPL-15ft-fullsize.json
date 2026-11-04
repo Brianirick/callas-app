@@ -1,0 +1,10 @@
+{
+  "type": "finishing",
+  "name": "RPL-15ft-fullsize",
+  "description": "RPL 15ft straight at full size (199.75x89): remove bleed, outline fonts, mediabox to origin. Thru-cut stamped after via recipe impose_cutpath (full-size CP).",
+  "steps": [
+    {"op": "remove_bleed"},
+    {"op": "outline_fonts"},
+    {"op": "set_mediabox_to_origin"}
+  ]
+}

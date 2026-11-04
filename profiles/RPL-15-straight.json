@@ -1,14 +1,15 @@
 {
   "type": "recipe",
   "name": "RPL-15-straight",
-  "description": "Auto-imported from QuickProof (Id=904)",
+  "description": "Full-size art 199.75x89, no scaling: remove bleed, outline fonts, thru-cut stamped (full-size CP from KFPX RPL_15FT_FINISH_V3)",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 199.75,
     "height_inch": 89.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": "RPL-15ft-fullsize",
   "overlay": "RPL_15ft_Straight_199.75x89H.pdf",
-  "cutpath": null
+  "cutpath": null,
+  "impose_cutpath": "RPL_15ft_Straight_wEndcaps_FULLSIZE_CP.pdf"
 }

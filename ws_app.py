@@ -1590,6 +1590,12 @@ elif page == "build":
                             fetch_pdf_from_s3(_ov, "overlay")
                         if _cp:
                             fetch_pdf_from_s3(_cp, "cutpath")
+                        _tf = test_recipe.get("finishing")
+                        for _x in (test_recipe.get("impose_cutpath"), test_recipe.get("finishing_cutpath"),
+                                   (_tf.get("cutpath") if isinstance(_tf, dict) else None),
+                                   (test_recipe.get("labels") or {}).get("cutpath")):
+                            if _x:
+                                fetch_pdf_from_s3(_x, "cutpath")
                         result = ws.run_recipe(t_in, test_recipe,
                                                profiles_dir=str(PROFILES_DIR),
                                                overlays_dir=str(OVERLAYS_DIR),

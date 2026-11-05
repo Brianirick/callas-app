@@ -93,7 +93,7 @@ def _fetch_cutpath(name: str) -> None:
     """Download a recipe cutpath from S3 into CUTPATHS_DIR (cached)."""
     if not name or (CUTPATHS_DIR / name).exists():
         return
-    CUTPATHS_DIR.mkdir(parents=True, exist_ok=True)
+    (CUTPATHS_DIR / name).parent.mkdir(parents=True, exist_ok=True)   # names may include a subfolder
     try:
         boto3.client("s3").download_file(S3_BUCKET, S3_CUTPATH_PREFIX + name,
                                          str(CUTPATHS_DIR / name))

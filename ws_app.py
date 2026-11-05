@@ -304,6 +304,7 @@ def fetch_pdf_from_s3(filename: str, kind: str) -> Path | None:
     local_dir = OVERLAYS_DIR if kind == "overlay" else CUTPATHS_DIR
     local_dir.mkdir(parents=True, exist_ok=True)
     local_path = local_dir / filename
+    local_path.parent.mkdir(parents=True, exist_ok=True)   # names may include a subfolder
     if local_path.exists():
         return local_path
     prefix = S3_OVERLAY_PREFIX if kind == "overlay" else S3_CUTPATH_PREFIX
@@ -583,6 +584,15 @@ if page == "run":
                                         st.write(f"✅ Impose cutpath fetched: {_icp}")
                                     else:
                                         st.write(f"⚠️ Could not fetch impose cutpath from S3: {_icp}")
+                                _fin_d = profile_data.get("finishing")
+                                _lcp = ((_fin_d.get("cutpath") if isinstance(_fin_d, dict) else "")
+                                        or (profile_data.get("labels") or {}).get("cutpath") or "")
+                                if _lcp:
+                                    _lcp_local = fetch_pdf_from_s3(_lcp, "cutpath")
+                                    if _lcp_local:
+                                        st.write(f"✅ Label cutpath fetched: {_lcp}")
+                                    else:
+                                        st.write(f"⚠️ Could not fetch label cutpath from S3: {_lcp}")
                                 _fcp = profile_data.get("finishing_cutpath") or ""
                                 if _fcp:
                                     _fcp_local = fetch_pdf_from_s3(_fcp, "cutpath")

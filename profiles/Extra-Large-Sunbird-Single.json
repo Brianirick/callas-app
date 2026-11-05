@@ -8,7 +8,21 @@
     "height_inch": 159.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerLeft",
+        "x_pt": 0.0,
+        "y_pt": 216.0,
+        "rotation": 90,
+        "size": 18.0
+      }
+    ],
+    "cutpath": "XL_SunbirdSingle-CP-v2-fix.pdf",
+    "cutpath_placement": "CenterActual"
+  },
   "overlay": "XL_SunbirdSingle-O.pdf",
   "cutpath": "XL_SunbirdSingle-CP.pdf"
 }

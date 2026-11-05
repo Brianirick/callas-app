@@ -8,7 +8,28 @@
     "height_inch": 190.0,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerRight",
+        "x_pt": -20.0,
+        "y_pt": 180.0,
+        "rotation": 90,
+        "size": 28.0
+      },
+      {
+        "anchor": "LowerLeft",
+        "x_pt": 20.0,
+        "y_pt": 180.0,
+        "rotation": 90,
+        "size": 28.0
+      }
+    ],
+    "cutpath": "Feather-ExtraLarge-double-BF_CutPath.pdf",
+    "cutpath_placement": "CenterActual"
+  },
   "overlay": "Feather-ExtraLarge-double-BF_OVERLAY.pdf",
   "cutpath": "Feather-ExtraLarge-double-BF_CUTPATH.pdf"
 }

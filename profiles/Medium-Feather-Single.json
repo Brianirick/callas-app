@@ -8,7 +8,21 @@
     "height_inch": 150.6,
     "tolerance_inch": 1.0
   },
-  "finishing": null,
+  "finishing": {
+    "type": "flag_label",
+    "placeholder": "ORDER #00000",
+    "labels": [
+      {
+        "anchor": "LowerLeft",
+        "x_pt": 10.0,
+        "y_pt": 220.0,
+        "rotation": 90,
+        "size": 36.0
+      }
+    ],
+    "cutpath": "feather banner-M1-WCP-F.pdf",
+    "cutpath_placement": "CenterActual"
+  },
   "overlay": "featherbanner-M1-WCP.pdf",
   "cutpath": "feather banner-M1-FLAT-WCP-F.pdf"
 }

@@ -2094,6 +2094,14 @@ def stamp_overlay(input_path: str, output_path: str,
             ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
             x0 = target.x0 + (target.width - ow) / 2
             target = fitz.Rect(x0, target.y0, x0 + ow, target.y0 + oh)
+        elif placement == "CenterActual":
+            # Actual size (no scaling), centred on the page both ways -- what a Callas
+            # overlay with PLACEMENT=4 and no scale does. The overlay may be larger or
+            # smaller than the page; it is not fitted.
+            ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
+            cx = (target.x0 + target.x1) / 2
+            cy = (target.y0 + target.y1) / 2
+            target = fitz.Rect(cx - ow / 2, cy - oh / 2, cx + ow / 2, cy + oh / 2)
         elif placement == "TopCenter":
             # show_pdf_page fits + centres inside target; pin the fitted box to the top
             ow, oh = over[ov_idx].rect.width, over[ov_idx].rect.height
@@ -3458,7 +3466,8 @@ def run_recipe(input_path: str, recipe: dict,
             if _fin_cp_path.exists():
                 _step(f"✂️ Stamping finishing cutpath: {_fin_cp_name}…")
                 tmp_pf_with_cp = tempfile.mktemp(suffix=".pdf")
-                stamp_overlay(tmp_pf, tmp_pf_with_cp, str(_fin_cp_path), opacity=1.0)
+                stamp_overlay(tmp_pf, tmp_pf_with_cp, str(_fin_cp_path), opacity=1.0,
+                              placement=_lbl_cfg.get("cutpath_placement") or "Center")
                 tmp_pf = tmp_pf_with_cp
             else:
                 _step(f"⚠️ Finishing cutpath not found: {_fin_cp_name}")

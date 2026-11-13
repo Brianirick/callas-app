@@ -1,7 +1,7 @@
 {
   "type": "recipe",
   "name": "8ft-4sided-multi-table-throw-5pc",
-  "description": "8ft 4-Sided Multi Stretch Table Throw \u2014 5-piece",
+  "description": "8ft 4-Sided Multi Stretch Table Throw — 5-piece",
   "preflight": "60-50-50-100",
   "check_size": {
     "width_inch": 158,
@@ -11,5 +11,6 @@
   "finishing": "8ft-4-MULTI-5pc",
   "overlay": null,
   "cutpath": null,
-  "impose_cutpath": "8ft-4sided-MultiStretchTablethrow_5pc_IMPOSE_CP.pdf"
+  "impose_cutpath": "8ft-4sided-MultiStretchTablethrow_5pc_IMPOSE_CP.pdf",
+  "mesh": "multi-8ft-4"
 }

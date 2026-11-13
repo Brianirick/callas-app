@@ -11,5 +11,6 @@
   "finishing": "6ft-4-MULTI-5pc",
   "overlay": null,
   "cutpath": null,
-  "impose_cutpath": "6ft-4-multi-5pc-bleed-cp-blk.pdf"
+  "impose_cutpath": "6ft-4-multi-5pc-bleed-cp-blk.pdf",
+  "mesh": "multi-6ft-4"
 }

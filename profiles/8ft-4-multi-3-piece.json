@@ -11,5 +11,6 @@
   "finishing": "8ft-4-MULTI-3pc",
   "overlay": null,
   "cutpath": null,
-  "impose_cutpath": "multi-8ft-4-cutpath-blk.pdf"
+  "impose_cutpath": "multi-8ft-4-cutpath-blk.pdf",
+  "mesh": "multi-8ft-4"
 }

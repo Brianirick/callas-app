@@ -398,7 +398,27 @@ def recipe_download_buttons(result: dict, stem: str):
 
 VIEWER3D_DIR = Path(__file__).parent / "viewer3d"
 MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
+    "throw-4ft-3": "64 × 28 × 38 in",
+    "throw-4ft-4": "64 × 29 × 43 in",
+    "throw-6ft-3": "91 × 28 × 38 in",
+    "throw-6ft-4": "95 × 29 × 46 in",
+    "throw-8ft-3": "110 × 28 × 38 in",
     "throw-8ft-4": "109 × 29 × 43 in",
+    "fitted-4ft-3-24": "51 × 31 × 27 in",
+    "fitted-4ft-3-30": "49 × 32 × 31 in",
+    "fitted-4ft-4-24": "51 × 31 × 27 in",
+    "fitted-4ft-4-30": "49 × 32 × 31 in",
+    "fitted-6ft-3": "73 × 30 × 30 in",
+    "fitted-6ft-4": "73 × 30 × 30 in",
+    "fitted-8ft-3": "96 × 30 × 30 in",
+    "multi-4ft-3-24": "50 × 31 × 26 in",
+    "multi-4ft-3-30": "50 × 31 × 31 in",
+    "multi-4ft-4-24": "50 × 31 × 27 in",
+    "multi-4ft-4-30": "50 × 31 × 31 in",
+    "multi-6ft-3": "72 × 31 × 31 in",
+    "multi-6ft-4": "72 × 31 × 31 in",
+    "multi-8ft-3": "97 × 31 × 31 in",
+    "multi-8ft-4": "97 × 31 × 31 in",
 }
 
 

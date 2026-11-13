@@ -11,5 +11,6 @@
   "finishing": "8ft-4-MULTI-5pc",
   "overlay": "8ft_4-sided_Stretch_Table_Throw-overlay-V2-.pdf",
   "cutpath": "8ft_4-sided_Stretch_Table_Throw-CP--.pdf",
-  "impose_cutpath": "8ft-4-multi-cp-12-8-22-blk.pdf"
+  "impose_cutpath": "8ft-4-multi-cp-12-8-22-blk.pdf",
+  "mesh": "multi-8ft-4"
 }

@@ -398,6 +398,7 @@ def recipe_download_buttons(result: dict, stem: str):
 
 VIEWER3D_DIR = Path(__file__).parent / "viewer3d"
 MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
+    "tent-10ft": "121 × 121 × 132 in",
     "throw-4ft-3": "64 × 28 × 38 in",
     "throw-4ft-4": "64 × 29 × 43 in",
     "throw-6ft-3": "91 × 28 × 38 in",
@@ -422,42 +423,74 @@ MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
 }
 
 
-def _proof_data_uri(path: str, max_edge: int = 2048) -> str:
+def _proof_data_uri(path: str, max_edge: int = 2048, crop=None) -> str:
     """Downscale the proof JPEG and return it as a data URI for the 3D viewer."""
     import base64, io
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
     im = Image.open(path).convert("RGB")
+    if crop:  # (left, top, right, bottom) as fractions of the page image
+        w, h = im.size
+        im = im.crop((int(crop[0] * w), int(crop[1] * h), int(crop[2] * w), int(crop[3] * h)))
     im.thumbnail((max_edge, max_edge))
     buf = io.BytesIO()
     im.save(buf, "JPEG", quality=88)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
-def render_3d_viewer(mesh: str, proof_path: str, label: str):
-    import base64, streamlit.components.v1 as components
+def _tent_side_map(n_pages: int) -> dict:
+    """Which input page goes on which side of the tent (page order: Front, Right, Back, Left)."""
+    if n_pages >= 4:
+        return {"front": 0, "right": 1, "back": 2, "left": 3}
+    if n_pages == 2:   # page 1 = Front + Back, page 2 = Right + Left
+        return {"front": 0, "back": 0, "right": 1, "left": 1}
+    return {"front": 0, "right": 0, "back": 0, "left": 0}   # one page = same art on all sides
+
+
+def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
+    import base64, json as _json, streamlit.components.v1 as components
+    profile = profile or {}
+    proofs = proofs if isinstance(proofs, list) else [proofs]
+    proofs = [p for p in proofs if p and os.path.exists(p)]
     glb = VIEWER3D_DIR / f"{mesh}.glb"
-    tpl = VIEWER3D_DIR / "viewer_template.html"
-    if not glb.exists() or not tpl.exists():
+    is_tent = mesh.startswith("tent")
+    tpl = VIEWER3D_DIR / ("viewer_tent_template.html" if is_tent else "viewer_template.html")
+    if not glb.exists() or not tpl.exists() or not proofs:
         st.warning(f"3D model not found: {mesh}")
         return
+    glb_uri = "data:model/gltf-binary;base64," + base64.b64encode(glb.read_bytes()).decode()
     html = (tpl.read_text(encoding="utf-8")
-            .replace("__GLB__", "data:model/gltf-binary;base64," + base64.b64encode(glb.read_bytes()).decode())
-            .replace("__JPG__", _proof_data_uri(proof_path))
+            .replace("__GLB__", glb_uri)
             .replace("__PNAME__", label)
             .replace("__DIMS__", MESH_INFO.get(mesh, "")))
+    if is_tent:
+        crop = None
+        cin = profile.get("mesh_crop_in")          # [x, y_from_bottom, w, h] inches within the page
+        cs = profile.get("check_size") or {}
+        if cin and cs.get("width_inch") and cs.get("height_inch"):
+            pw, ph = float(cs["width_inch"]), float(cs["height_inch"])
+            x, y, w, h = [float(v) for v in cin]
+            crop = (x / pw, 1 - (y + h) / ph, (x + w) / pw, 1 - y / ph)
+        page_uris = {}
+        sides = {}
+        for side, i in _tent_side_map(len(proofs)).items():
+            if i not in page_uris:
+                page_uris[i] = _proof_data_uri(proofs[i], crop=crop)
+            sides[side] = page_uris[i]
+        html = html.replace("__SIDES__", _json.dumps(sides))
+    else:
+        html = html.replace("__JPG__", _proof_data_uri(proofs[0]))
     components.html(html, height=700, scrolling=False)
 
 
 if hasattr(st, "dialog"):
     @st.dialog("3D Proof", width="large")
-    def show_3d_dialog(mesh: str, proof_path: str, label: str):
-        render_3d_viewer(mesh, proof_path, label)
+    def show_3d_dialog(mesh: str, proofs, label: str, profile: dict = None):
+        render_3d_viewer(mesh, proofs, label, profile)
 else:
-    def show_3d_dialog(mesh: str, proof_path: str, label: str):
+    def show_3d_dialog(mesh: str, proofs, label: str, profile: dict = None):
         with st.expander("3D Proof", expanded=True):
-            render_3d_viewer(mesh, proof_path, label)
-
+            render_3d_viewer(mesh, proofs, label, profile)
 
 
 def success_banner(operation: str):
@@ -712,10 +745,10 @@ if page == "run":
                     recipe_download_buttons(result, st.session_state.run_stem)
                     _mesh = profile_data.get("mesh")
                     _pj = result.get("original_jpeg")
-                    _pj = _pj[0] if isinstance(_pj, list) and _pj else _pj
-                    if _mesh and _pj and os.path.exists(_pj):
+                    _pj = _pj if isinstance(_pj, list) else ([_pj] if _pj else [])
+                    if _mesh and any(p and os.path.exists(p) for p in _pj):
                         if st.button("🧊  3D Proof", use_container_width=True, key="btn_3d_proof"):
-                            show_3d_dialog(_mesh, _pj, st.session_state.run_stem or profile_name)
+                            show_3d_dialog(_mesh, _pj, st.session_state.run_stem or profile_name, profile_data)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

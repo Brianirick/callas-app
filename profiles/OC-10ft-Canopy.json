@@ -25,5 +25,12 @@
   },
   "overlay": "10ft_Canopy_V3-overlay.pdf",
   "cutpath": null,
-  "impose_cutpath": "10ft_Canopy_V4-CP.pdf"
+  "impose_cutpath": "10ft_Canopy_V4-CP.pdf",
+  "mesh": "tent-10ft",
+  "mesh_crop_in": [
+    4,
+    0.3905,
+    118,
+    86.25
+  ]
 }

@@ -396,6 +396,50 @@ def recipe_download_buttons(result: dict, stem: str):
                 col_idx += 1
 
 
+VIEWER3D_DIR = Path(__file__).parent / "viewer3d"
+MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
+    "throw-8ft-4": "109 × 29 × 43 in",
+}
+
+
+def _proof_data_uri(path: str, max_edge: int = 2048) -> str:
+    """Downscale the proof JPEG and return it as a data URI for the 3D viewer."""
+    import base64, io
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = None
+    im = Image.open(path).convert("RGB")
+    im.thumbnail((max_edge, max_edge))
+    buf = io.BytesIO()
+    im.save(buf, "JPEG", quality=88)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def render_3d_viewer(mesh: str, proof_path: str, label: str):
+    import base64, streamlit.components.v1 as components
+    glb = VIEWER3D_DIR / f"{mesh}.glb"
+    tpl = VIEWER3D_DIR / "viewer_template.html"
+    if not glb.exists() or not tpl.exists():
+        st.warning(f"3D model not found: {mesh}")
+        return
+    html = (tpl.read_text(encoding="utf-8")
+            .replace("__GLB__", "data:model/gltf-binary;base64," + base64.b64encode(glb.read_bytes()).decode())
+            .replace("__JPG__", _proof_data_uri(proof_path))
+            .replace("__PNAME__", label)
+            .replace("__DIMS__", MESH_INFO.get(mesh, "")))
+    components.html(html, height=700, scrolling=False)
+
+
+if hasattr(st, "dialog"):
+    @st.dialog("3D Proof", width="large")
+    def show_3d_dialog(mesh: str, proof_path: str, label: str):
+        render_3d_viewer(mesh, proof_path, label)
+else:
+    def show_3d_dialog(mesh: str, proof_path: str, label: str):
+        with st.expander("3D Proof", expanded=True):
+            render_3d_viewer(mesh, proof_path, label)
+
+
+
 def success_banner(operation: str):
     st.markdown(f"""
     <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
@@ -646,6 +690,12 @@ if page == "run":
                                            + " — these areas will print. Remove template elements before uploading if unintended.")
                     success_banner(f"{profile_name} complete")
                     recipe_download_buttons(result, st.session_state.run_stem)
+                    _mesh = profile_data.get("mesh")
+                    _pj = result.get("original_jpeg")
+                    _pj = _pj[0] if isinstance(_pj, list) and _pj else _pj
+                    if _mesh and _pj and os.path.exists(_pj):
+                        if st.button("🧊  3D Proof", use_container_width=True, key="btn_3d_proof"):
+                            show_3d_dialog(_mesh, _pj, st.session_state.run_stem or profile_name)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

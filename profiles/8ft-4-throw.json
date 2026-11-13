@@ -10,5 +10,6 @@
   },
   "finishing": null,
   "overlay": "8ftTablethrowFull-overlay-v1.pdf",
-  "cutpath": "8ft_4-sided-custom-CutPath-CP-V2.pdf"
+  "cutpath": "8ft_4-sided-custom-CutPath-CP-V2.pdf",
+  "mesh": "throw-8ft-4"
 }

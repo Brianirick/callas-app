@@ -424,7 +424,30 @@ MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
 }
 
 
-def _proof_data_uri(path: str, max_edge: int = 2048, crop=None) -> str:
+def _apply_gap_fill(im, npz_path):
+    """Extend each UV panel's edge colors into the empty gaps between panels (uses a precomputed
+    nearest-edge map shipped with the mesh), so seams/rims never sample the white gap."""
+    import numpy as np
+    z = np.load(npz_path)
+    S = int(z["S"])
+    gap = np.unpackbits(z["gap"])[:S * S].reshape(S, S).astype(bool)
+    W, H = im.size
+    a = np.asarray(im.convert("RGB")).copy()
+    ys, xs = np.nonzero(gap)
+    sy, sx = z["iy"].astype(np.int64), z["ix"].astype(np.int64)
+    fy, fx = H / S, W / S
+    for oy in range(int(np.ceil(fy))):
+        for ox in range(int(np.ceil(fx))):
+            dy = np.minimum((ys * fy).astype(np.int64) + oy, H - 1)
+            dx = np.minimum((xs * fx).astype(np.int64) + ox, W - 1)
+            ssy = np.minimum((sy * fy + fy / 2).astype(np.int64), H - 1)
+            ssx = np.minimum((sx * fx + fx / 2).astype(np.int64), W - 1)
+            a[dy, dx] = a[ssy, ssx]
+    from PIL import Image
+    return Image.fromarray(a)
+
+
+def _proof_data_uri(path: str, max_edge: int = 2048, crop=None, fill=None) -> str:
     """Downscale the proof JPEG and return it as a data URI for the 3D viewer."""
     import base64, io
     from PIL import Image
@@ -434,6 +457,11 @@ def _proof_data_uri(path: str, max_edge: int = 2048, crop=None) -> str:
         w, h = im.size
         im = im.crop((int(crop[0] * w), int(crop[1] * h), int(crop[2] * w), int(crop[3] * h)))
     im.thumbnail((max_edge, max_edge))
+    if fill and os.path.exists(fill):
+        try:
+            im = _apply_gap_fill(im, fill)
+        except Exception:
+            pass
     buf = io.BytesIO()
     im.save(buf, "JPEG", quality=88)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
@@ -553,7 +581,7 @@ def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
             sides[side] = _tent_texture_uri(proofs[i], None, side, page_h_in=float(cs.get('height_inch') or 87.031))
         html = html.replace("__SIDES__", _json.dumps(sides))
     else:
-        html = html.replace("__JPG__", _proof_data_uri(proofs[0]))
+        html = html.replace("__JPG__", _proof_data_uri(proofs[0], fill=str(VIEWER3D_DIR / f"{mesh}.fill.npz")))
     components.html(html, height=700, scrolling=False)
 
 

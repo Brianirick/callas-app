@@ -447,26 +447,43 @@ TENT_UV = {
 }
 
 
-def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048, page_h_in: float = 87.031) -> str:
-    """Place the side artwork so its valance band (bottom valance_in) lands exactly on the
-    model's valance quad and the peak art starts at the valance/peak seam."""
+def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048,
+                      page_h_in: float = 87.031) -> str:
+    """Build the UV texture for one tent side from its flat 126 x 87 in proof JPEG.
+    Valance (bottom 13.75 in, x 2.5..123.5 in) goes on the valance quad; the peak's blue print
+    triangle is stretched row-by-row so it exactly fills the model's peak triangle."""
     import base64, io
+    import numpy as np
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
     full = Image.open(path).convert("RGB")
     W, H = full.size
     ppi = W / 126.0
-    vh = int(round(valance_in * ppi))                       # valance rows (bottom of page)
-    # Valance: art x 4..122 in fills the full texture width (looks right on the model)
-    val = full.crop((int(4 * ppi), H - vh, int(122 * ppi), H))
-    # Peak: blue triangle spans x ~1.4..124.6 in at its base; map that to the peak's UV base width
-    peak = full.crop((int(1.4 * ppi), 0, int(124.6 * ppi), H - vh))
+    vh = int(round(valance_in * ppi))
     u0, u1, vb, vs, vt = TENT_UV[side]
     X0, X1 = int(round(u0 * size)), int(round(u1 * size))
     ys, yb, yt = int(round((1 - vs) * size)), int(round((1 - vb) * size)), int(round((1 - vt) * size))
     canvas = Image.new("RGB", (size, size), (70, 70, 70))
-    canvas.paste(val.resize((size, yb - ys), Image.LANCZOS), (0, ys))
-    canvas.paste(peak.resize((X1 - X0, ys - yt), Image.LANCZOS), (X0, yt))
+    val = full.crop((int(2.5 * ppi), H - vh, int(123.5 * ppi), H))
+    canvas.paste(val.resize((X1 - X0, yb - ys), Image.LANCZOS), (X0, ys))
+    a = np.asarray(full.crop((0, 0, W, H - vh)).convert("L")).astype(int)
+    ph, half = a.shape[0], W // 2
+    nonw = a[:, :half] < 235
+    L = np.where(nonw.any(1), nonw.argmax(1), half).astype(float)
+    k = 9
+    Ls = np.convolve(np.pad(L, (k, k), mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), mode="valid")
+    cx, nrows = (X0 + X1) / 2.0, ys - yt
+    for r in range(nrows):
+        t = r / max(nrows - 1, 1)                      # 0 at apex .. 1 at seam
+        hw = (X1 - X0) / 2.0 * t
+        if hw < 1:
+            continue
+        ar = min(ph - 1, int(round(t * (ph - 1))))
+        l = Ls[ar]
+        if l >= half - 1:
+            continue
+        seg = full.crop((int(round(l)), ar, int(round(W - l)), ar + 1))
+        canvas.paste(seg.resize((max(int(round(2 * hw)), 1), 1), Image.LANCZOS), (int(round(cx - hw)), yt + r))
     buf = io.BytesIO()
     canvas.save(buf, "JPEG", quality=90)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()

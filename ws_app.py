@@ -495,8 +495,9 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
         n = int(round(xb - xs))
         if n < 1:
             continue
-        xi, xo = int(round(xb)), int(round(2 * cxm - xb))
-        n = min(n, xi - int(xs) + 1, 100)
+        IN = 5   # mirror from a few px inside the edge so anti-aliased edge pixels are overwritten
+        xi, xo = int(round(xb)) + IN, int(round(2 * cxm - xb)) - IN
+        n = min(n + IN, xi - int(xs) + 1, 120)
         for k in range(1, n + 1):
             arr[r, xi - k] = arr[r, min(xi + k, size - 1)]
             arr[r, xo + k - 1] = arr[r, max(xo - k - 1, 0)]

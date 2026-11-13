@@ -447,7 +447,7 @@ TENT_UV = {
 }
 
 
-def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048) -> str:
+def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048, page_h_in: float = 87.031) -> str:
     """Place the side artwork so its valance band (bottom valance_in) lands exactly on the
     model's valance quad and the peak art starts at the valance/peak seam."""
     import base64, io
@@ -458,7 +458,7 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
     if crop:
         im = im.crop((int(crop[0] * w), int(crop[1] * h), int(crop[2] * w), int(crop[3] * h)))
     w, h = im.size
-    art_h_in = 86.25
+    art_h_in = page_h_in
     vh = int(round(h * valance_in / art_h_in))          # valance rows (bottom of art)
     peak, val = im.crop((0, 0, w, h - vh)), im.crop((0, h - vh, w, h))
     u0, u1, vb, vs, vt = TENT_UV[side]
@@ -507,7 +507,7 @@ def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
             crop = (x / pw, 1 - (y + h) / ph, (x + w) / pw, 1 - y / ph)
         sides = {}
         for side, i in _tent_side_map(len(proofs)).items():
-            sides[side] = _tent_texture_uri(proofs[i], crop, side)
+            sides[side] = _tent_texture_uri(proofs[i], None, side, page_h_in=float(cs.get('height_inch') or 87.031))
         html = html.replace("__SIDES__", _json.dumps(sides))
     else:
         html = html.replace("__JPG__", _proof_data_uri(proofs[0]))

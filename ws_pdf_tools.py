@@ -3624,6 +3624,9 @@ def run_recipe(input_path: str, recipe: dict,
             stamp_overlay(tmp_pf, tmp_cp, _cp_use, opacity=1.0)
             results["cutpath_pdf"]  = tmp_cp
             results["cutpath_jpeg"] = export_jpeg(tmp_cp, tmp_cp_jpg)
+            # No finishing profile -> artwork + cutpath file IS the production file
+            if not finishing:
+                results["finished_pdf"] = tmp_cp
         else:
             _step(f"⚠️ Cutpath not found: {cutpath}")
     _step("✅ Done!")

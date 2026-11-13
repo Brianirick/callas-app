@@ -453,18 +453,19 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
     import base64, io
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
-    im = Image.open(path).convert("RGB")
-    w, h = im.size
-    im = im.crop((int(w * 4 / 126), 0, int(w * 122 / 126), h))   # art x 4..122 in of the 126 in page
-    w, h = im.size
-    art_h_in = page_h_in
-    vh = int(round(h * valance_in / art_h_in))          # valance rows (bottom of art)
-    peak, val = im.crop((0, 0, w, h - vh)), im.crop((0, h - vh, w, h))
+    full = Image.open(path).convert("RGB")
+    W, H = full.size
+    ppi = W / 126.0
+    vh = int(round(valance_in * ppi))                       # valance rows (bottom of page)
+    # Valance: art x 4..122 in fills the full texture width (looks right on the model)
+    val = full.crop((int(4 * ppi), H - vh, int(122 * ppi), H))
+    # Peak: blue triangle spans x ~1.4..124.6 in at its base; map that to the peak's UV base width
+    peak = full.crop((int(1.4 * ppi), 0, int(124.6 * ppi), H - vh))
     u0, u1, vb, vs, vt = TENT_UV[side]
-    X0, X1 = 0, size   # horizontal: art x 4..122 in spans the full texture width (measured fit)
+    X0, X1 = int(round(u0 * size)), int(round(u1 * size))
     ys, yb, yt = int(round((1 - vs) * size)), int(round((1 - vb) * size)), int(round((1 - vt) * size))
     canvas = Image.new("RGB", (size, size), (70, 70, 70))
-    canvas.paste(val.resize((X1 - X0, yb - ys), Image.LANCZOS), (X0, ys))
+    canvas.paste(val.resize((size, yb - ys), Image.LANCZOS), (0, ys))
     canvas.paste(peak.resize((X1 - X0, ys - yt), Image.LANCZOS), (X0, yt))
     buf = io.BytesIO()
     canvas.save(buf, "JPEG", quality=90)

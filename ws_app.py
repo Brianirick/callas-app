@@ -455,14 +455,13 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
     Image.MAX_IMAGE_PIXELS = None
     im = Image.open(path).convert("RGB")
     w, h = im.size
-    if crop:
-        im = im.crop((int(crop[0] * w), int(crop[1] * h), int(crop[2] * w), int(crop[3] * h)))
+    im = im.crop((int(w * 4 / 126), 0, int(w * 122 / 126), h))   # art x 4..122 in of the 126 in page
     w, h = im.size
     art_h_in = page_h_in
     vh = int(round(h * valance_in / art_h_in))          # valance rows (bottom of art)
     peak, val = im.crop((0, 0, w, h - vh)), im.crop((0, h - vh, w, h))
     u0, u1, vb, vs, vt = TENT_UV[side]
-    X0, X1 = int(round(u0 * size)), int(round(u1 * size))
+    X0, X1 = 0, size   # horizontal: art x 4..122 in spans the full texture width (measured fit)
     ys, yb, yt = int(round((1 - vs) * size)), int(round((1 - vb) * size)), int(round((1 - vt) * size))
     canvas = Image.new("RGB", (size, size), (70, 70, 70))
     canvas.paste(val.resize((X1 - X0, yb - ys), Image.LANCZOS), (X0, ys))

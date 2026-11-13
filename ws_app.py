@@ -450,53 +450,34 @@ TENT_UV = {
 def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048,
                       page_h_in: float = 87.031) -> str:
     """Build the UV texture for one tent side from its flat 126 x 87 in proof JPEG.
-    Valance (bottom 13.75 in, x 2.5..123.5 in) goes on the valance quad; the peak's blue print
-    triangle is stretched row-by-row so it exactly fills the model's peak triangle."""
+    Plain linear mapping (no warping, so customer art is never distorted): the valance band
+    (bottom 13.75 in, x 2.5..123.5) goes on the valance quad, the peak (x 1.4..124.6, above
+    13.75 in) on the peak triangle. Both are padded outward so no seam shows at the edges."""
     import base64, io
-    import numpy as np
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
     full = Image.open(path).convert("RGB")
     W, H = full.size
-    ppi = W / 126.0
-    vh = int(round(valance_in * ppi))
+    ppi, PAD = W / 126.0, 1.0
+    vin = valance_in
     u0, u1, vb, vs, vt = TENT_UV[side]
-    X0, X1 = int(round(u0 * size)), int(round(u1 * size))
-    ys, yb, yt = int(round((1 - vs) * size)), int(round((1 - vb) * size)), int(round((1 - vt) * size))
-    canvas = Image.new("RGB", (size, size), (70, 70, 70))
-    val = full.crop((int(2.5 * ppi), H - vh, int(123.5 * ppi), H))
-    canvas.paste(val.resize((X1 - X0, yb - ys), Image.LANCZOS), (X0, ys))
-    a = np.asarray(full.crop((0, 0, W, H - vh)).convert("L")).astype(int)
-    ph, half = a.shape[0], W // 2
-    nonw = a[:, :half] < 235
-    L = np.where(nonw.any(1), nonw.argmax(1), half).astype(float)
-    k = 9
-    Ls = np.convolve(np.pad(L, (k, k), mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), mode="valid")
-    cx, nrows = (X0 + X1) / 2.0, ys - yt
-    base_half = (X1 - X0) / 2.0
-    sc = base_half / max(half - Ls[-1], 1)            # one uniform scale for both axes: no distortion
-    for r in range(nrows):
-        t = r / max(nrows - 1, 1)                      # 0 at apex .. 1 at seam
-        hw = base_half * t
-        if hw < 1:
-            continue
-        ar = min(ph - 1, int(round(t * (ph - 1))))
-        l = Ls[ar]
-        if l >= half - 1:
-            continue
-        seg = full.crop((int(round(l)), ar, int(round(W - l)), ar + 1))
-        rw = max(int(round(2 * hw)), 1)
-        w = min(max(int(round((W - 2 * l) * sc)), 1), rw)
-        px = np.asarray(seg.resize((w, 1), Image.LANCZOS))            # 1 x w x 3
-        pl = (rw - w) // 2
-        pr = rw - w - pl
-        if pl > 0 or pr > 0:   # gap: mirror the art's own edge outward (no stretching, no assumed color)
-            m = min(max(pl, pr), w - 1)
-            px = np.pad(px, ((0, 0), (min(pl, m), min(pr, m)), (0, 0)), mode="symmetric")
-            if px.shape[1] < rw:
-                px = np.pad(px, ((0, 0), (0, rw - px.shape[1]), (0, 0)), mode="edge")
-        row = Image.fromarray(px[:, :rw].astype("uint8"))
-        canvas.paste(row, (int(round(cx - hw)), yt + r))
+    X0, X1 = u0 * size, u1 * size
+    ys, yb, yt = (1 - vs) * size, (1 - vb) * size, (1 - vt) * size
+    canvas = Image.new("RGB", (size, size), (128, 128, 128))
+    # Peak
+    ax0, ax1, ay1 = 1.4, 124.6, H / ppi
+    sx, sy = (X1 - X0) / (ax1 - ax0), (ys - yt) / (ay1 - vin)
+    cx0, cx1, cy0 = max(ax0 - PAD, 0), min(ax1 + PAD, 126.0), max(vin - PAD * 2, 0)
+    crop_img = full.crop((int(cx0 * ppi), 0, int(cx1 * ppi), int(H - cy0 * ppi)))
+    canvas.paste(crop_img.resize((int(round((cx1 - cx0) * sx)), int(round((ay1 - cy0) * sy))), Image.LANCZOS),
+                 (int(round(X0 - (ax0 - cx0) * sx)), int(round(yt))))
+    # Valance (pasted over the peak's lower padding)
+    vx0, vx1 = 2.5, 123.5
+    vsx = (X1 - X0) / (vx1 - vx0)
+    px0, px1 = vx0 - PAD * 0.5, vx1 + PAD * 0.5
+    val = full.crop((int(px0 * ppi), int(H - vin * ppi), int(px1 * ppi), H))
+    canvas.paste(val.resize((int(round((px1 - px0) * vsx)), int(round(yb - ys))), Image.LANCZOS),
+                 (int(round(X0 - (vx0 - px0) * vsx)), int(round(ys))))
     buf = io.BytesIO()
     canvas.save(buf, "JPEG", quality=90)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()

@@ -412,6 +412,7 @@ MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
     "fitted-6ft-3": "73 × 30 × 30 in",
     "fitted-6ft-4": "73 × 30 × 30 in",
     "fitted-8ft-3": "96 × 30 × 30 in",
+    "fitted-8ft-4": "96 × 30 × 30 in",
     "multi-4ft-3-24": "50 × 31 × 26 in",
     "multi-4ft-3-30": "50 × 31 × 31 in",
     "multi-4ft-4-24": "50 × 31 × 27 in",

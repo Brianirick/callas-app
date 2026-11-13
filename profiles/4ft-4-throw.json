@@ -1,15 +1,15 @@
 {
   "type": "recipe",
   "name": "4ft-4-throw",
-  "description": "QuickProof product '4ft-4-throw' - uses recipe '4ft-4sided-fitted-table-throw'",
+  "description": "QuickProof product '4ft-4-throw' - custom throw (original overlay/cutpath, no finishing)",
   "preflight": "60-50-50-100",
   "check_size": {
-    "width_inch": 106.0,
-    "height_inch": 82.5,
+    "width_inch": 102.0,
+    "height_inch": 84.0,
     "tolerance_inch": 1.0
   },
-  "finishing": "4ft-4-FITTED-3pc",
-  "overlay": "4ft-4sided-FittedTablethrow.pdf",
-  "cutpath": "4ft-4sided-FittedTablethrow---.pdf",
-  "impose_cutpath": "4ft-4sided-FittedTablethrow_IMPOSE_CP.pdf"
+  "finishing": null,
+  "overlay": "4ft_4-sided-custom-trim.pdf",
+  "cutpath": "4ft_4-sided-custom-CutPath-CP-V2.pdf",
+  "mesh": "throw-4ft-4"
 }

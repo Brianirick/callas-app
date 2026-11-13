@@ -447,6 +447,13 @@ TENT_UV = {
 }
 
 
+# Printable (blue) left edge of the 10ft tent peak in the template: (inches up from page bottom, x in)
+TENT_EDGE = [(14.0, 1.7), (17, 4.97), (20, 8.0), (23, 10.92), (26, 13.82), (29, 16.7), (32, 19.52), (35, 22.35),
+             (38, 25.15), (41, 27.8), (44, 30.3), (47, 32.83), (50, 35.33), (53, 37.83), (56, 40.35), (59, 42.85),
+             (62, 45.38), (65, 47.75), (68, 49.82), (71, 51.85), (74, 53.88), (77, 55.9), (80, 57.92), (83, 59.95),
+             (86, 61.98), (86.5, 62.32), (87.03, 63.0)]
+
+
 def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048,
                       page_h_in: float = 87.031) -> str:
     """Build the UV texture for one tent side from its flat 126 x 87 in proof JPEG.
@@ -471,6 +478,29 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
     crop_img = full.crop((int(cx0 * ppi), 0, int(cx1 * ppi), int(H - cy0 * ppi)))
     canvas.paste(crop_img.resize((int(round((cx1 - cx0) * sx)), int(round((ay1 - cy0) * sy))), Image.LANCZOS),
                  (int(round(X0 - (ax0 - cx0) * sx)), int(round(yt))))
+    # Edge band: the printable triangle bows inward of the straight model edge, so art in that thin
+    # band is unprinted (often white). Mirror the printable edge outward over it; nothing is stretched.
+    import numpy as np
+    ey = np.array([p[0] for p in TENT_EDGE])
+    ex = np.array([p[1] for p in TENT_EDGE])
+    arr = np.array(canvas)
+    half_w, cxm = (X1 - X0) / 2.0, (X0 + X1) / 2.0
+    for r in range(int(yt) + 1, int(ys)):
+        t = (r - yt) / (ys - yt)
+        ya = ay1 - t * (ay1 - vin)
+        if ya < vin or ya > ey[-1]:
+            continue
+        xb = X0 + (np.interp(ya, ey, ex) - ax0) * sx      # printable left edge (canvas px)
+        xs = cxm - half_w * t                             # straight model edge
+        n = int(round(xb - xs))
+        if n < 1:
+            continue
+        xi, xo = int(round(xb)), int(round(2 * cxm - xb))
+        n = min(n, xi - int(xs) + 1, 100)
+        for k in range(1, n + 1):
+            arr[r, xi - k] = arr[r, min(xi + k, size - 1)]
+            arr[r, xo + k - 1] = arr[r, max(xo - k - 1, 0)]
+    canvas = Image.fromarray(arr)
     # Valance (pasted over the peak's lower padding)
     vx0, vx1 = 2.5, 123.5
     vsx = (X1 - X0) / (vx1 - vx0)

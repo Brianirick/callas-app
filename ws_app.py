@@ -438,6 +438,40 @@ def _proof_data_uri(path: str, max_edge: int = 2048, crop=None) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
+# UV boxes of each tent side in tent-10ft.glb: (u0, u1, v_valance_bottom, v_seam, v_peak_top)
+TENT_UV = {
+    "front": (0.0587, 0.9408, 0.0192, 0.1751, 0.9462),
+    "left":  (0.0653, 0.9355, 0.0171, 0.1757, 0.9588),
+    "back":  (0.0534, 0.9466, 0.0159, 0.1756, 0.9546),
+    "right": (0.0583, 0.9417, 0.0178, 0.1748, 0.9590),
+}
+
+
+def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, size: int = 2048) -> str:
+    """Place the side artwork so its valance band (bottom valance_in) lands exactly on the
+    model's valance quad and the peak art starts at the valance/peak seam."""
+    import base64, io
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = None
+    im = Image.open(path).convert("RGB")
+    w, h = im.size
+    if crop:
+        im = im.crop((int(crop[0] * w), int(crop[1] * h), int(crop[2] * w), int(crop[3] * h)))
+    w, h = im.size
+    art_h_in = 86.25
+    vh = int(round(h * valance_in / art_h_in))          # valance rows (bottom of art)
+    peak, val = im.crop((0, 0, w, h - vh)), im.crop((0, h - vh, w, h))
+    u0, u1, vb, vs, vt = TENT_UV[side]
+    X0, X1 = int(round(u0 * size)), int(round(u1 * size))
+    ys, yb, yt = int(round((1 - vs) * size)), int(round((1 - vb) * size)), int(round((1 - vt) * size))
+    canvas = Image.new("RGB", (size, size), (70, 70, 70))
+    canvas.paste(val.resize((X1 - X0, yb - ys), Image.LANCZOS), (X0, ys))
+    canvas.paste(peak.resize((X1 - X0, ys - yt), Image.LANCZOS), (X0, yt))
+    buf = io.BytesIO()
+    canvas.save(buf, "JPEG", quality=90)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
 def _tent_side_map(n_pages: int) -> dict:
     """Which input page goes on which side of the tent (page order: Front, Right, Back, Left)."""
     if n_pages >= 4:
@@ -471,12 +505,9 @@ def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
             pw, ph = float(cs["width_inch"]), float(cs["height_inch"])
             x, y, w, h = [float(v) for v in cin]
             crop = (x / pw, 1 - (y + h) / ph, (x + w) / pw, 1 - y / ph)
-        page_uris = {}
         sides = {}
         for side, i in _tent_side_map(len(proofs)).items():
-            if i not in page_uris:
-                page_uris[i] = _proof_data_uri(proofs[i], crop=crop)
-            sides[side] = page_uris[i]
+            sides[side] = _tent_texture_uri(proofs[i], crop, side)
         html = html.replace("__SIDES__", _json.dumps(sides))
     else:
         html = html.replace("__JPG__", _proof_data_uri(proofs[0]))

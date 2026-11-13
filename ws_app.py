@@ -473,9 +473,11 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
     k = 9
     Ls = np.convolve(np.pad(L, (k, k), mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), mode="valid")
     cx, nrows = (X0 + X1) / 2.0, ys - yt
+    base_half = (X1 - X0) / 2.0
+    sc = base_half / max(half - Ls[-1], 1)            # one uniform scale for both axes: no distortion
     for r in range(nrows):
         t = r / max(nrows - 1, 1)                      # 0 at apex .. 1 at seam
-        hw = (X1 - X0) / 2.0 * t
+        hw = base_half * t
         if hw < 1:
             continue
         ar = min(ph - 1, int(round(t * (ph - 1))))
@@ -483,7 +485,18 @@ def _tent_texture_uri(path: str, crop, side: str, valance_in: float = 13.75, siz
         if l >= half - 1:
             continue
         seg = full.crop((int(round(l)), ar, int(round(W - l)), ar + 1))
-        canvas.paste(seg.resize((max(int(round(2 * hw)), 1), 1), Image.LANCZOS), (int(round(cx - hw)), yt + r))
+        rw = max(int(round(2 * hw)), 1)
+        w = min(max(int(round((W - 2 * l) * sc)), 1), rw)
+        px = np.asarray(seg.resize((w, 1), Image.LANCZOS))            # 1 x w x 3
+        pl = (rw - w) // 2
+        pr = rw - w - pl
+        if pl > 0 or pr > 0:   # gap: mirror the art's own edge outward (no stretching, no assumed color)
+            m = min(max(pl, pr), w - 1)
+            px = np.pad(px, ((0, 0), (min(pl, m), min(pr, m)), (0, 0)), mode="symmetric")
+            if px.shape[1] < rw:
+                px = np.pad(px, ((0, 0), (0, rw - px.shape[1]), (0, 0)), mode="edge")
+        row = Image.fromarray(px[:, :rw].astype("uint8"))
+        canvas.paste(row, (int(round(cx - hw)), yt + r))
     buf = io.BytesIO()
     canvas.save(buf, "JPEG", quality=90)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()

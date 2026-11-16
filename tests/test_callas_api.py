@@ -102,6 +102,61 @@ def test_preflight_encrypted(client, tmp_path):
     assert report(post(client, "/preflight", {"file": enc}, {"product": "banner-10x8"}))["pdf_encrypted"] is True
 
 
+def add_spots(path, names):
+    """Reference a Separation colour space per name from page 1, as WS templates do."""
+    doc = fitz.open(str(path))
+    kind, res = doc.xref_get_key(doc[0].xref, "Resources")
+    res_xref = int(res.split()[0]) if kind == "xref" else doc[0].xref
+    prefix = "" if kind == "xref" else "Resources/"
+    for i, name in enumerate(names):
+        xref = doc.get_new_xref()
+        doc.update_object(xref, f"[/Separation /{name.replace(' ', '#20')} /DeviceCMYK "
+                                "<</FunctionType 2 /Domain [0 1] /C0 [0 0 0 0] /C1 [1 0 0 0] /N 1>>]")
+        doc.xref_set_key(res_xref, f"{prefix}ColorSpace/CS{i}", f"{xref} 0 R")
+    doc.saveIncr()
+    doc.close()
+    return path
+
+
+def test_preflight_template_elements_warn(client, tmp_path):
+    pdf = add_spots(make_pdf(tmp_path / "t.pdf"), ["Blue Template Layer", "Red Template Layer", "PANTONE 185 C"])
+    r = report(post(client, "/preflight", {"file": pdf}, {"product": "no-finish"}))
+    assert r["doc_errors"] == 0 and r["doc_warnings"] == 1
+    assert "Blue Template Layer, Red Template Layer" in r["doc_warnings_list"][0]
+    # KFPX names QuickProof's ProofMessage.GetWarningMessage matches on
+    assert r["doc_warning_list"] == [{"name": "Blue Template Color Used"}, {"name": "Red Template Color Used"}]
+
+
+def test_preflight_clean_file_no_warnings(client, tmp_path):
+    pdf = add_spots(make_pdf(tmp_path / "c.pdf"), ["PANTONE 185 C"])
+    r = report(post(client, "/preflight", {"file": pdf}, {"product": "no-finish"}))
+    assert r["doc_warnings"] == 0 and r["doc_warnings_list"] == [] and r["doc_warning_list"] == []
+
+
+def test_upload_pdf_renamed_ai_passes_through(client, tmp_path):
+    ai = tmp_path / "art.ai"
+    make_pdf(tmp_path / "a.pdf").rename(ai)
+    resp = post(client, "/preflight", {"file": ai}, {"product": "banner-10x8"})
+    assert resp.status_code == 200 and report(resp)["doc_errors"] == 0
+
+
+def test_upload_unreadable_file_is_422(client, tmp_path):
+    txt = tmp_path / "notes.pdf"
+    txt.write_text("just some text")
+    assert post(client, "/preflight", {"file": txt}, {"product": "banner-10x8"}).status_code == 422
+
+
+def test_upload_eps_converted(client, tmp_path):
+    import ws_pdf_tools
+    if not ws_pdf_tools._find_ghostscript():
+        pytest.skip("Ghostscript not installed")
+    eps = tmp_path / "art.eps"
+    eps.write_text("%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 720 576\n"
+                   "0 0 1 0 setcmykcolor 0 0 720 576 rectfill showpage\n%%EOF\n")
+    resp = post(client, "/preflight", {"file": eps}, {"product": "banner-10x8"})
+    assert resp.status_code == 200 and report(resp)["doc_errors"] == 0
+
+
 def test_split_returns_requested_page(client, tmp_path):
     resp = post(client, "/split", {"file": make_pdf(tmp_path / "m.pdf", pages=3)}, {"page": "2"})
     doc = fitz.open(stream=resp.content, filetype="pdf")

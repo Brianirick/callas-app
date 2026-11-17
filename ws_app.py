@@ -552,8 +552,9 @@ def _tent_side_map(n_pages: int) -> dict:
     return {"front": 0, "right": 0, "back": 0, "left": 0}   # one page = same art on all sides
 
 
-def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
-    import base64, json as _json, streamlit.components.v1 as components
+def build_viewer_html(mesh: str, proofs, label: str, profile: dict = None):
+    """Return the self-contained 3D viewer page (model + proof embedded) or None if unavailable."""
+    import base64, json as _json
     profile = profile or {}
     proofs = proofs if isinstance(proofs, list) else [proofs]
     proofs = [p for p in proofs if p and os.path.exists(p)]
@@ -561,27 +562,72 @@ def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
     is_tent = mesh.startswith("tent")
     tpl = VIEWER3D_DIR / ("viewer_tent_template.html" if is_tent else "viewer_template.html")
     if not glb.exists() or not tpl.exists() or not proofs:
-        st.warning(f"3D model not found: {mesh}")
-        return
+        return None
     glb_uri = "data:model/gltf-binary;base64," + base64.b64encode(glb.read_bytes()).decode()
     html = (tpl.read_text(encoding="utf-8")
             .replace("__GLB__", glb_uri)
             .replace("__PNAME__", label)
             .replace("__DIMS__", MESH_INFO.get(mesh, "")))
     if is_tent:
-        crop = None
-        cin = profile.get("mesh_crop_in")          # [x, y_from_bottom, w, h] inches within the page
         cs = profile.get("check_size") or {}
-        if cin and cs.get("width_inch") and cs.get("height_inch"):
-            pw, ph = float(cs["width_inch"]), float(cs["height_inch"])
-            x, y, w, h = [float(v) for v in cin]
-            crop = (x / pw, 1 - (y + h) / ph, (x + w) / pw, 1 - y / ph)
         sides = {}
         for side, i in _tent_side_map(len(proofs)).items():
             sides[side] = _tent_texture_uri(proofs[i], None, side, page_h_in=float(cs.get('height_inch') or 87.031))
         html = html.replace("__SIDES__", _json.dumps(sides))
     else:
         html = html.replace("__JPG__", _proof_data_uri(proofs[0], fill=str(VIEWER3D_DIR / f"{mesh}.fill.npz")))
+    return html
+
+
+def _customerize(html: str) -> str:
+    """Customer-facing version: no internal controls, no version tags, noindex, reference-only note."""
+    html = html.replace("<title>3D Proof Viewer</title>", "<title>3D Proof Preview</title>\n<meta name=\"robots\" content=\"noindex,nofollow\">")
+    html = html.replace("<title>Tent 3D Proof</title>", "<title>3D Proof Preview</title>\n<meta name=\"robots\" content=\"noindex,nofollow\">")
+    html = html.replace("<h1>3D Proof Viewer</h1>", "<h1>3D Proof Preview</h1>").replace("<h1>10ft Tent 3D Proof</h1>", "<h1>10ft Tent 3D Proof Preview</h1>")
+    import re
+    html = re.sub(r'<div class="hint">Drag to orbit[^<]*</div>', '<div class="hint">Drag to rotate · scroll or pinch to zoom</div>', html, count=1)
+    css = ('<style>label.t:has(#wire),label.btn:has(#file){display:none!important}'
+           '@media(max-width:560px){h1{font-size:16px}}</style>')
+    disc = ('<p class="hint" style="order:99;margin:4px 0 0">3D preview for reference only. Colors, fabric drape and '
+            'finishing are approximate. The approved flat proof is what we print.</p>')
+    html = html.replace('<div class="w">', css + '<div class="w">' + disc, 1)
+    return html
+
+
+CUSTOMER_3D_BUCKET = "ws-quickproof-graphics"
+CUSTOMER_3D_PREFIX = "{so}/3d/"        # key = prefix + <slug>-<token>.html  (sales order folder, like the proof JPEGs)
+
+
+def publish_customer_3d(mesh: str, proofs, label: str, profile: dict, sales_order: str):
+    """Build the customer page and upload it to S3. Returns (url, error)."""
+    import re, secrets
+    html = build_viewer_html(mesh, proofs, label, profile)
+    if not html:
+        return None, "3D model or proof image not found."
+    html = _customerize(html)
+    client = _s3()
+    if not client:
+        return None, "S3 is not connected."
+    so = re.sub(r"[^A-Za-z0-9_-]", "", sales_order or "") or "unassigned"
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "-", label or "proof").strip("-")[:60] or "proof"
+    key = CUSTOMER_3D_PREFIX.format(so=so) + f"{slug}-{secrets.token_hex(4)}.html"
+    try:
+        client.put_object(Bucket=CUSTOMER_3D_BUCKET, Key=key, Body=html.encode("utf-8"),
+                          ContentType="text/html; charset=utf-8", ContentDisposition="inline",
+                          CacheControl="no-cache")
+    except Exception as e:
+        return None, f"Upload failed: {e}"
+    from urllib.parse import quote
+    region = getattr(getattr(client, "meta", None), "region_name", None) or "us-east-1"
+    return f"https://{CUSTOMER_3D_BUCKET}.s3.{region}.amazonaws.com/{quote(key)}", None
+
+
+def render_3d_viewer(mesh: str, proofs, label: str, profile: dict = None):
+    import streamlit.components.v1 as components
+    html = build_viewer_html(mesh, proofs, label, profile)
+    if not html:
+        st.warning(f"3D model not found: {mesh}")
+        return
     components.html(html, height=700, scrolling=False)
 
 
@@ -593,6 +639,25 @@ else:
     def show_3d_dialog(mesh: str, proofs, label: str, profile: dict = None):
         with st.expander("3D Proof", expanded=True):
             render_3d_viewer(mesh, proofs, label, profile)
+
+
+if hasattr(st, "dialog"):
+    @st.dialog("Customer 3D link")
+    def show_publish_dialog(mesh: str, proofs, label: str, profile: dict = None, default_so: str = ""):
+        st.caption("Publishes a customer-facing 3D page to S3 and gives you a link to send. "
+                   "Reference only - the approved flat proof governs production.")
+        so = st.text_input("Sales order #", value=default_so, key="c3d_so")
+        if st.button("Publish 3D page", type="primary", key="c3d_go"):
+            with st.spinner("Building and uploading..."):
+                url, err = publish_customer_3d(mesh, proofs, label, profile or {}, so)
+            if err:
+                st.error(err)
+            else:
+                st.success("Published. Copy the link below.")
+                st.code(url, language=None)
+else:
+    def show_publish_dialog(*a, **k):
+        st.info("Customer 3D link needs a newer Streamlit (st.dialog).")
 
 
 def success_banner(operation: str):
@@ -849,8 +914,16 @@ if page == "run":
                     _pj = result.get("original_jpeg")
                     _pj = _pj if isinstance(_pj, list) else ([_pj] if _pj else [])
                     if _mesh and any(p and os.path.exists(p) for p in _pj):
-                        if st.button("🧊  3D Proof", use_container_width=True, key="btn_3d_proof"):
-                            show_3d_dialog(_mesh, _pj, st.session_state.run_stem or profile_name, profile_data)
+                        _c3a, _c3b = st.columns(2)
+                        with _c3a:
+                            if st.button("🧊  3D Proof", use_container_width=True, key="btn_3d_proof"):
+                                show_3d_dialog(_mesh, _pj, st.session_state.run_stem or profile_name, profile_data)
+                        with _c3b:
+                            if st.button("🔗  Customer 3D link", use_container_width=True, key="btn_3d_link"):
+                                import re as _re
+                                _m = _re.search(r"\d{5,}", st.session_state.run_stem or "")
+                                show_publish_dialog(_mesh, _pj, st.session_state.run_stem or profile_name,
+                                                    profile_data, _m.group(0) if _m else "")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

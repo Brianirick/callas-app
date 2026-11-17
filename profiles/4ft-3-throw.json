@@ -9,7 +9,7 @@
     "tolerance_inch": 1.0
   },
   "finishing": null,
-  "overlay": "4ft_3-sided-custom-trim.pdf",
-  "cutpath": "4ft_3-sided-custom-CutPath-CP-V2.pdf",
+  "overlay": "4ft_3-sided-custom-V2-overlay.pdf",
+  "cutpath": "4ft_3-sided-custom-CutPath-CP.pdf",
   "mesh": "throw-4ft-3"
 }

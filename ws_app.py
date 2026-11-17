@@ -609,6 +609,11 @@ def publish_customer_3d(mesh: str, proofs, label: str, profile: dict, sales_orde
     if not client:
         return None, "S3 is not connected."
     so = re.sub(r"[^A-Za-z0-9_-]", "", sales_order or "") or "unassigned"
+    # bucket folders are named SO-<number>/ (e.g. SO-1001637/), so add the prefix to a bare number
+    if so.isdigit():
+        so = "SO-" + so
+    elif so.upper().startswith("SO") and so[2:].lstrip("-_").isdigit():
+        so = "SO-" + so[2:].lstrip("-_")
     slug = re.sub(r"[^A-Za-z0-9_-]+", "-", label or "proof").strip("-")[:60] or "proof"
     key = CUSTOMER_3D_PREFIX.format(so=so) + f"{slug}-{secrets.token_hex(4)}.html"
     try:
@@ -923,7 +928,7 @@ if page == "run":
                                 import re as _re
                                 _m = _re.search(r"\d{5,}", st.session_state.run_stem or "")
                                 show_publish_dialog(_mesh, _pj, st.session_state.run_stem or profile_name,
-                                                    profile_data, _m.group(0) if _m else "")
+                                                    profile_data, ("SO-" + _m.group(0)) if _m else "")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

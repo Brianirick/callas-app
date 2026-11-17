@@ -399,6 +399,8 @@ def recipe_download_buttons(result: dict, stem: str):
 VIEWER3D_DIR = Path(__file__).parent / "viewer3d"
 MESH_INFO = {  # mesh name -> display dimensions (W x H x D, inches)
     "tent-10ft": "121 × 121 × 132 in",
+    "flag14-single": "14 ft",
+    "flag14-double": "14 ft",
     "throw-4ft-3": "64 × 28 × 38 in",
     "throw-4ft-4": "64 × 29 × 43 in",
     "throw-6ft-3": "91 × 28 × 38 in",
@@ -558,9 +560,11 @@ def build_viewer_html(mesh: str, proofs, label: str, profile: dict = None):
     profile = profile or {}
     proofs = proofs if isinstance(proofs, list) else [proofs]
     proofs = [p for p in proofs if p and os.path.exists(p)]
-    glb = VIEWER3D_DIR / f"{mesh}.glb"
+    is_flag = mesh.startswith("flag14")
+    base = st.session_state.get("flag_base", "x") if is_flag else ""
+    glb = VIEWER3D_DIR / (f"{mesh}-{base}.glb" if is_flag else f"{mesh}.glb")
     is_tent = mesh.startswith("tent")
-    tpl = VIEWER3D_DIR / ("viewer_tent_template.html" if is_tent else "viewer_template.html")
+    tpl = VIEWER3D_DIR / ("viewer_flag_template.html" if is_flag else "viewer_tent_template.html" if is_tent else "viewer_template.html")
     if not glb.exists() or not tpl.exists() or not proofs:
         return None
     glb_uri = "data:model/gltf-binary;base64," + base64.b64encode(glb.read_bytes()).decode()
@@ -568,7 +572,21 @@ def build_viewer_html(mesh: str, proofs, label: str, profile: dict = None):
             .replace("__GLB__", glb_uri)
             .replace("__PNAME__", label)
             .replace("__DIMS__", MESH_INFO.get(mesh, "")))
-    if is_tent:
+    if is_flag:
+        # front = the proof as printed; back = side 2 (double: same page, right half) or a washed-out see-through copy (single)
+        front = _proof_data_uri(proofs[0], max_edge=4096)
+        if mesh.endswith("double"):
+            back = front
+        else:
+            import base64 as _b64, io as _io
+            from PIL import Image as _Im
+            _im = _Im.open(proofs[0]).convert("RGB")
+            _im.thumbnail((4096, 4096))
+            _im = _Im.blend(_im, _Im.new("RGB", _im.size, (255, 255, 255)), 0.55)
+            _buf = _io.BytesIO(); _im.save(_buf, "JPEG", quality=85)
+            back = "data:image/jpeg;base64," + _b64.b64encode(_buf.getvalue()).decode()
+        html = html.replace("__SIDES__", _json.dumps({"front": front, "back": back}))
+    elif is_tent:
         cs = profile.get("check_size") or {}
         sides = {}
         for side, i in _tent_side_map(len(proofs)).items():
@@ -582,6 +600,7 @@ def build_viewer_html(mesh: str, proofs, label: str, profile: dict = None):
 def _customerize(html: str) -> str:
     """Customer-facing version: no internal controls, no version tags, noindex, reference-only note."""
     html = html.replace("<title>3D Proof Viewer</title>", "<title>3D Proof Preview</title>\n<meta name=\"robots\" content=\"noindex,nofollow\">")
+    html = html.replace("<title>Flag 3D Proof</title>", "<title>3D Proof Preview</title>\n<meta name=\"robots\" content=\"noindex,nofollow\">").replace("<h1>14ft Flag 3D Proof</h1>", "<h1>14ft Flag 3D Proof Preview</h1>")
     html = html.replace("<title>Tent 3D Proof</title>", "<title>3D Proof Preview</title>\n<meta name=\"robots\" content=\"noindex,nofollow\">")
     html = html.replace("<h1>3D Proof Viewer</h1>", "<h1>3D Proof Preview</h1>").replace("<h1>10ft Tent 3D Proof</h1>", "<h1>10ft Tent 3D Proof Preview</h1>")
     import re
@@ -919,6 +938,9 @@ if page == "run":
                     _pj = result.get("original_jpeg")
                     _pj = _pj if isinstance(_pj, list) else ([_pj] if _pj else [])
                     if _mesh and any(p and os.path.exists(p) for p in _pj):
+                        if _mesh.startswith("flag14"):
+                            st.radio("Flag base", ["x", "spike"], format_func=lambda v: "X base" if v == "x" else "Spike base",
+                                     horizontal=True, key="flag_base")
                         _c3a, _c3b = st.columns(2)
                         with _c3a:
                             if st.button("🧊  3D Proof", use_container_width=True, key="btn_3d_proof"):

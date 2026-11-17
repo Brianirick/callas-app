@@ -22,5 +22,6 @@
     ]
   },
   "overlay": "L_FalconSingle.pdf",
-  "cutpath": "L_FalconSingle-CP-.pdf"
+  "cutpath": "L_FalconSingle-CP-.pdf",
+  "mesh": "flag14-single"
 }

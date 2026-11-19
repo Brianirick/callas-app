@@ -571,7 +571,8 @@ def build_viewer_html(mesh: str, proofs, label: str, profile: dict = None):
     html = (tpl.read_text(encoding="utf-8")
             .replace("__GLB__", glb_uri)
             .replace("__PNAME__", label)
-            .replace("__DIMS__", MESH_INFO.get(mesh, "")))
+            .replace("__DIMS__", MESH_INFO.get(mesh, ""))
+            .replace("__MESH__", mesh))
     if is_flag:
         # front = the proof as printed; back = side 2 (double: same page, right half) or a washed-out see-through copy (single)
         front = _proof_data_uri(proofs[0], max_edge=4096)
